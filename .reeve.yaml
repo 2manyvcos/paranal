@@ -1,0 +1,46 @@
+---
+type: pipeline
+name: Deploy Paranal Documentation
+
+when:
+  workerGroup:
+    include: [soldier]
+  trigger:
+    include: [commit, action]
+  action:
+    include: [paranal:deploy-documentation]
+
+steps:
+  - name: Deploy
+    task: "@reeve/npm-cli"
+    params:
+      SSH_KNOWN_HOSTS: { env: github/fingerprints }
+      SSH_KEY: { env: github/2manyvcos/paranal/ssh-key }
+      GIT_USER_EMAIL: { env: github/2manyvcos/paranal/email }
+      GIT_USER_NAME: { env: github/2manyvcos/paranal/name }
+      GIT_REMOTE: git@github.com:2manyvcos/paranal
+    command: /bin/sh
+    input: |
+      set -e
+
+      mkdir -m 0700 -p ~/.ssh
+      echo "$SSH_KNOWN_HOSTS" >~/.ssh/known_hosts
+      echo 'IdentityFile ~/.ssh/id_deploy' >~/.ssh/config
+      echo "$SSH_KEY" >~/.ssh/id_deploy
+      chmod 0600 ~/.ssh/known_hosts ~/.ssh/config ~/.ssh/id_deploy
+      unset SSH_KNOWN_HOSTS SSH_KEY
+
+      git config --global user.email "$GIT_USER_EMAIL"
+      git config --global user.name "$GIT_USER_NAME"
+      unset GIT_USER_EMAIL GIT_USER_NAME
+
+      git clone "$GIT_REMOTE" --branch pages docs/.vitepress/dist
+      COMMIT_HASH=$(git rev-parse --short HEAD)
+
+      npm ci
+      npm run docs:build
+
+      cd docs/.vitepress/dist
+      git add .
+      git commit -m "Deploy website - based on $COMMIT_HASH"
+      git push
