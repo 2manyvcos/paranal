@@ -12,7 +12,7 @@ when:
 
 steps:
   - name: Deploy
-    task: "@reeve/npm-cli"
+    task: '@reeve/npm-cli'
     params:
       SSH_KNOWN_HOSTS: { env: github/fingerprints }
       SSH_KEY: { env: github/2manyvcos/paranal/ssh-key }
