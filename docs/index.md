@@ -7,7 +7,7 @@ hero:
   text: Advanced Service Dashboard
   tagline: With Health and Version Monitoring
   image:
-    src: /logo.svg
+    src: /paranal.svg
     alt: Paranal
   actions:
     - theme: brand

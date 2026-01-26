@@ -3,11 +3,7 @@ import { defineConfig } from 'vitepress';
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   vite: {
-    server: {
-      host: '0.0.0.0',
-      port: 8080,
-      allowedHosts: true,
-    },
+    server: { host: '0.0.0.0', port: 8080, allowedHosts: true },
   },
 
   lang: 'en-US',
@@ -18,7 +14,8 @@ export default defineConfig({
   cleanUrls: true,
 
   head: [
-    ['link', { rel: 'icon', href: '/favicon.svg' }],
+    ['link', { rel: 'icon', href: '/paranal-simple.svg' }],
+    ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'Paranal' }],
     [
@@ -37,7 +34,7 @@ export default defineConfig({
   ],
 
   themeConfig: {
-    logo: '/favicon.svg',
+    logo: '/paranal-simple.svg',
 
     search: {
       provider: 'local',

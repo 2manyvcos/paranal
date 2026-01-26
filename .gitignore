@@ -9,9 +9,6 @@ npm-debug.log*
 # Optional npm cache directory
 .npm
 
-# Client
-client/dist
-
 # Docs
 docs/.vitepress/cache
 docs/.vitepress/dist

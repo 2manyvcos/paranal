@@ -1,12 +1,48 @@
 {
+  "name": "paranal",
+  "description": "Advanced Service Dashboard with Health and Version Monitoring",
+  "version": "0.0.0",
+  "author": {
+    "name": "Aaron Burmeister"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/2manyvcos/paranal"
+  },
+  "private": true,
+  "type": "module",
   "scripts": {
+    "client:dev": "vite",
+    "client:build": "tsc -b && vite build",
+    "client:lint": "eslint .",
+    "client:preview": "vite preview",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "prettify": "prettier . --write"
   },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "eslint-plugin-unused-imports": "^4.3.0",
+    "globals": "^16.5.0",
     "prettier": "^3.8.1",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "^7.2.4",
+    "vite-tsconfig-paths": "^6.0.5",
     "vitepress": "^2.0.0-alpha.15"
   }
 }
