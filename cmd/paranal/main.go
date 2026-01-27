@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"github.com/2manyvcos/paranal/server"
+)
 
 func main() {
-	fmt.Println("Hello, Paranal 💫!")
+	server.Run()
 }
