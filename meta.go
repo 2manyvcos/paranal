@@ -3,7 +3,7 @@ package meta
 import (
 	_ "embed"
 	"encoding/json"
-	"log"
+	"fmt"
 )
 
 //go:embed package.json
@@ -17,6 +17,6 @@ var Meta struct {
 func init() {
 	err := json.Unmarshal([]byte(rawPackage), &Meta)
 	if err != nil {
-		log.Fatalf("Error reading package metadata - %s\n", err)
+		panic(fmt.Sprintf("reading package metadata failed - %s\n", err))
 	}
 }

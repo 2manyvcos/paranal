@@ -17,5 +17,8 @@ func Run() {
 	}
 	defer app.Close()
 
-	api.Serve(app)
+	err = api.Serve(app)
+	if err != nil {
+		log.Printf("HTTP server exited - %s\n", err)
+	}
 }

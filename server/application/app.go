@@ -48,7 +48,7 @@ func Setup() (app *App, err error) {
 
 	app.Config.Server.Protocol = loadConfigValue("SERVER_PROTOCOL", "http")
 	app.Config.Server.Address = loadConfigValue("SERVER_ADDRESS", "0.0.0.0")
-	app.Config.Server.Port = loadConfigValue("SERVER_PORT", "3000")
+	app.Config.Server.Port = loadConfigValue("SERVER_PORT", "8080")
 	app.Config.Server.CertFile = loadConfigValue("SERVER_CERT_FILE", ".paranal/ssl/cert.pem")
 	app.Config.Server.KeyFile = loadConfigValue("SERVER_KEY_FILE", ".paranal/ssl/key.pem")
 
