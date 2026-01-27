@@ -46,7 +46,7 @@ func (p *sqlite) Setup() error {
 	// var dbVersion int
 	// err = p.DB.QueryRow("PRAGMA user_version").Scan(&dbVersion)
 
-	_, err := p.DB.Exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT UNIQUE, role INTEGER, pwHash TEXT)")
+	_, err := p.DB.Exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT UNIQUE, displayName TEXT, role INTEGER, pwHash TEXT)")
 	if err != nil {
 		return fmt.Errorf(`creating table "users" failed - %s`, err)
 	}
@@ -60,14 +60,14 @@ func (p *sqlite) UpsertUser(user User) error {
 	}
 
 	_, err := p.DB.Exec(
-		"INSERT INTO users (name, role, pwHash) VALUES(?, ?, ?) ON CONFLICT(name) DO UPDATE SET role=excluded.role, pwHash=excluded.pwHash",
-		user.Name, user.Role, user.PasswordHash,
+		"INSERT INTO users (name, displayName, role, pwHash) VALUES(?, ?, ?, ?) ON CONFLICT(name) DO UPDATE SET displayName=excluded.displayName, role=excluded.role, pwHash=excluded.pwHash",
+		user.Name, user.DisplayName, user.Role, user.PasswordHash,
 	)
 	return err
 }
 
 func (p *sqlite) ListUsers() ([]UserDataset, error) {
-	rows, err := p.DB.Query("SELECT id, name, role, pwHash FROM users")
+	rows, err := p.DB.Query("SELECT id, name, displayName, role, pwHash FROM users")
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (p *sqlite) ListUsers() ([]UserDataset, error) {
 
 	for rows.Next() {
 		var user UserDataset
-		if err := rows.Scan(&user.ID, &user.Name, &user.Role, &user.PasswordHash); err != nil {
+		if err := rows.Scan(&user.ID, &user.Name, &user.DisplayName, &user.Role, &user.PasswordHash); err != nil {
 			return nil, err
 		}
 		result = append(result, user)

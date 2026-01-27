@@ -82,7 +82,7 @@ func Setup() (app *App, err error) {
 
 func (app *App) prepare() (err error) {
 	if app.Config.Admin.Username != "" {
-		log.Printf("Setting up admin user %s\n", app.Config.Admin.Username)
+		log.Printf("Setting up admin user \"%s\"\n", app.Config.Admin.Username)
 		err = app.DataProvider.UpsertUser(data.User{
 			Name:         app.Config.Admin.Username,
 			PasswordHash: app.Config.Admin.PasswordHash,

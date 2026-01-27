@@ -5,6 +5,7 @@ const USER_ROLE_COMMON = 1
 
 type User struct {
 	Name         string
+	DisplayName  string
 	Role         int
 	PasswordHash string
 }
