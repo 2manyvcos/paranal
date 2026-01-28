@@ -17,9 +17,15 @@ func New() http.Handler {
 	// 	w.Write([]byte(r.PathValue("text")))
 	// })
 	api.Handle("POST /auth", http.HandlerFunc(PostAuth))
+
 	api.Handle("GET /user", helper.WithAuth(http.HandlerFunc(GetUser)))
+	api.Handle("PUT /user", helper.WithAuth(http.HandlerFunc(PutUser)))
+	api.Handle("PUT /user/password", helper.WithAuth(http.HandlerFunc(PutUserPassword)))
+
 	api.Handle("GET /users", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(GetUsers))))
+	api.Handle("POST /users", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(PostUsers))))
 	api.Handle("GET /users/{username}", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(GetUsersByUsername))))
+	api.Handle("PUT /users/{username}", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(PutUsersByUsername))))
 	api.Handle("DELETE /users/{username}", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(DeleteUsersByUsername))))
 
 	return api

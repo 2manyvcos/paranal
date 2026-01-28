@@ -50,7 +50,7 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 	matches, err := crypto.Argon2IDCompare(payload.Password, user.PasswordHash)
 	if !matches {
 		if err != nil {
-			log.Printf("Error comparing argon2id hash - %s\n", err)
+			log.Printf("Error comparing hash - %s\n", err)
 		}
 		maskAuthRejection()
 		http.Error(res, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)

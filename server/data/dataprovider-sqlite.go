@@ -8,10 +8,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"modernc.org/sqlite"
 	_ "modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite/lib"
 )
 
-type sqlite struct {
+type sqliteImpl struct {
 	*sql.DB
 }
 
@@ -26,11 +28,11 @@ func SQLite(path string) (DataProvider, error) {
 		return nil, err
 	}
 
-	provider := &sqlite{db}
+	provider := &sqliteImpl{db}
 	return provider, provider.Setup()
 }
 
-func (p *sqlite) Setup() error {
+func (p *sqliteImpl) Setup() error {
 	log.Println("Setting up SQLite data backend")
 
 	// Migration strategy as taken from a stackoverflow comment:
@@ -66,7 +68,7 @@ func requireFound(result sql.Result) error {
 	return nil
 }
 
-func (p *sqlite) ListUsers() ([]User, error) {
+func (p *sqliteImpl) ListUsers() ([]User, error) {
 	rows, err := p.DB.Query("SELECT name, displayName, role, pwHash FROM users")
 	if err != nil {
 		return nil, err
@@ -88,7 +90,7 @@ func (p *sqlite) ListUsers() ([]User, error) {
 	return result, nil
 }
 
-func (p *sqlite) GetUser(name string) (result User, err error) {
+func (p *sqliteImpl) GetUser(name string) (result User, err error) {
 	if name == "" {
 		return User{}, fmt.Errorf("invalid username")
 	}
@@ -100,7 +102,7 @@ func (p *sqlite) GetUser(name string) (result User, err error) {
 	return
 }
 
-func (p *sqlite) CreateUser(user User, updateExisting bool) error {
+func (p *sqliteImpl) CreateUser(user User, updateExisting bool) error {
 	if !user.Valid() {
 		return fmt.Errorf("invalid user")
 	}
@@ -113,10 +115,13 @@ func (p *sqlite) CreateUser(user User, updateExisting bool) error {
 		statement,
 		user.Name, user.DisplayName, user.Role, user.PasswordHash,
 	)
+	if sqliteErr, ok := err.(*sqlite.Error); ok && sqliteErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
+		return ErrConflict
+	}
 	return err
 }
 
-func (p *sqlite) UpdateUser(user User) error {
+func (p *sqliteImpl) UpdateUser(user User) error {
 	if !user.Valid() {
 		return fmt.Errorf("invalid user")
 	}
@@ -131,7 +136,7 @@ func (p *sqlite) UpdateUser(user User) error {
 	return requireFound(result)
 }
 
-func (p *sqlite) DeleteUser(name string) error {
+func (p *sqliteImpl) DeleteUser(name string) error {
 	if name == "" {
 		return fmt.Errorf("invalid username")
 	}

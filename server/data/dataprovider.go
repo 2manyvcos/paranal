@@ -5,6 +5,7 @@ import (
 	"io"
 )
 
+var ErrConflict = errors.New("conflicting record found")
 var ErrNotFound = errors.New("no record found")
 
 type DataProvider interface {

@@ -33,7 +33,8 @@ func hash() {
 	noInput := true
 	defer func() {
 		if noInput {
-			panic(fmt.Errorf("generating hash failed: no input"))
+			fmt.Fprintln(os.Stderr, "Generating hash failed - no input")
+			os.Exit(1)
 		}
 	}()
 
@@ -47,7 +48,8 @@ func hash() {
 
 		hash, err := crypto.Argon2IDHash(credentials)
 		if err != nil {
-			panic(fmt.Errorf("generating hash failed: %s", err))
+			fmt.Fprintf(os.Stderr, "Error while generating hash - %s\n", err)
+			os.Exit(1)
 		}
 
 		fmt.Println(hash)

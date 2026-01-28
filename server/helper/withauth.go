@@ -79,11 +79,10 @@ func authorizeRemoteUser(req *http.Request) *data.User {
 		if !app.Config.Auth.RemoteUser.CreateUnknownUsers {
 			return nil
 		}
-		role := data.USER_ROLE_COMMON
-		if admin {
-			role = data.USER_ROLE_ADMIN
+		newUser := data.User{
+			Name: username,
+			Role: map[bool]int{false: data.USER_ROLE_COMMON, true: data.USER_ROLE_ADMIN}[admin],
 		}
-		newUser := data.User{Name: username, Role: role}
 		err := app.CreateUser(newUser, false)
 		if err != nil {
 			log.Printf("Error creating user - %s\n", err)
