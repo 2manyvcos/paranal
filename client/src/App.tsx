@@ -1,7 +1,6 @@
+import '@/App.css';
 import { useState } from 'react';
 import reactLogo from './assets/react.svg';
-import paranalLogo from '/paranal.svg';
-import '@/App.css';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -10,7 +9,7 @@ function App() {
     <>
       <div>
         <a href="https://vite.dev" target="_blank">
-          <img src={paranalLogo} className="logo" alt="Vite logo" />
+          <img src={window.paranal.logo} className="logo" alt="Vite logo" />
         </a>
         <a href="https://react.dev" target="_blank">
           <img src={reactLogo} className="logo react" alt="React logo" />

@@ -2,16 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="description"
-      content="Advanced Service Dashboard with Health and Version Monitoring"
-    />
-    <link rel="icon" type="image/svg+xml" href="/paranal-simple.svg" />
+    <meta name="description" content="%VITE_CONFIG_TAGLINE%" />
+    <link rel="icon" href="%VITE_CONFIG_FAVICON%" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" href="%VITE_CONFIG_APPLE_TOUCH_ICON%" />
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="manifest" href="/manifest.json" />
-    <title>Paranal</title>
+    <link rel="stylesheet" href="%VITE_CONFIG_THEME%" />
+    <title>%VITE_CONFIG_APP_NAME%</title>
+    <script>
+      window.paranal = {
+        logo: '%VITE_CONFIG_LOGO%',
+      };
+    </script>
   </head>
   <body>
     <div id="root"></div>

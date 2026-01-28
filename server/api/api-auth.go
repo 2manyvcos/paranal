@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/2manyvcos/paranal/crypto"
+	"github.com/2manyvcos/paranal/server/helper"
 )
 
 func PostAuth(res http.ResponseWriter, req *http.Request) {
@@ -25,7 +26,7 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	app := GetApp(req)
+	app := helper.GetApp(req)
 
 	user, err := app.GetUser(payload.Username)
 	if err != nil {

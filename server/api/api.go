@@ -1,20 +1,14 @@
 package api
 
 import (
-	"fmt"
-	"log"
 	"net/http"
-	"strings"
 
-	"github.com/2manyvcos/paranal/client"
-	"github.com/2manyvcos/paranal/server/application"
+	"github.com/2manyvcos/paranal/server/helper"
 )
 
-const API_PREFIX = "/api"
 const API_VERSION = "v1"
-const API_PATH = API_PREFIX + "/" + API_VERSION
 
-func Serve(app *application.App) error {
+func New() http.Handler {
 	api := http.NewServeMux()
 	// api.HandleFunc("POST /auth", HandleAuth(p))
 	// api.HandleFunc("GET /demo-endpoint", AuthValidator(p, HandleDemoEndpoint(p)))
@@ -22,31 +16,7 @@ func Serve(app *application.App) error {
 	// 	w.Write([]byte(r.PathValue("text")))
 	// })
 	api.HandleFunc("POST /auth", PostAuth)
-	api.HandleFunc("GET /user", WithAuth(http.HandlerFunc(GetUser)))
+	api.HandleFunc("GET /user", helper.WithAuth(http.HandlerFunc(GetUser)))
 
-	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, OmitTrailingSlash(WithApp(app, api))))
-	http.HandleFunc(API_PREFIX+"/", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-	})
-
-	resolvedClientFiles := FileTemplates(client.ClientFiles, map[string]any{
-		"appName":           app.Config.AppName,
-		"logoutRedirectURL": app.Config.Auth.LogoutRedirectURL,
-	}, "index.html", "manifest.json")
-	http.Handle("/", http.FileServer(FileRewrite(resolvedClientFiles, "index.html")))
-
-	hostname := fmt.Sprintf("%s:%s", app.Config.Server.Address, app.Config.Server.Port)
-
-	switch strings.ToLower(app.Config.Server.Protocol) {
-	case "http":
-		log.Printf("Listening at http://%s\n", hostname)
-		return http.ListenAndServe(hostname, nil)
-
-	case "https":
-		log.Printf("Listening at https://%s\n", hostname)
-		return http.ListenAndServeTLS(hostname, app.Config.Server.CertFile, app.Config.Server.KeyFile, nil)
-
-	default:
-		return fmt.Errorf("unsupported protocol \"%s\"", app.Config.Server.Protocol)
-	}
+	return api
 }

@@ -10,6 +10,15 @@ import (
 type App struct {
 	Config struct {
 		AppName string
+		Tagline string
+
+		Brand struct {
+			AssetsPath     string
+			Logo           string
+			Favicon        string
+			AppleTouchIcon string
+			Theme          string
+		}
 
 		Server struct {
 			Protocol string
@@ -51,6 +60,13 @@ func Setup() (app *App, err error) {
 	app = new(App)
 
 	app.Config.AppName = loadConfigValue("APP_NAME", "Paranal")
+	app.Config.Tagline = loadConfigValue("TAGLINE", "Advanced Service Dashboard with Health and Version Monitoring")
+
+	app.Config.Brand.AssetsPath = loadConfigValue("BRAND_ASSETS_PATH", "")
+	app.Config.Brand.Logo = loadConfigValue("BRAND_LOGO", "/logo.svg")
+	app.Config.Brand.Favicon = loadConfigValue("BRAND_FAVICON", "/favicon.svg")
+	app.Config.Brand.AppleTouchIcon = loadConfigValue("BRAND_APPLE_TOUCH_ICON", "/apple-touch-icon.png")
+	app.Config.Brand.Theme = loadConfigValue("BRAND_THEME", "/theme.css")
 
 	app.Config.Server.Protocol = loadConfigValue("SERVER_PROTOCOL", "http")
 	app.Config.Server.Address = loadConfigValue("SERVER_ADDRESS", "0.0.0.0")

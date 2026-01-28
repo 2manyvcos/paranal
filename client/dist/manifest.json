@@ -1,9 +1,9 @@
 {
-  "name": "Paranal",
-  "description": "Advanced Service Dashboard with Health and Version Monitoring",
+  "name": "{{ .appName }}",
+  "description": "{{ .tagline }}",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#8cb4f3",
   "background_color": "#ffffff",
-  "icons": [{ "src": "paranal-simple.svg", "sizes": "any" }]
+  "icons": [{ "src": "{{ .favicon }}", "sizes": "any" }]
 }

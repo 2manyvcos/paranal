@@ -1,4 +1,4 @@
-package api
+package helper
 
 import (
 	"bytes"
@@ -8,10 +8,15 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"time"
 )
 
 func FileTemplates(targetFS fs.FS, data any, targets ...string) http.FileSystem {
+	for i, target := range targets {
+		targets[i] = strings.TrimPrefix(target, "/")
+	}
+
 	httpFS := http.FS(targetFS)
 	tmpls, err := template.New("").ParseFS(targetFS, targets...)
 	if err != nil {
@@ -38,6 +43,12 @@ type cacheEntry struct {
 }
 
 func (t fileTemplate) Open(file string) (http.File, error) {
+	if file == "/" {
+		file = "."
+	} else {
+		file = strings.TrimPrefix(file, "/")
+	}
+
 	if !slices.Contains(t.targets, file) {
 		return t.fs.Open(file)
 	}
