@@ -29,7 +29,11 @@ func Serve(app *application.App) error {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	})
 
-	http.Handle("/", http.FileServer(FileRewrite(http.FS(client.ClientFiles), "index.html")))
+	resolvedClientFiles := FileTemplates(client.ClientFiles, map[string]any{
+		"appName":           app.Config.AppName,
+		"logoutRedirectURL": app.Config.Auth.LogoutRedirectURL,
+	}, "index.html", "manifest.json")
+	http.Handle("/", http.FileServer(FileRewrite(resolvedClientFiles, "index.html")))
 
 	hostname := fmt.Sprintf("%s:%s", app.Config.Server.Address, app.Config.Server.Port)
 
