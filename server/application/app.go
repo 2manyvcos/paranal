@@ -3,6 +3,7 @@ package application
 import (
 	"log"
 
+	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/data"
 )
 
@@ -26,14 +27,19 @@ type App struct {
 		}
 
 		Auth struct {
+			LogoutRedirectURL string
+
 			RemoteUser struct {
 				Enabled            bool
 				HeaderName         string
 				GroupsHeaderName   string
 				AdminGroup         string
-				AccountRedirectURL string
-				LogoutRedirectURL  string
 				CreateUnknownUsers bool
+				Whitelist          []string
+			}
+
+			JWT struct {
+				Secret string
 			}
 		}
 	}
@@ -58,13 +64,14 @@ func Setup() (app *App, err error) {
 	app.Config.Admin.Username = loadConfigValue("ADMIN_USERNAME", "")
 	app.Config.Admin.PasswordHash = loadConfigValue("ADMIN_PASSWORD_HASH", "")
 
+	app.Config.Auth.LogoutRedirectURL = loadConfigValue("AUTH_LOGOUT_REDIRECT_URL", "")
 	app.Config.Auth.RemoteUser.Enabled = loadConfigBool("AUTH_REMOTE_USER_ENABLED", false)
 	app.Config.Auth.RemoteUser.HeaderName = loadConfigValue("AUTH_REMOTE_USER_HEADER_NAME", "Remote-User")
 	app.Config.Auth.RemoteUser.GroupsHeaderName = loadConfigValue("AUTH_REMOTE_USER_GROUPS_HEADER_NAME", "")
 	app.Config.Auth.RemoteUser.AdminGroup = loadConfigValue("AUTH_REMOTE_USER_ADMIN_GROUP", "")
-	app.Config.Auth.RemoteUser.AccountRedirectURL = loadConfigValue("AUTH_REMOTE_USER_ACCOUNT_REDIRECT_URL", "")
-	app.Config.Auth.RemoteUser.LogoutRedirectURL = loadConfigValue("AUTH_REMOTE_USER_LOGOUT_REDIRECT_URL", "")
 	app.Config.Auth.RemoteUser.CreateUnknownUsers = loadConfigBool("AUTH_REMOTE_USER_CREATE_UNKNOWN_USERS", true)
+	app.Config.Auth.RemoteUser.Whitelist = loadConfigList("AUTH_REMOTE_USER_WHITELIST", nil)
+	app.Config.Auth.JWT.Secret = crypto.JWTGenerateTokenSecret()
 
 	app.DataProvider, err = data.Load(app.Config.DB)
 	if err != nil {
@@ -83,7 +90,7 @@ func Setup() (app *App, err error) {
 func (app *App) prepare() (err error) {
 	if app.Config.Admin.Username != "" {
 		log.Printf("Setting up admin user \"%s\"\n", app.Config.Admin.Username)
-		err = app.DataProvider.UpsertUser(data.User{
+		err = app.UpsertUser(data.User{
 			Name:         app.Config.Admin.Username,
 			PasswordHash: app.Config.Admin.PasswordHash,
 			Role:         data.USER_ROLE_ADMIN,

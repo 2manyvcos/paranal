@@ -15,6 +15,6 @@ func Load(config Config) (DataProvider, error) {
 		return SQLite(config.Path)
 
 	default:
-		return nil, fmt.Errorf(`invalid DB type "%s"`, config.Type)
+		return nil, fmt.Errorf("invalid DB type \"%s\"", config.Type)
 	}
 }

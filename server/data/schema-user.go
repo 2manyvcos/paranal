@@ -13,8 +13,3 @@ type User struct {
 func (u User) Valid() bool {
 	return u.Name != "" && u.Role >= 0 && u.Role <= 1
 }
-
-type UserDataset struct {
-	ID int
-	User
-}

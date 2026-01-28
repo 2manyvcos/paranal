@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -48,7 +49,23 @@ func (p *sqlite) Setup() error {
 
 	_, err := p.DB.Exec("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, name TEXT UNIQUE, displayName TEXT, role INTEGER, pwHash TEXT)")
 	if err != nil {
-		return fmt.Errorf(`creating table "users" failed - %s`, err)
+		return fmt.Errorf("creating table \"users\" failed - %s", err)
+	}
+
+	return nil
+}
+
+func (p *sqlite) InsertUser(user User) error {
+	if !user.Valid() {
+		return fmt.Errorf("invalid user")
+	}
+
+	_, err := p.DB.Exec(
+		"INSERT INTO users (name, displayName, role, pwHash) VALUES(?, ?, ?, ?)",
+		user.Name, user.DisplayName, user.Role, user.PasswordHash,
+	)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -56,28 +73,65 @@ func (p *sqlite) Setup() error {
 
 func (p *sqlite) UpsertUser(user User) error {
 	if !user.Valid() {
-		return fmt.Errorf(`invalid user`)
+		return fmt.Errorf("invalid user")
 	}
 
 	_, err := p.DB.Exec(
-		"INSERT INTO users (name, displayName, role, pwHash) VALUES(?, ?, ?, ?) ON CONFLICT(name) DO UPDATE SET displayName=excluded.displayName, role=excluded.role, pwHash=excluded.pwHash",
+		"INSERT INTO users (name, displayName, role, pwHash) VALUES(?, ?, ?, ?) ON CONFLICT(name) DO UPDATE SET displayName = excluded.displayName, role = excluded.role, pwHash = excluded.pwHash",
 		user.Name, user.DisplayName, user.Role, user.PasswordHash,
 	)
 	return err
 }
 
-func (p *sqlite) ListUsers() ([]UserDataset, error) {
-	rows, err := p.DB.Query("SELECT id, name, displayName, role, pwHash FROM users")
+func (p *sqlite) UpdateUser(user User) error {
+	if !user.Valid() {
+		return fmt.Errorf("invalid user")
+	}
+
+	result, err := p.DB.Exec(
+		"UPDATE users SET displayName = ?, role = ?, pwHash = ? WHERE name = ?",
+		user.DisplayName, user.Role, user.PasswordHash, user.Name,
+	)
+	if err != nil {
+		return err
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return fmt.Errorf("no rows updated")
+	}
+
+	return nil
+}
+
+func (p *sqlite) GetUser(name string) (result *User, err error) {
+	if name == "" {
+		return nil, fmt.Errorf("invalid username")
+	}
+
+	result = new(User)
+	err = p.DB.QueryRow("SELECT name, displayName, role, pwHash FROM users WHERE name = ?", name).Scan(&result.Name, &result.DisplayName, &result.Role, &result.PasswordHash)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
+	return
+}
+
+func (p *sqlite) ListUsers() ([]User, error) {
+	rows, err := p.DB.Query("SELECT name, displayName, role, pwHash FROM users")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var result []UserDataset
+	var result []User
 
 	for rows.Next() {
-		var user UserDataset
-		if err := rows.Scan(&user.ID, &user.Name, &user.DisplayName, &user.Role, &user.PasswordHash); err != nil {
+		var user User
+		if err := rows.Scan(&user.Name, &user.DisplayName, &user.Role, &user.PasswordHash); err != nil {
 			return nil, err
 		}
 		result = append(result, user)

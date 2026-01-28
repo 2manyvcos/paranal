@@ -18,11 +18,13 @@ func Serve(app *application.App) error {
 	api := http.NewServeMux()
 	// api.HandleFunc("POST /auth", HandleAuth(p))
 	// api.HandleFunc("GET /demo-endpoint", AuthValidator(p, HandleDemoEndpoint(p)))
-	api.HandleFunc("GET /echo/{text}", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(r.PathValue("text")))
-	})
+	// api.HandleFunc("GET /echo/{text}", func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Write([]byte(r.PathValue("text")))
+	// })
+	api.HandleFunc("POST /auth", PostAuth)
+	api.HandleFunc("GET /user", WithAuth(http.HandlerFunc(GetUser)))
 
-	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, OmitTrailingSlash(api)))
+	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, OmitTrailingSlash(WithApp(app, api))))
 	http.HandleFunc(API_PREFIX+"/", func(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 	})
@@ -41,6 +43,6 @@ func Serve(app *application.App) error {
 		return http.ListenAndServeTLS(hostname, app.Config.Server.CertFile, app.Config.Server.KeyFile, nil)
 
 	default:
-		return fmt.Errorf(`unsupported protocol "%s"`, app.Config.Server.Protocol)
+		return fmt.Errorf("unsupported protocol \"%s\"", app.Config.Server.Protocol)
 	}
 }

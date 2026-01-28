@@ -9,6 +9,9 @@ npm-debug.log*
 # Optional npm cache directory
 .npm
 
+# Editor state
+.vscode/launch.json
+
 # Docs
 docs/.vitepress/cache
 docs/.vitepress/dist
