@@ -55,69 +55,15 @@ func (p *sqlite) Setup() error {
 	return nil
 }
 
-func (p *sqlite) InsertUser(user User) error {
-	if !user.Valid() {
-		return fmt.Errorf("invalid user")
-	}
-
-	_, err := p.DB.Exec(
-		"INSERT INTO users (name, displayName, role, pwHash) VALUES(?, ?, ?, ?)",
-		user.Name, user.DisplayName, user.Role, user.PasswordHash,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (p *sqlite) UpsertUser(user User) error {
-	if !user.Valid() {
-		return fmt.Errorf("invalid user")
-	}
-
-	_, err := p.DB.Exec(
-		"INSERT INTO users (name, displayName, role, pwHash) VALUES(?, ?, ?, ?) ON CONFLICT(name) DO UPDATE SET displayName = excluded.displayName, role = excluded.role, pwHash = excluded.pwHash",
-		user.Name, user.DisplayName, user.Role, user.PasswordHash,
-	)
-	return err
-}
-
-func (p *sqlite) UpdateUser(user User) error {
-	if !user.Valid() {
-		return fmt.Errorf("invalid user")
-	}
-
-	result, err := p.DB.Exec(
-		"UPDATE users SET displayName = ?, role = ?, pwHash = ? WHERE name = ?",
-		user.DisplayName, user.Role, user.PasswordHash, user.Name,
-	)
-	if err != nil {
-		return err
-	}
-
+func requireFound(result sql.Result) error {
 	count, err := result.RowsAffected()
 	if err != nil {
 		return err
 	}
 	if count == 0 {
-		return fmt.Errorf("no rows updated")
+		return ErrNotFound
 	}
-
 	return nil
-}
-
-func (p *sqlite) GetUser(name string) (result *User, err error) {
-	if name == "" {
-		return nil, fmt.Errorf("invalid username")
-	}
-
-	result = new(User)
-	err = p.DB.QueryRow("SELECT name, displayName, role, pwHash FROM users WHERE name = ?", name).Scan(&result.Name, &result.DisplayName, &result.Role, &result.PasswordHash)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
-	return
 }
 
 func (p *sqlite) ListUsers() ([]User, error) {
@@ -140,4 +86,62 @@ func (p *sqlite) ListUsers() ([]User, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func (p *sqlite) GetUser(name string) (result User, err error) {
+	if name == "" {
+		return User{}, fmt.Errorf("invalid username")
+	}
+
+	err = p.DB.QueryRow("SELECT name, displayName, role, pwHash FROM users WHERE name = ?", name).Scan(&result.Name, &result.DisplayName, &result.Role, &result.PasswordHash)
+	if errors.Is(err, sql.ErrNoRows) {
+		return User{}, ErrNotFound
+	}
+	return
+}
+
+func (p *sqlite) CreateUser(user User, updateExisting bool) error {
+	if !user.Valid() {
+		return fmt.Errorf("invalid user")
+	}
+
+	statement := "INSERT INTO users (name, displayName, role, pwHash) VALUES(?, ?, ?, ?)"
+	if updateExisting {
+		statement = "INSERT INTO users (name, displayName, role, pwHash) VALUES(?, ?, ?, ?) ON CONFLICT(name) DO UPDATE SET displayName = excluded.displayName, role = excluded.role, pwHash = excluded.pwHash"
+	}
+	_, err := p.DB.Exec(
+		statement,
+		user.Name, user.DisplayName, user.Role, user.PasswordHash,
+	)
+	return err
+}
+
+func (p *sqlite) UpdateUser(user User) error {
+	if !user.Valid() {
+		return fmt.Errorf("invalid user")
+	}
+
+	result, err := p.DB.Exec(
+		"UPDATE users SET displayName = ?, role = ?, pwHash = ? WHERE name = ?",
+		user.DisplayName, user.Role, user.PasswordHash, user.Name,
+	)
+	if err != nil {
+		return err
+	}
+	return requireFound(result)
+}
+
+func (p *sqlite) DeleteUser(name string) error {
+	if name == "" {
+		return fmt.Errorf("invalid username")
+	}
+
+	result, err := p.DB.Exec(
+		"DELETE FROM users WHERE name = ?",
+		name,
+	)
+	if err != nil {
+		return err
+	}
+	return requireFound(result)
 }

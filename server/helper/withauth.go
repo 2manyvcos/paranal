@@ -2,6 +2,7 @@ package helper
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"slices"
@@ -12,8 +13,8 @@ import (
 	"github.com/2manyvcos/paranal/utils"
 )
 
-func WithAuth(handler http.Handler) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
+func WithAuth(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		authorizedUser := authorize(req)
 
 		if authorizedUser == nil {
@@ -22,7 +23,7 @@ func WithAuth(handler http.Handler) http.HandlerFunc {
 		}
 
 		handler.ServeHTTP(res, req.WithContext(context.WithValue(req.Context(), "authorizedUser", authorizedUser)))
-	}
+	})
 }
 
 func GetAuthorizedUser(req *http.Request) *data.User {
@@ -58,10 +59,14 @@ func authorizeRemoteUser(req *http.Request) *data.User {
 		return nil
 	}
 
-	authorizedUser, err := app.GetUser(username)
-	if err != nil {
-		log.Printf("Error loading user - %s\n", err)
-		return nil
+	var authorizedUser *data.User
+	if user, err := app.GetUser(username); err != nil {
+		if !errors.Is(err, data.ErrNotFound) {
+			log.Printf("Error loading user - %s\n", err)
+			return nil
+		}
+	} else {
+		authorizedUser = &user
 	}
 
 	var admin bool
@@ -79,7 +84,7 @@ func authorizeRemoteUser(req *http.Request) *data.User {
 			role = data.USER_ROLE_ADMIN
 		}
 		newUser := data.User{Name: username, Role: role}
-		err := app.InsertUser(newUser)
+		err := app.CreateUser(newUser, false)
 		if err != nil {
 			log.Printf("Error creating user - %s\n", err)
 			return nil
@@ -118,9 +123,12 @@ func authorizeBearer(req *http.Request) *data.User {
 	}
 
 	user, err := app.GetUser(username)
+	if errors.Is(err, data.ErrNotFound) {
+		return nil
+	}
 	if err != nil {
 		log.Printf("Error loading user - %s\n", err)
 		return nil
 	}
-	return user
+	return &user
 }

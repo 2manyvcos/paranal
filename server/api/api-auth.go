@@ -2,16 +2,20 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"math/rand"
 	"net/http"
 	"time"
 
 	"github.com/2manyvcos/paranal/crypto"
+	"github.com/2manyvcos/paranal/server/data"
 	"github.com/2manyvcos/paranal/server/helper"
 )
 
 func PostAuth(res http.ResponseWriter, req *http.Request) {
+	app := helper.GetApp(req)
+
 	if req.Header.Get("Content-Type") != "application/json" {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
@@ -26,15 +30,18 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	app := helper.GetApp(req)
-
 	user, err := app.GetUser(payload.Username)
+	if errors.Is(err, data.ErrNotFound) {
+		maskAuthRejection()
+		http.Error(res, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
 	if err != nil {
 		log.Printf("Error loading user - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if user == nil || user.PasswordHash == "" {
+	if user.PasswordHash == "" {
 		maskAuthRejection()
 		http.Error(res, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return

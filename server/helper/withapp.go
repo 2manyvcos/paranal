@@ -7,10 +7,10 @@ import (
 	"github.com/2manyvcos/paranal/server/application"
 )
 
-func WithApp(app *application.App, handler http.Handler) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
+func WithApp(app *application.App, handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		handler.ServeHTTP(res, req.WithContext(context.WithValue(req.Context(), "app", app)))
-	}
+	})
 }
 
 func GetApp(req *http.Request) *application.App {

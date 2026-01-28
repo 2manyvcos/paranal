@@ -106,11 +106,14 @@ func Setup() (app *App, err error) {
 func (app *App) prepare() (err error) {
 	if app.Config.Admin.Username != "" {
 		log.Printf("Setting up admin user \"%s\"\n", app.Config.Admin.Username)
-		err = app.UpsertUser(data.User{
-			Name:         app.Config.Admin.Username,
-			PasswordHash: app.Config.Admin.PasswordHash,
-			Role:         data.USER_ROLE_ADMIN,
-		})
+		err = app.CreateUser(
+			data.User{
+				Name:         app.Config.Admin.Username,
+				PasswordHash: app.Config.Admin.PasswordHash,
+				Role:         data.USER_ROLE_ADMIN,
+			},
+			true,
+		)
 		if err != nil {
 			return err
 		}
