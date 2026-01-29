@@ -113,7 +113,7 @@ func authorizeBearer(req *http.Request) *data.User {
 		return nil
 	}
 
-	ok, username, err := crypto.JWTValidateToken(app.Config.Auth.JWT.Secret, strings.TrimSpace(strings.TrimPrefix(bearer, "Bearer ")))
+	ok, username, err := crypto.ValidateJWTToken(app.Config.Auth.JWT.Secret, strings.TrimSpace(strings.TrimPrefix(bearer, "Bearer ")))
 	if !ok || err != nil {
 		// if err != nil {
 		// 	log.Printf("Error validating token - %s\n", err)

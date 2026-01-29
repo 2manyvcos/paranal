@@ -63,7 +63,7 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 		Role:        data.USER_ROLE_CODES[payload.Role],
 	}
 	if payload.Password != "" {
-		newUser.PasswordHash, err = crypto.Argon2IDHash(payload.Password)
+		newUser.PasswordHash, err = crypto.Hash(payload.Password)
 		if err != nil {
 			log.Printf("Error while generating hash - %s\n", err)
 			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -158,7 +158,7 @@ func PutUsersByUsername(res http.ResponseWriter, req *http.Request) {
 	newUser.DisplayName = payload.DisplayName
 	newUser.Role = data.USER_ROLE_CODES[payload.Role]
 	if payload.Password != "" {
-		newUser.PasswordHash, err = crypto.Argon2IDHash(payload.Password)
+		newUser.PasswordHash, err = crypto.Hash(payload.Password)
 		if err != nil {
 			log.Printf("Error while generating hash - %s\n", err)
 			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

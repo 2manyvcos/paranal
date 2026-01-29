@@ -93,7 +93,7 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	if authorizedUser.PasswordHash != "" {
-		matches, err := crypto.Argon2IDCompare(payload.CurrentPassword, authorizedUser.PasswordHash)
+		matches, err := crypto.CompareToHash(payload.CurrentPassword, authorizedUser.PasswordHash)
 		if !matches {
 			if err != nil {
 				log.Printf("Error comparing hash - %s\n", err)
@@ -105,7 +105,7 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 	}
 
 	newUser := *authorizedUser
-	newUser.PasswordHash, err = crypto.Argon2IDHash(payload.NewPassword)
+	newUser.PasswordHash, err = crypto.Hash(payload.NewPassword)
 	if err != nil {
 		log.Printf("Error while generating hash - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

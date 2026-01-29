@@ -9,8 +9,10 @@ import (
 
 type App struct {
 	Config struct {
-		AppName string
-		Tagline string
+		AppName     string
+		Tagline     string
+		ScriptsPath string
+		SecretKey   string
 
 		Brand struct {
 			AssetsPath     string
@@ -61,6 +63,10 @@ func Setup() (app *App, err error) {
 
 	app.Config.AppName = loadConfigValue("APP_NAME", "Paranal")
 	app.Config.Tagline = loadConfigValue("TAGLINE", "Advanced Service Dashboard with Health and Version Monitoring")
+	app.Config.ScriptsPath = loadConfigValue("SCRIPTS_PATH", ".paranal/scripts")
+	if app.Config.SecretKey, err = loadRequiredConfigValue("SECRET_KEY"); err != nil {
+		return nil, err
+	}
 
 	app.Config.Brand.AssetsPath = loadConfigValue("BRAND_ASSETS_PATH", "")
 	app.Config.Brand.Logo = loadConfigValue("BRAND_LOGO", "/logo.svg")
@@ -87,7 +93,7 @@ func Setup() (app *App, err error) {
 	app.Config.Auth.RemoteUser.AdminGroup = loadConfigValue("AUTH_REMOTE_USER_ADMIN_GROUP", "")
 	app.Config.Auth.RemoteUser.CreateUnknownUsers = loadConfigBool("AUTH_REMOTE_USER_CREATE_UNKNOWN_USERS", true)
 	app.Config.Auth.RemoteUser.Whitelist = loadConfigList("AUTH_REMOTE_USER_WHITELIST", nil)
-	app.Config.Auth.JWT.Secret = crypto.JWTGenerateTokenSecret()
+	app.Config.Auth.JWT.Secret = crypto.GenerateJWTTokenSecret()
 
 	app.DataProvider, err = data.Load(app.Config.DB)
 	if err != nil {

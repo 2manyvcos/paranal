@@ -47,7 +47,7 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	matches, err := crypto.Argon2IDCompare(payload.Password, user.PasswordHash)
+	matches, err := crypto.CompareToHash(payload.Password, user.PasswordHash)
 	if !matches {
 		if err != nil {
 			log.Printf("Error comparing hash - %s\n", err)
@@ -57,7 +57,7 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	accessToken, expires, err := crypto.JWTGenerateToken(app.Config.Auth.JWT.Secret, "api", user.Name)
+	accessToken, expires, err := crypto.GenerateJWTToken(app.Config.Auth.JWT.Secret, "api", user.Name)
 	if err != nil {
 		log.Printf("Error generating access token - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

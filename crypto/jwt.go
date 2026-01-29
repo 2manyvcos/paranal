@@ -18,7 +18,7 @@ type JWTClaims struct {
 	jwt.RegisteredClaims
 }
 
-func JWTGenerateTokenSecret() string {
+func GenerateJWTTokenSecret() string {
 	result := make([]rune, JWT_TOKEN_LENGTH)
 	for i := range result {
 		result[i] = JWT_TOKEN_CHARSET[rand.Intn(len(JWT_TOKEN_CHARSET))]
@@ -27,7 +27,7 @@ func JWTGenerateTokenSecret() string {
 	return string(result)
 }
 
-func JWTGenerateToken(secret string, origin string, subject string) (token string, expires time.Time, err error) {
+func GenerateJWTToken(secret string, origin string, subject string) (token string, expires time.Time, err error) {
 	expires = time.Now().Add(JWT_TOKEN_EXPIRY)
 
 	jwt := jwt.NewWithClaims(jwt.SigningMethodHS256, JWTClaims{
@@ -42,7 +42,7 @@ func JWTGenerateToken(secret string, origin string, subject string) (token strin
 	return
 }
 
-func JWTValidateToken(secret string, token string) (valid bool, subject string, err error) {
+func ValidateJWTToken(secret string, token string) (valid bool, subject string, err error) {
 	parsed, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
