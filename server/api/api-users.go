@@ -70,7 +70,7 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-	if !newUser.Valid() {
+	if err := newUser.Valid(); err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -165,7 +165,7 @@ func PutUsersByUsername(res http.ResponseWriter, req *http.Request) {
 			return
 		}
 	}
-	if !newUser.Valid() {
+	if err := newUser.Valid(); err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}

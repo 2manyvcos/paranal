@@ -46,8 +46,11 @@ func (record *UserCredential) Dataset() UserCredential {
 	return *record
 }
 
-func (record UserCredential) Valid() bool {
-	return record.Name != ""
+func (record UserCredential) Valid() error {
+	if record.Name == "" {
+		return fmt.Errorf("invalid name")
+	}
+	return nil
 }
 
 func (record UserCredential) IDs() []any {

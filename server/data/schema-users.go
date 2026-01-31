@@ -63,9 +63,14 @@ func (record *User) Dataset() User {
 	return *record
 }
 
-func (record User) Valid() bool {
-	_, roleOk := USER_ROLE_NAMES[record.Role]
-	return record.Name != "" && roleOk
+func (record User) Valid() error {
+	if record.Name == "" {
+		return fmt.Errorf("invalid name")
+	}
+	if _, roleOk := USER_ROLE_NAMES[record.Role]; !roleOk {
+		return fmt.Errorf("invalid role")
+	}
+	return nil
 }
 
 func (record User) IDs() []any {

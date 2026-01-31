@@ -1,7 +1,7 @@
 package data
 
 type Dataset interface {
-	Valid() bool
+	Valid() error
 	IDs() []any
 	Fields() []any
 }

@@ -11,6 +11,7 @@ npm-debug.log*
 
 # Editor state
 .vscode/launch.json
+__debug_*
 
 # Docs
 docs/.vitepress/cache

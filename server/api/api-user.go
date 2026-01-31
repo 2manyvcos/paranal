@@ -111,7 +111,7 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if !newUser.Valid() {
+	if err := newUser.Valid(); err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}

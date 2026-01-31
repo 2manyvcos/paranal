@@ -7,7 +7,7 @@ import (
 )
 
 func (p *sqliteImpl) setupHTTPCredentials() error {
-	_, err := p.DB.Exec("CREATE TABLE IF NOT EXISTS httpcredentials (id INTEGER PRIMARY KEY, name TEXT UNIQUE, key TEXT, value TEXT)")
+	_, err := p.DB.Exec("CREATE TABLE IF NOT EXISTS httpcredentials (id INTEGER PRIMARY KEY, name TEXT UNIQUE, type INTEGER, key TEXT, value TEXT)")
 	if err != nil {
 		return fmt.Errorf("creating table \"httpcredentials\" failed - %s", err)
 	}

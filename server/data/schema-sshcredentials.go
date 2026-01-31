@@ -47,8 +47,14 @@ func (record *SSHCredential) Dataset() SSHCredential {
 	return *record
 }
 
-func (record SSHCredential) Valid() bool {
-	return record.Name != "" && record.User != ""
+func (record SSHCredential) Valid() error {
+  if record.Name == "" {
+    return fmt.Errorf("invalid name")
+  }
+  if record.User == "" {
+    return fmt.Errorf("invalid user")
+  }
+  return nil
 }
 
 func (record SSHCredential) IDs() []any {

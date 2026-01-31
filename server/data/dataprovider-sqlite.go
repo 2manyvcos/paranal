@@ -143,8 +143,8 @@ func sqliteGetDataset[TableType Table[RecordType, DatasetType], RecordType Recor
 }
 
 func sqliteCreateDataset[TableType Table[RecordType, DatasetType], RecordType Record[DatasetType], DatasetType Dataset](p *sqliteImpl, table TableType, dataset DatasetType, updateExisting bool) error {
-	if !dataset.Valid() {
-		return fmt.Errorf("invalid dataset")
+	if err := dataset.Valid(); err != nil {
+		return err
 	}
 
 	tableName := table.Name()
@@ -177,8 +177,8 @@ func sqliteCreateDataset[TableType Table[RecordType, DatasetType], RecordType Re
 }
 
 func sqliteUpdateDataset[TableType Table[RecordType, DatasetType], RecordType Record[DatasetType], DatasetType Dataset](p *sqliteImpl, table TableType, dataset DatasetType) error {
-	if !dataset.Valid() {
-		return fmt.Errorf("invalid dataset")
+	if err := dataset.Valid(); err != nil {
+		return err
 	}
 
 	tableName := table.Name()
