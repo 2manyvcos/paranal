@@ -13,7 +13,13 @@ type DataProvider interface {
 
 	ListUsers() ([]User, error)
 	GetUser(name string) (User, error)
-	CreateUser(user User, updateExisting bool) error
-	UpdateUser(user User) error
+	CreateUser(record User, updateExisting bool) error
+	UpdateUser(record User) error
 	DeleteUser(name string) error
+
+	ListSSHCredentials() ([]SSHCredential, error)
+	GetSSHCredential(name string) (SSHCredential, error)
+	CreateSSHCredential(record SSHCredential, updateExisting bool) error
+	UpdateSSHCredential(record SSHCredential) error
+	DeleteSSHCredential(name string) error
 }
