@@ -55,7 +55,15 @@ func (p *sqliteImpl) Setup() error {
 		return err
 	}
 
+	if err := p.setupHTTPCredentials(); err != nil {
+		return err
+	}
+
 	if err := p.setupSSHCredentials(); err != nil {
+		return err
+	}
+
+	if err := p.setupUserCredentials(); err != nil {
 		return err
 	}
 

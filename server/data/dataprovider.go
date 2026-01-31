@@ -17,9 +17,21 @@ type DataProvider interface {
 	UpdateUser(record User) error
 	DeleteUser(name string) error
 
+	ListHTTPCredentials() ([]HTTPCredential, error)
+	GetHTTPCredential(name string) (HTTPCredential, error)
+	CreateHTTPCredential(record HTTPCredential, updateExisting bool) error
+	UpdateHTTPCredential(record HTTPCredential) error
+	DeleteHTTPCredential(name string) error
+
 	ListSSHCredentials() ([]SSHCredential, error)
 	GetSSHCredential(name string) (SSHCredential, error)
 	CreateSSHCredential(record SSHCredential, updateExisting bool) error
 	UpdateSSHCredential(record SSHCredential) error
 	DeleteSSHCredential(name string) error
+
+	ListUserCredentials() ([]UserCredential, error)
+	GetUserCredential(name string) (UserCredential, error)
+	CreateUserCredential(record UserCredential, updateExisting bool) error
+	UpdateUserCredential(record UserCredential) error
+	DeleteUserCredential(name string) error
 }
