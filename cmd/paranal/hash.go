@@ -48,7 +48,7 @@ func hash() {
 
 		hash, err := crypto.Hash(credentials)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error while generating hash - %s\n", err)
+			fmt.Fprintf(os.Stderr, "Error generating hash - %s\n", err)
 			os.Exit(1)
 		}
 

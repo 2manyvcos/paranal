@@ -8,6 +8,7 @@ import (
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/data"
 	"github.com/2manyvcos/paranal/server/helper"
+	"github.com/2manyvcos/paranal/utils"
 )
 
 func GetUser(res http.ResponseWriter, req *http.Request) {
@@ -23,14 +24,16 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 		Name        string `json:"name"`
 		DisplayName string `json:"displayName"`
 		Role        string `json:"role"`
+		HasPassword bool   `json:"hasPassword"`
 	}{
 		Name:        authorizedUser.Name,
 		DisplayName: authorizedUser.DisplayName,
 		Role:        data.USER_ROLE_NAMES[authorizedUser.Role],
+		HasPassword: authorizedUser.PasswordHash != "",
 	})
 }
 
-func PutUser(res http.ResponseWriter, req *http.Request) {
+func PatchUser(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
@@ -43,22 +46,22 @@ func PutUser(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var payload struct {
-		DisplayName string `json:"displayName"`
+	var requestPayload struct {
+		DisplayName utils.Optional[string] `json:"displayName"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
-	err := decoder.Decode(&payload)
+	err := decoder.Decode(&requestPayload)
 	if err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	newUser := *authorizedUser
-	newUser.DisplayName = payload.DisplayName
-	err = app.UpdateUser(newUser)
+	updatedRecord := *authorizedUser
+	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
+	err = app.UpdateUser(updatedRecord)
 	if err != nil {
-		log.Printf("Error updating user - %s\n", err)
+		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -77,23 +80,23 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var payload struct {
+	var requestPayload struct {
 		CurrentPassword string `json:"currentPassword"`
 		NewPassword     string `json:"newPassword"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
-	err := decoder.Decode(&payload)
+	err := decoder.Decode(&requestPayload)
 	if err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	if payload.NewPassword == "" {
+	if requestPayload.NewPassword == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 	if authorizedUser.PasswordHash != "" {
-		matches, err := crypto.CompareToHash(payload.CurrentPassword, authorizedUser.PasswordHash)
+		matches, err := crypto.CompareToHash(requestPayload.CurrentPassword, authorizedUser.PasswordHash)
 		if !matches {
 			if err != nil {
 				log.Printf("Error comparing hash - %s\n", err)
@@ -104,20 +107,20 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	newUser := *authorizedUser
-	newUser.PasswordHash, err = crypto.Hash(payload.NewPassword)
+	updatedRecord := *authorizedUser
+	updatedRecord.PasswordHash, err = crypto.Hash(requestPayload.NewPassword)
 	if err != nil {
-		log.Printf("Error while generating hash - %s\n", err)
+		log.Printf("Error generating hash - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if err := newUser.Valid(); err != nil {
+	if err := updatedRecord.Valid(); err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUser(newUser)
+	err = app.UpdateUser(updatedRecord)
 	if err != nil {
-		log.Printf("Error updating user - %s\n", err)
+		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

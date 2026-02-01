@@ -12,10 +12,10 @@ import (
 	"github.com/2manyvcos/paranal/utils"
 )
 
-func GetUsers(res http.ResponseWriter, req *http.Request) {
+func GetUserCredentials(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	records, err := app.ListUsers()
+	records, err := app.ListUserCredentials()
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -24,21 +24,19 @@ func GetUsers(res http.ResponseWriter, req *http.Request) {
 
 	responsePayload := make([]struct {
 		Name        string `json:"name"`
-		DisplayName string `json:"displayName"`
-		Role        string `json:"role"`
-		HasPassword bool   `json:"hasPassword"`
+		Description string `json:"description"`
+		HasValue    bool   `json:"hasValue"`
 	}, len(records))
 	for i, record := range records {
 		responsePayload[i].Name = record.Name
-		responsePayload[i].DisplayName = record.DisplayName
-		responsePayload[i].Role = data.USER_ROLE_NAMES[record.Role]
-		responsePayload[i].HasPassword = record.PasswordHash != ""
+		responsePayload[i].Description = record.Description
+		responsePayload[i].HasValue = record.Value != ""
 	}
 	res.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(res).Encode(responsePayload)
 }
 
-func PostUsers(res http.ResponseWriter, req *http.Request) {
+func PostUserCredentials(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	if req.Header.Get("Content-Type") != "application/json" {
@@ -48,9 +46,8 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 
 	var requestPayload struct {
 		Name        string `json:"name"`
-		DisplayName string `json:"displayName"`
-		Role        string `json:"role"`
-		Password    string `json:"password"`
+		Description string `json:"description"`
+		Value       string `json:"value"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
@@ -60,15 +57,14 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := data.User{
+	newRecord := data.UserCredential{
 		Name:        requestPayload.Name,
-		DisplayName: requestPayload.DisplayName,
-		Role:        data.USER_ROLE_CODES[requestPayload.Role],
+		Description: requestPayload.Description,
 	}
-	if requestPayload.Password != "" {
-		newRecord.PasswordHash, err = crypto.Hash(requestPayload.Password)
+	if requestPayload.Value != "" {
+		newRecord.Value, err = crypto.Encrypt(app.Config.SecretKey, requestPayload.Value)
 		if err != nil {
-			log.Printf("Error generating hash - %s\n", err)
+			log.Printf("Error encrypting value - %s\n", err)
 			http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 			return
 		}
@@ -77,7 +73,7 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.CreateUser(newRecord, false)
+	err = app.CreateUserCredential(newRecord, false)
 	if errors.Is(err, data.ErrConflict) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
@@ -90,12 +86,12 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusCreated)
 }
 
-func GetUsersByName(res http.ResponseWriter, req *http.Request) {
+func GetUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	name := req.PathValue("name")
 
-	record, err := app.GetUser(name)
+	record, err := app.GetUserCredential(name)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -109,36 +105,28 @@ func GetUsersByName(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(res).Encode(struct {
 		Name        string `json:"name"`
-		DisplayName string `json:"displayName"`
-		Role        string `json:"role"`
-		HasPassword bool   `json:"hasPassword"`
+		Description string `json:"description"`
+		HasValue    bool   `json:"hasValue"`
 	}{
 		Name:        record.Name,
-		DisplayName: record.DisplayName,
-		Role:        data.USER_ROLE_NAMES[record.Role],
-		HasPassword: record.PasswordHash != "",
+		Description: record.Description,
+		HasValue:    record.Value != "",
 	})
 }
 
-func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
+func PatchUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
-	authorizedUser := helper.GetAuthorizedUser(req)
 
 	name := req.PathValue("name")
 
-	if authorizedUser != nil && authorizedUser.Name == name {
-		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-		return
-	}
 	if req.Header.Get("Content-Type") != "application/json" {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
 	}
 
 	var requestPayload struct {
-		DisplayName utils.Optional[string] `json:"displayName"`
-		Role        utils.Optional[string] `json:"role"`
-		Password    utils.Optional[string] `json:"password"`
+		Description utils.Optional[string] `json:"description"`
+		Value       utils.Optional[string] `json:"value"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
@@ -148,7 +136,7 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetUser(name)
+	record, err := app.GetUserCredential(name)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -160,17 +148,14 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 	}
 
 	updatedRecord := record
-	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
-	if requestPayload.Role.IsDefined {
-		updatedRecord.Role = data.USER_ROLE_CODES[requestPayload.Role.Value]
-	}
-	if requestPayload.Password.IsDefined {
-		if requestPayload.Password.Value == "" {
-			updatedRecord.PasswordHash = ""
+	requestPayload.Description.ApplyIfDefined(&updatedRecord.Description)
+	if requestPayload.Value.IsDefined {
+		if requestPayload.Value.Value == "" {
+			updatedRecord.Value = ""
 		} else {
-			updatedRecord.PasswordHash, err = crypto.Hash(requestPayload.Password.Value)
+			updatedRecord.Value, err = crypto.Encrypt(app.Config.SecretKey, requestPayload.Value.Value)
 			if err != nil {
-				log.Printf("Error generating hash - %s\n", err)
+				log.Printf("Error encrypting value - %s\n", err)
 				http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
 			}
@@ -180,7 +165,7 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUser(updatedRecord)
+	err = app.UpdateUserCredential(updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -188,18 +173,12 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func DeleteUsersByName(res http.ResponseWriter, req *http.Request) {
+func DeleteUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
-	authorizedUser := helper.GetAuthorizedUser(req)
 
 	name := req.PathValue("name")
 
-	if authorizedUser != nil && authorizedUser.Name == name {
-		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-		return
-	}
-
-	err := app.DeleteUser(name)
+	err := app.DeleteUserCredential(name)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

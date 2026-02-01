@@ -202,7 +202,7 @@ func sqliteUpdateDataset[TableType Table[RecordType, DatasetType], RecordType Re
 		strings.Join(fieldMappings, ", "),
 		strings.Join(idConditions, " AND "),
 	)
-	result, err := p.DB.Exec(statement, slices.Concat(dataset.Fields(), dataset.IDs()))
+	result, err := p.DB.Exec(statement, slices.Concat(dataset.Fields(), dataset.IDs())...)
 	if err != nil {
 		return err
 	}
