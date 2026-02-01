@@ -12,6 +12,7 @@ ignore (
 
 require (
 	github.com/alexedwards/argon2id v1.0.0
+	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/jplorg/jpl/go/v2 v2.0.1
 	github.com/spf13/cobra v1.10.2

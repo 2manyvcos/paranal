@@ -14,24 +14,22 @@ import (
 func FuncCredential(app *application.App) jpl.JPLFunc {
 	return enclose(func(runtime jpl.JPLRuntime, signal jpl.JPLRuntimeSignal, input any, args ...any) ([]any, error) {
 		var err error
-		var arg any
 
-		if len(args) > 0 {
-			arg, err = library.UnwrapValue(args[0])
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			arg = nil
+		if len(args) < 1 {
+			return nil, fmt.Errorf("too view arguments")
 		}
-		t, err := library.Type(arg)
+		if len(args) > 1 {
+			return nil, fmt.Errorf("too many arguments")
+		}
+
+		unwrappedName, err := library.UnwrapValue(args[0])
 		if err != nil {
 			return nil, err
 		}
-		if t != jpl.JPLT_STRING {
-			return nil, library.ThrowAny(library.NewTypeError("%s (%*<100v) cannot be used as name", string(t), arg))
+		name, ok := unwrappedName.(string)
+		if !ok {
+			return nil, fmt.Errorf("invalid name")
 		}
-		name := arg.(string)
 
 		credential, err := app.GetUserCredential(name)
 		if errors.Is(err, data.ErrNotFound) {

@@ -13,34 +13,43 @@ import (
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/application"
 	"github.com/2manyvcos/paranal/server/data"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/jplorg/jpl/go/v2/jpl"
 	"github.com/jplorg/jpl/go/v2/library"
 )
 
 var jsonRegex = regexp.MustCompile("^application/[^+]*[+]?(json);?.*$")
 
+type Options struct {
+	Method  string             `mapstructure:"method"`
+	Auth    string             `mapstructure:"auth"`
+	Headers map[string]*string `mapstructure:"headers"`
+}
+
 func FuncHTTP(app *application.App) jpl.JPLFunc {
 	return enclose(func(runtime jpl.JPLRuntime, signal jpl.JPLRuntimeSignal, input any, args ...any) ([]any, error) {
 		var err error
-		var arg any
 
-		arg, err = library.StripJSON(input)
-		if err != nil {
-			return nil, err
+		if len(args) < 1 {
+			return nil, fmt.Errorf("too view arguments")
 		}
-		t, err := library.Type(arg)
+		if len(args) > 2 {
+			return nil, fmt.Errorf("too many arguments")
+		}
+
+		strippedInput, err := library.StripJSON(input)
 		if err != nil {
 			return nil, err
 		}
 		var body io.Reader
 		var detectedContentType string
-		switch t {
-		case jpl.JPLT_NULL:
-		case jpl.JPLT_STRING:
-			body = bytes.NewReader([]byte(arg.(string)))
+		switch v := strippedInput.(type) {
+		case nil:
+		case string:
+			body = bytes.NewReader([]byte(v))
 			detectedContentType = "text/plain"
 		default:
-			serializedBody, err := json.Marshal(arg)
+			serializedBody, err := json.Marshal(v)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing data")
 			}
@@ -48,107 +57,35 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 			detectedContentType = "application/json"
 		}
 
-		if len(args) > 0 {
-			arg, err = library.UnwrapValue(args[0])
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			arg = nil
-		}
-		t, err = library.Type(arg)
+		unwrappedURL, err := library.UnwrapValue(args[0])
 		if err != nil {
 			return nil, err
 		}
-		if t != jpl.JPLT_STRING {
-			return nil, library.ThrowAny(library.NewTypeError("%s (%*<100v) cannot be used as URL", string(t), arg))
-		}
-		url := arg.(string)
-		if url == "" {
+		url, ok := unwrappedURL.(string)
+		if !ok {
 			return nil, fmt.Errorf("invalid URL")
 		}
 
-		if len(args) > 1 {
-			arg, err = library.StripJSON(args[1])
-			if err != nil {
-				return nil, err
-			}
-		} else {
-			arg = nil
-		}
-		t, err = library.Type(arg)
-		if err != nil {
-			return nil, err
-		}
-		var options struct {
-			Method  string
-			Auth    string
-			Headers map[string]string
-		}
+		var options Options
 		options.Method = "GET"
-		options.Headers = make(map[string]string)
 		if body != nil {
 			options.Method = "POST"
-			options.Headers = map[string]string{"Content-Type": detectedContentType}
+			options.Headers = map[string]*string{"Content-Type": &detectedContentType}
 		}
-		switch t {
-		case jpl.JPLT_NULL:
-		case jpl.JPLT_OBJECT:
-			optionMap := arg.(map[string]any)
-
-			option := optionMap["method"]
-			to, err := library.Type(option)
+		if len(args) > 1 {
+			var strippedOptions any
+			strippedOptions, err = library.StripJSON(args[1])
 			if err != nil {
 				return nil, err
 			}
-			switch to {
-			case jpl.JPLT_NULL:
-			case jpl.JPLT_STRING:
-				options.Method = option.(string)
-			default:
-				return nil, library.ThrowAny(library.NewTypeError("%s (%*<100v) cannot be used as options.method", string(to), option))
-			}
-
-			option = optionMap["auth"]
-			to, err = library.Type(option)
+			decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &options})
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
 			}
-			switch to {
-			case jpl.JPLT_NULL:
-			case jpl.JPLT_STRING:
-				options.Auth = option.(string)
-			default:
-				return nil, library.ThrowAny(library.NewTypeError("%s (%*<100v) cannot be used as options.auth", string(to), option))
-			}
-
-			option = optionMap["headers"]
-			to, err = library.Type(option)
+			err = decoder.Decode(strippedOptions)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
 			}
-			switch to {
-			case jpl.JPLT_NULL:
-			case jpl.JPLT_OBJECT:
-				for key, header := range option.(map[string]any) {
-					th, err := library.Type(header)
-					if err != nil {
-						return nil, err
-					}
-					switch th {
-					case jpl.JPLT_NULL:
-						delete(options.Headers, key)
-					case jpl.JPLT_STRING:
-						options.Headers[key] = header.(string)
-					default:
-						return nil, library.ThrowAny(library.NewTypeError("%s (%*<100v) cannot be used as header", string(to), option))
-					}
-				}
-			default:
-				return nil, library.ThrowAny(library.NewTypeError("%s (%*<100v) cannot be used as options.headers", string(to), option))
-			}
-		default:
-			return nil, library.ThrowAny(library.NewTypeError("%s (%*<100v) cannot be used as options", string(t), arg))
 		}
 
 		var credential data.HTTPCredential
@@ -174,7 +111,11 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 			return nil, fmt.Errorf("error sending HTTP request: %s", err)
 		}
 		for key, value := range options.Headers {
-			req.Header.Set(key, value)
+			if value == nil {
+				req.Header.Del(key)
+			} else {
+				req.Header.Set(key, *value)
+			}
 		}
 		switch credential.Type {
 		case 0:
