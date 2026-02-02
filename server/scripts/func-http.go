@@ -20,7 +20,7 @@ import (
 
 var jsonRegex = regexp.MustCompile("^application/[^+]*[+]?(json);?.*$")
 
-type Options struct {
+type HTTPOptions struct {
 	Method  string             `mapstructure:"method"`
 	Auth    string             `mapstructure:"auth"`
 	Headers map[string]*string `mapstructure:"headers"`
@@ -30,10 +30,10 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 	return enclose(func(runtime jpl.JPLRuntime, signal jpl.JPLRuntimeSignal, input any, args ...any) ([]any, error) {
 		var err error
 
-		if len(args) < 1 {
-			return nil, fmt.Errorf("too view arguments")
-		}
-		if len(args) > 2 {
+		argCount := len(args)
+		if argCount < 1 {
+			return nil, fmt.Errorf("not enough arguments")
+		} else if argCount > 2 {
 			return nil, fmt.Errorf("too many arguments")
 		}
 
@@ -51,30 +51,30 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 		default:
 			serializedBody, err := json.Marshal(v)
 			if err != nil {
-				return nil, fmt.Errorf("error parsing data")
+				return nil, fmt.Errorf("error parsing request body")
 			}
 			body = bytes.NewReader(serializedBody)
 			detectedContentType = "application/json"
 		}
 
-		unwrappedURL, err := library.UnwrapValue(args[0])
+		unwrappedArg, err := library.UnwrapValue(args[0])
 		if err != nil {
 			return nil, err
 		}
-		url, ok := unwrappedURL.(string)
+		url, ok := unwrappedArg.(string)
 		if !ok {
 			return nil, fmt.Errorf("invalid URL")
 		}
 
-		var options Options
+		var options HTTPOptions
 		options.Method = "GET"
 		if body != nil {
 			options.Method = "POST"
 			options.Headers = map[string]*string{"Content-Type": &detectedContentType}
 		}
-		if len(args) > 1 {
-			var strippedOptions any
-			strippedOptions, err = library.StripJSON(args[1])
+		if argCount > 1 {
+			var strippedArg any
+			strippedArg, err = library.StripJSON(args[1])
 			if err != nil {
 				return nil, err
 			}
@@ -82,7 +82,7 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 			if err != nil {
 				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
 			}
-			err = decoder.Decode(strippedOptions)
+			err = decoder.Decode(strippedArg)
 			if err != nil {
 				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
 			}
@@ -135,7 +135,6 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 		ctx, cancel := context.WithCancel(req.Context())
 		unsub := signal.Subscribe(cancel)
 		defer unsub()
-
 		resp, err := http.DefaultClient.Do(req.WithContext(ctx))
 		if err != nil {
 			return nil, fmt.Errorf("error sending HTTP request: %s", err)

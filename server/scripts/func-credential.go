@@ -15,18 +15,17 @@ func FuncCredential(app *application.App) jpl.JPLFunc {
 	return enclose(func(runtime jpl.JPLRuntime, signal jpl.JPLRuntimeSignal, input any, args ...any) ([]any, error) {
 		var err error
 
-		if len(args) < 1 {
-			return nil, fmt.Errorf("too view arguments")
-		}
-		if len(args) > 1 {
+		if argCount := len(args); argCount < 1 {
+			return nil, fmt.Errorf("not enough arguments")
+		} else if argCount > 1 {
 			return nil, fmt.Errorf("too many arguments")
 		}
 
-		unwrappedName, err := library.UnwrapValue(args[0])
+		unwrappedArg, err := library.UnwrapValue(args[0])
 		if err != nil {
 			return nil, err
 		}
-		name, ok := unwrappedName.(string)
+		name, ok := unwrappedArg.(string)
 		if !ok {
 			return nil, fmt.Errorf("invalid name")
 		}
