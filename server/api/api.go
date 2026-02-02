@@ -42,5 +42,7 @@ func New() http.Handler {
 	api.Handle("PATCH /usercredentials/{name}", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(PatchUserCredentialsByName))))
 	api.Handle("DELETE /usercredentials/{name}", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(DeleteUserCredentialsByName))))
 
+	api.Handle("POST /script", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(PostScript))))
+
 	return api
 }

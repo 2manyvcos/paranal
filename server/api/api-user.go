@@ -41,7 +41,7 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
-	if req.Header.Get("Content-Type") != "application/json" {
+	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
 	}
@@ -75,7 +75,7 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
-	if req.Header.Get("Content-Type") != "application/json" {
+	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
 	}

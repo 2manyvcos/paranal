@@ -11,43 +11,47 @@ import (
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/data"
 	"github.com/2manyvcos/paranal/server/helper"
+	"github.com/2manyvcos/paranal/utils"
 )
 
 func PostAuth(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	if req.Header.Get("Content-Type") != "application/json" {
+	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
 	}
 
-	var payload AuthRequest
+	var requestPayload struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
-	err := decoder.Decode(&payload)
-	if err != nil || payload.Username == "" || payload.Password == "" {
+	err := decoder.Decode(&requestPayload)
+	if err != nil || requestPayload.Username == "" || requestPayload.Password == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	user, err := app.GetUser(payload.Username)
+	record, err := app.GetUser(requestPayload.Username)
 	if errors.Is(err, data.ErrNotFound) {
 		maskAuthRejection()
 		http.Error(res, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 	if err != nil {
-		log.Printf("Error loading user - %s\n", err)
+		log.Printf("Error loading record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	if user.PasswordHash == "" {
+	if record.PasswordHash == "" {
 		maskAuthRejection()
 		http.Error(res, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return
 	}
 
-	matches, err := crypto.CompareToHash(payload.Password, user.PasswordHash)
+	matches, err := crypto.CompareToHash(requestPayload.Password, record.PasswordHash)
 	if !matches {
 		if err != nil {
 			log.Printf("Error comparing hash - %s\n", err)
@@ -57,7 +61,7 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	accessToken, expires, err := crypto.GenerateJWTToken(app.Config.Auth.JWT.Secret, "api", user.Name)
+	accessToken, expires, err := crypto.GenerateJWTToken(app.Config.Auth.JWT.Secret, "api", record.Name)
 	if err != nil {
 		log.Printf("Error generating access token - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -65,8 +69,12 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(res).Encode(AuthResponse{
-		Username:    payload.Username,
+	err = json.NewEncoder(res).Encode(struct {
+		Username    string    `json:"username"`
+		AccessToken string    `json:"accessToken"`
+		Expires     time.Time `json:"expires"`
+	}{
+		Username:    requestPayload.Username,
 		AccessToken: accessToken,
 		Expires:     expires,
 	})

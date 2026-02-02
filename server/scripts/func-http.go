@@ -8,18 +8,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/application"
 	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/utils"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/jplorg/jpl/go/v2/jpl"
 	"github.com/jplorg/jpl/go/v2/library"
 )
-
-var jsonRegex = regexp.MustCompile("^application/[^+]*[+]?(json);?.*$")
 
 type HTTPOptions struct {
 	Method  string             `mapstructure:"method"`
@@ -164,7 +162,7 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 
 		contentType := resp.Header.Get("Content-Type")
 		switch {
-		case jsonRegex.MatchString(contentType):
+		case utils.JsonRegex.MatchString(contentType):
 			var parsedResponsePayload any
 			err = json.NewDecoder(resp.Body).Decode(&parsedResponsePayload)
 			if err != nil {
