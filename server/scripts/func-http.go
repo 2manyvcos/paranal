@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/application"
@@ -24,6 +25,7 @@ type HTTPOptions struct {
 	Method  string             `mapstructure:"method"`
 	Auth    string             `mapstructure:"auth"`
 	Headers map[string]*string `mapstructure:"headers"`
+	Timeout int                `mapstructure:"timeout"`
 }
 
 func FuncHTTP(app *application.App) jpl.JPLFunc {
@@ -73,8 +75,8 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 			options.Headers = map[string]*string{"Content-Type": &detectedContentType}
 		}
 		if argCount > 1 {
-			var strippedArg any
-			strippedArg, err = library.StripJSON(args[1])
+			var err error
+			strippedArg, err := library.StripJSON(args[1])
 			if err != nil {
 				return nil, err
 			}
@@ -106,7 +108,16 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 			}
 		}
 
-		req, err := http.NewRequest(options.Method, url, body)
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if options.Timeout > 0 {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(options.Timeout)*time.Second)
+		} else {
+			ctx, cancel = context.WithCancel(context.Background())
+		}
+		unsub := signal.Subscribe(cancel)
+		defer unsub()
+		req, err := http.NewRequestWithContext(ctx, options.Method, url, body)
 		if err != nil {
 			return nil, fmt.Errorf("error sending HTTP request: %s", err)
 		}
@@ -120,22 +131,28 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 		switch credential.Type {
 		case 0:
 		case data.HTTP_CREDENTIAL_TYPE_BASIC:
+			if credential.Key == "" {
+				return nil, fmt.Errorf("HTTP credential \"%s\" has no user", credential.Name)
+			}
 			req.SetBasicAuth(credential.Key, credential.Value)
 		case data.HTTP_CREDENTIAL_TYPE_BEARER:
 			req.Header.Add("Authorization", "Bearer "+credential.Value)
 		case data.HTTP_CREDENTIAL_TYPE_HEADER:
+			if credential.Key == "" {
+				return nil, fmt.Errorf("HTTP credential \"%s\" has no header name", credential.Name)
+			}
 			req.Header.Add(credential.Key, credential.Value)
 		case data.HTTP_CREDENTIAL_TYPE_QUERY:
+			if credential.Key == "" {
+				return nil, fmt.Errorf("HTTP credential \"%s\" has no query key", credential.Name)
+			}
 			query := req.URL.Query()
 			query.Add(credential.Key, credential.Value)
 			req.URL.RawQuery = query.Encode()
 		default:
 			return nil, fmt.Errorf("invalid HTTP credential \"%s\"", credential.Name)
 		}
-		ctx, cancel := context.WithCancel(req.Context())
-		unsub := signal.Subscribe(cancel)
-		defer unsub()
-		resp, err := http.DefaultClient.Do(req.WithContext(ctx))
+		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
 			return nil, fmt.Errorf("error sending HTTP request: %s", err)
 		}

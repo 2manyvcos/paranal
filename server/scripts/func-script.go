@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/2manyvcos/paranal/server/application"
 	"github.com/go-viper/mapstructure/v2"
@@ -19,7 +20,8 @@ import (
 )
 
 type ScriptOptions struct {
-	Env map[string]*string `mapstructure:"env"`
+	Env     map[string]*string `mapstructure:"env"`
+	Timeout int                `mapstructure:"timeout"`
 }
 
 func FuncScript(app *application.App) jpl.JPLFunc {
@@ -65,12 +67,11 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 		if len(command) < 1 {
 			return nil, fmt.Errorf("invalid command")
 		}
-		// github.com/alessio/shellescape.Quote
 
 		var options ScriptOptions
 		if argCount > 1 {
-			var strippedArg any
-			strippedArg, err = library.StripJSON(args[1])
+			var err error
+			strippedArg, err := library.StripJSON(args[1])
 			if err != nil {
 				return nil, err
 			}
@@ -97,26 +98,42 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 		} else if strings.HasPrefix(rel, ".."+string(os.PathSeparator)) || rel == ".." || rel == "." {
 			return nil, fmt.Errorf("error resolving script: invalid script location")
 		}
-
-		env := make([]string, 0, len(options.Env))
-		for key, value := range options.Env {
-			if value != nil {
-				env = append(env, key+"="+*value)
-			}
+		var ctx context.Context
+		var cancel context.CancelFunc
+		if options.Timeout > 0 {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(options.Timeout)*time.Second)
+		} else {
+			ctx, cancel = context.WithCancel(context.Background())
 		}
-
-		ctx, cancel := context.WithCancel(context.Background())
+		go func() {
+			select {
+			case <-ctx.Done():
+				fmt.Println("context done")
+			case <-time.After(5 * time.Second):
+				cancel()
+			}
+		}()
+		defer cancel()
 		unsub := signal.Subscribe(cancel)
 		defer unsub()
 		cmd := exec.CommandContext(ctx, commandPath, command[1:]...)
 		cmd.Stdin = stdin
 		var stdout strings.Builder
 		cmd.Stdout = &stdout
+		var stderr strings.Builder
+		cmd.Stderr = &stderr
+		env := make([]string, 0, len(options.Env))
+		for key, value := range options.Env {
+			if value != nil {
+				env = append(env, key+"="+*value)
+			}
+		}
 		cmd.Env = env
 		cmd.Dir = filepath.Dir(commandPath)
+		cmd.WaitDelay = 5 * time.Second
 		err = cmd.Run()
 		if err != nil {
-			return nil, fmt.Errorf("error running command: %s", err)
+			return nil, fmt.Errorf("error running command: %s\n\n%s", err, stderr.String())
 		}
 		return []any{stdout.String()}, nil
 	})
