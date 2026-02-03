@@ -105,14 +105,6 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 		} else {
 			ctx, cancel = context.WithCancel(context.Background())
 		}
-		go func() {
-			select {
-			case <-ctx.Done():
-				fmt.Println("context done")
-			case <-time.After(5 * time.Second):
-				cancel()
-			}
-		}()
 		defer cancel()
 		unsub := signal.Subscribe(cancel)
 		defer unsub()

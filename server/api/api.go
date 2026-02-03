@@ -54,5 +54,7 @@ func New() http.Handler {
 	api.Handle("PATCH /services/{serviceID}/scripts/{scriptID}", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(PatchServicesByIDScriptsByID))))
 	api.Handle("DELETE /services/{serviceID}/scripts/{scriptID}", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(DeleteServicesByIDScriptsByID))))
 
+	api.Handle("POST /get-website-logo", helper.WithAuth(helper.WithRole(data.USER_ROLE_ADMIN, http.HandlerFunc(PostGetWebsiteLogo))))
+
 	return api
 }
