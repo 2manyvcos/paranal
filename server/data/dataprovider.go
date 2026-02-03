@@ -42,8 +42,9 @@ type DataProvider interface {
 	DeleteService(id string) error
 
 	ListScripts() ([]Script, error)
-	GetScript(name string) (Script, error)
 	CreateScript(record Script, updateExisting bool) error
-	UpdateScript(record Script) error
-	DeleteScript(name string) error
+	ListScriptsByService(serviceID string) ([]Script, error)
+	GetScriptByService(serviceID string, id int) (Script, error)
+	UpdateScriptByService(record Script) error
+	DeleteScriptByService(serviceID string, id int) error
 }

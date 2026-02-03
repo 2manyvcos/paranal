@@ -18,21 +18,25 @@ func (p *sqliteImpl) ListScripts() ([]Script, error) {
 	return sqliteListJoinedDatasets(p, Scripts)
 }
 
-func (p *sqliteImpl) GetScript(name string) (result Script, err error) {
-	return sqliteGetJoinedDataset(p, Scripts, ScriptName(name))
-}
-
 func (p *sqliteImpl) CreateScript(record Script, updateExisting bool) error {
 	if updateExisting {
-		return sqliteCreateOrUpdateDataset(p, Scripts, record, ScriptNameIDs)
+		return sqliteCreateOrUpdateDataset(p, Scripts, record, ScriptIDIDs)
 	}
 	return sqliteCreateDataset(p, Scripts, record)
 }
 
-func (p *sqliteImpl) UpdateScript(record Script) error {
-	return sqliteUpdateDataset(p, Scripts, ScriptName(record.Name), record)
+func (p *sqliteImpl) ListScriptsByService(serviceID string) ([]Script, error) {
+	return sqliteGetJoinedDatasets(p, Scripts, ScriptServiceID(serviceID))
 }
 
-func (p *sqliteImpl) DeleteScript(name string) error {
-	return sqliteDeleteDataset(p, Scripts, ScriptName(name))
+func (p *sqliteImpl) GetScriptByService(serviceID string, id int) (result Script, err error) {
+	return sqliteGetJoinedDataset(p, Scripts, ScriptIDAndServiceID{ID: id, ServiceID: serviceID})
+}
+
+func (p *sqliteImpl) UpdateScriptByService(record Script) error {
+	return sqliteUpdateDataset(p, Scripts, ScriptIDAndServiceID{ID: record.ID, ServiceID: record.ServiceID}, record)
+}
+
+func (p *sqliteImpl) DeleteScriptByService(serviceID string, id int) error {
+	return sqliteDeleteDataset(p, Scripts, ScriptIDAndServiceID{ID: id, ServiceID: serviceID})
 }

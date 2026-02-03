@@ -37,6 +37,40 @@ func sqliteListDatasets[Dataset any](p *sqliteImpl, table Table[Dataset]) ([]Dat
 	return results, nil
 }
 
+func sqliteGetDatasets[Dataset any](p *sqliteImpl, table Table[Dataset], id Identifier[Dataset]) ([]Dataset, error) {
+	if err := id.Valid(); err != nil {
+		return nil, err
+	}
+	ids := id.IDNames()
+	conditions := make([]string, len(ids))
+	for i, name := range ids {
+		conditions[i] = fmt.Sprintf("%s = ?", name)
+	}
+	statement := fmt.Sprintf(
+		"SELECT %s FROM %s WHERE %s",
+		strings.Join(table.RecordFieldNames(), ", "),
+		table.TableName(),
+		strings.Join(conditions, " AND "),
+	)
+	rows, err := p.DB.Query(statement, id.IDs()...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var results []Dataset
+	for rows.Next() {
+		record := table.NewRecord()
+		if err := rows.Scan(record.RecordFields()...); err != nil {
+			return nil, err
+		}
+		results = append(results, record.Dataset())
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+	return results, nil
+}
+
 func sqliteGetDataset[Dataset any](p *sqliteImpl, table Table[Dataset], id Identifier[Dataset]) (Dataset, error) {
 	if err := id.Valid(); err != nil {
 		var dataset Dataset

@@ -94,9 +94,9 @@ func PostHTTPCredentials(res http.ResponseWriter, req *http.Request) {
 func GetHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	name := req.PathValue("name")
+	credentialName := req.PathValue("credentialName")
 
-	record, err := app.GetHTTPCredential(name)
+	record, err := app.GetHTTPCredential(credentialName)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -124,7 +124,7 @@ func GetHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 func PatchHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	name := req.PathValue("name")
+	credentialName := req.PathValue("credentialName")
 
 	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
@@ -144,7 +144,7 @@ func PatchHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetHTTPCredential(name)
+	record, err := app.GetHTTPCredential(credentialName)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -187,9 +187,9 @@ func PatchHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 func DeleteHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	name := req.PathValue("name")
+	credentialName := req.PathValue("credentialName")
 
-	err := app.DeleteHTTPCredential(name)
+	err := app.DeleteHTTPCredential(credentialName)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

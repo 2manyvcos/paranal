@@ -93,9 +93,9 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 func GetUsersByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	name := req.PathValue("name")
+	userName := req.PathValue("userName")
 
-	record, err := app.GetUser(name)
+	record, err := app.GetUser(userName)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -124,9 +124,9 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	name := req.PathValue("name")
+	userName := req.PathValue("userName")
 
-	if authorizedUser != nil && authorizedUser.Name == name {
+	if authorizedUser != nil && authorizedUser.Name == userName {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -148,7 +148,7 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetUser(name)
+	record, err := app.GetUser(userName)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -192,14 +192,14 @@ func DeleteUsersByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	name := req.PathValue("name")
+	userName := req.PathValue("userName")
 
-	if authorizedUser != nil && authorizedUser.Name == name {
+	if authorizedUser != nil && authorizedUser.Name == userName {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
 
-	err := app.DeleteUser(name)
+	err := app.DeleteUser(userName)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
