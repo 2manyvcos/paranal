@@ -35,9 +35,6 @@ func PostGetWebsiteLogo(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	for _, icon := range icons {
-		fmt.Printf("%+v\n", icon)
-	}
 	logo := selectLogo(icons)
 	if logo == nil {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
