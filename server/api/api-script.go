@@ -18,7 +18,8 @@ func PostScript(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var requestPayload struct {
-		Script string `json:"script"`
+		Source    string `json:"source"`
+		ServiceID string `json:"serviceID"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
@@ -28,7 +29,7 @@ func PostScript(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	results, err := scripts.Run(app, requestPayload.Script)
+	results, err := scripts.Run(app, requestPayload.ServiceID, requestPayload.Source)
 	if err != nil {
 		res.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(res).Encode(struct {

@@ -1,38 +1,51 @@
 package data
 
-type Dataset interface {
+type Table[Dataset any] interface {
+	TableName() string
+	RecordFieldNames() []string
+	NewRecord() TableRecord[Dataset]
+}
+
+type TableRecord[Dataset any] interface {
+	RecordFields() []any
+	Dataset() Dataset
+}
+
+type Identifier[Dataset any] interface {
+	Table() Table[Dataset]
 	Valid() error
-	IDs() []any
-	Fields() []any
-}
-
-type Record[DatasetType Dataset] interface {
-	IDPointers() []any
-	FieldPointers() []any
-	Dataset() DatasetType
-}
-
-type Table[RecordType Record[DatasetType], DatasetType Dataset] interface {
-	Name() string
 	IDNames() []string
-	IDsValid(id ...any) error
-	FieldNames() []string
-	NewRecord() RecordType
+	IDs() []any
+}
+
+type Insertable[Dataset any] interface {
+	Table() Table[Dataset]
+	Valid() error
+	InsertableNames() []string
+	Insertables() []any
+}
+
+type Updatable[Dataset any] interface {
+	Table() Table[Dataset]
+	Valid() error
+	UpdatableNames() []string
+	Updatables() []any
+}
+
+type Upsertable[Dataset any] interface {
+	Insertable[Dataset]
+	Updatable[Dataset]
 }
 
 type TableHeader struct {
-	Table       string
-	IDs, Fields []string
+	Name   string
+	Fields []string
 }
 
-func (t TableHeader) Name() string {
-	return t.Table
+func (t TableHeader) TableName() string {
+	return t.Name
 }
 
-func (t TableHeader) IDNames() []string {
-	return t.IDs
-}
-
-func (t TableHeader) FieldNames() []string {
+func (t TableHeader) RecordFieldNames() []string {
 	return t.Fields
 }

@@ -130,19 +130,19 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 		case 0:
 		case data.HTTP_CREDENTIAL_TYPE_BASIC:
 			if credential.Key == "" {
-				return nil, fmt.Errorf("HTTP credential \"%s\" has no user", credential.Name)
+				return nil, fmt.Errorf("HTTP credential \"%s\" has no key", credential.Name)
 			}
 			req.SetBasicAuth(credential.Key, credential.Value)
 		case data.HTTP_CREDENTIAL_TYPE_BEARER:
 			req.Header.Add("Authorization", "Bearer "+credential.Value)
 		case data.HTTP_CREDENTIAL_TYPE_HEADER:
 			if credential.Key == "" {
-				return nil, fmt.Errorf("HTTP credential \"%s\" has no header name", credential.Name)
+				return nil, fmt.Errorf("HTTP credential \"%s\" has no key", credential.Name)
 			}
 			req.Header.Add(credential.Key, credential.Value)
 		case data.HTTP_CREDENTIAL_TYPE_QUERY:
 			if credential.Key == "" {
-				return nil, fmt.Errorf("HTTP credential \"%s\" has no query key", credential.Name)
+				return nil, fmt.Errorf("HTTP credential \"%s\" has no key", credential.Name)
 			}
 			query := req.URL.Query()
 			query.Add(credential.Key, credential.Value)

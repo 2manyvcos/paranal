@@ -17,6 +17,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/jplorg/jpl/go/v2 v2.0.1
 	github.com/spf13/cobra v1.10.2
+	golang.org/x/crypto v0.47.0
 	modernc.org/sqlite v1.44.3
 )
 
@@ -28,7 +29,6 @@ require (
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
-	golang.org/x/crypto v0.47.0 // indirect
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	modernc.org/libc v1.67.7 // indirect

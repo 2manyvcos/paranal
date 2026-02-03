@@ -2,20 +2,37 @@ package data
 
 import "fmt"
 
-const USER_ROLE_COMMON = 1
-const USER_ROLE_ADMIN = 2
+const (
+	USER_ROLE_COMMON = 1
+	USER_ROLE_ADMIN  = 2
+)
 
-var USER_ROLE_NAMES = map[int]string{
-	USER_ROLE_COMMON: "common",
-	USER_ROLE_ADMIN:  "admin",
-}
-var USER_ROLE_CODES map[string]int
+var (
+	USER_ROLE_NAMES = map[int]string{
+		USER_ROLE_COMMON: "common",
+		USER_ROLE_ADMIN:  "admin",
+	}
+	USER_ROLE_CODES map[string]int
+)
 
 func init() {
 	USER_ROLE_CODES = make(map[string]int, len(USER_ROLE_NAMES))
 	for code, name := range USER_ROLE_NAMES {
 		USER_ROLE_CODES[name] = code
 	}
+}
+
+type UserTable struct{ TableHeader }
+
+var Users Table[User] = UserTable{
+	TableHeader{
+		Name:   "users",
+		Fields: userFields,
+	},
+}
+
+func (t UserTable) NewRecord() TableRecord[User] {
+	return new(User)
 }
 
 type User struct {
@@ -25,58 +42,73 @@ type User struct {
 	PasswordHash string
 }
 
-var USERS Table[*User, User] = UserTable{
-	TableHeader{
-		Table:  "users",
-		IDs:    []string{"name"},
-		Fields: []string{"displayName", "role", "passwordHash"},
-	},
+var userFields = []string{"name", "displayName", "role", "passwordHash"}
+
+func (r *User) RecordFields() []any {
+	return []any{&r.Name, &r.DisplayName, &r.Role, &r.PasswordHash}
 }
 
-type UserTable struct {
-	TableHeader
+func (r *User) Dataset() User {
+	return *r
 }
 
-func (table UserTable) IDsValid(ids ...any) error {
-	if len(ids) != 1 {
-		return fmt.Errorf("invalid number of ids")
-	}
-	if name, ok := ids[0].(string); !ok || name == "" {
+var _ Upsertable[User] = User{}
+
+func (r User) Table() Table[User] {
+	return Users
+}
+
+func (r User) Valid() error {
+	if r.Name == "" {
 		return fmt.Errorf("invalid name")
 	}
-	return nil
-}
-
-func (table UserTable) NewRecord() *User {
-	return new(User)
-}
-
-func (record *User) IDPointers() []any {
-	return []any{&record.Name}
-}
-
-func (record *User) FieldPointers() []any {
-	return []any{&record.DisplayName, &record.Role, &record.PasswordHash}
-}
-
-func (record *User) Dataset() User {
-	return *record
-}
-
-func (record User) Valid() error {
-	if record.Name == "" {
-		return fmt.Errorf("invalid name")
-	}
-	if _, roleOk := USER_ROLE_NAMES[record.Role]; !roleOk {
+	if _, roleOk := USER_ROLE_NAMES[r.Role]; !roleOk {
 		return fmt.Errorf("invalid role")
 	}
 	return nil
 }
 
-func (record User) IDs() []any {
-	return record.IDPointers()
+func (r User) InsertableNames() []string {
+	return userInsertables
 }
 
-func (record User) Fields() []any {
-	return record.FieldPointers()
+var userInsertables = []string{"name", "displayName", "role", "passwordHash"}
+
+func (r User) Insertables() []any {
+	return []any{r.Name, r.DisplayName, r.Role, r.PasswordHash}
+}
+
+func (r User) UpdatableNames() []string {
+	return userUpdatables
+}
+
+var userUpdatables = []string{"displayName", "role", "passwordHash"}
+
+func (r User) Updatables() []any {
+	return []any{r.DisplayName, r.Role, r.PasswordHash}
+}
+
+type UserName string
+
+var _ Identifier[User] = UserName("")
+
+func (i UserName) Table() Table[User] {
+	return Users
+}
+
+func (i UserName) Valid() error {
+	if i == "" {
+		return fmt.Errorf("invalid name")
+	}
+	return nil
+}
+
+func (i UserName) IDNames() []string {
+	return UserNameIDs
+}
+
+var UserNameIDs = []string{"name"}
+
+func (i UserName) IDs() []any {
+	return []any{string(i)}
 }

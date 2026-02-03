@@ -34,4 +34,16 @@ type DataProvider interface {
 	CreateUserCredential(record UserCredential, updateExisting bool) error
 	UpdateUserCredential(record UserCredential) error
 	DeleteUserCredential(name string) error
+
+	ListServices() ([]Service, error)
+	GetService(id string) (Service, error)
+	CreateService(record Service, updateExisting bool) error
+	UpdateService(record Service) error
+	DeleteService(id string) error
+
+	ListScripts() ([]Script, error)
+	GetScript(name string) (Script, error)
+	CreateScript(record Script, updateExisting bool) error
+	UpdateScript(record Script) error
+	DeleteScript(name string) error
 }

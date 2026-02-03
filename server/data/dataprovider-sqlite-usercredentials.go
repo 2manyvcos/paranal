@@ -15,21 +15,24 @@ func (p *sqliteImpl) setupUserCredentials() error {
 }
 
 func (p *sqliteImpl) ListUserCredentials() ([]UserCredential, error) {
-	return sqliteListDatasets(p, USER_CREDENTIALS)
+	return sqliteListDatasets(p, UserCredentials)
 }
 
 func (p *sqliteImpl) GetUserCredential(name string) (result UserCredential, err error) {
-	return sqliteGetDataset(p, USER_CREDENTIALS, name)
+	return sqliteGetDataset(p, UserCredentials, UserCredentialName(name))
 }
 
 func (p *sqliteImpl) CreateUserCredential(record UserCredential, updateExisting bool) error {
-	return sqliteCreateDataset(p, USER_CREDENTIALS, record, updateExisting)
+	if updateExisting {
+		return sqliteCreateOrUpdateDataset(p, UserCredentials, record, UserCredentialNameIDs)
+	}
+	return sqliteCreateDataset(p, UserCredentials, record)
 }
 
 func (p *sqliteImpl) UpdateUserCredential(record UserCredential) error {
-	return sqliteUpdateDataset(p, USER_CREDENTIALS, record)
+	return sqliteUpdateDataset(p, UserCredentials, UserCredentialName(record.Name), record)
 }
 
 func (p *sqliteImpl) DeleteUserCredential(name string) error {
-	return sqliteDeleteDataset(p, USER_CREDENTIALS, name)
+	return sqliteDeleteDataset(p, UserCredentials, UserCredentialName(name))
 }

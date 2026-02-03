@@ -2,17 +2,11 @@ package data
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
-	"slices"
-	"strings"
 
-	"modernc.org/sqlite"
 	_ "modernc.org/sqlite"
-	sqlite3 "modernc.org/sqlite/lib"
 )
 
 type sqliteImpl struct {
@@ -67,6 +61,14 @@ func (p *sqliteImpl) Setup() error {
 		return err
 	}
 
+	if err := p.setupServices(); err != nil {
+		return err
+	}
+
+	if err := p.setupScripts(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -79,156 +81,4 @@ func requireFound(result sql.Result) error {
 		return ErrNotFound
 	}
 	return nil
-}
-
-func sqliteListDatasets[TableType Table[RecordType, DatasetType], RecordType Record[DatasetType], DatasetType Dataset](p *sqliteImpl, table TableType) ([]DatasetType, error) {
-	tableName := table.Name()
-	idNames := table.IDNames()
-	fieldNames := table.FieldNames()
-	fields := slices.Concat(idNames, fieldNames)
-
-	statement := fmt.Sprintf(
-		"SELECT %s FROM %s",
-		strings.Join(fields, ", "),
-		tableName,
-	)
-	rows, err := p.DB.Query(statement)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var result []DatasetType
-	for rows.Next() {
-		record := table.NewRecord()
-		if err := rows.Scan(slices.Concat(record.IDPointers(), record.FieldPointers())...); err != nil {
-			return nil, err
-		}
-		result = append(result, record.Dataset())
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return result, nil
-}
-
-func sqliteGetDataset[TableType Table[RecordType, DatasetType], RecordType Record[DatasetType], DatasetType Dataset](p *sqliteImpl, table TableType, ids ...any) (DatasetType, error) {
-	if err := table.IDsValid(ids...); err != nil {
-		var dataset DatasetType
-		return dataset, err
-	}
-
-	tableName := table.Name()
-	idNames := table.IDNames()
-	fieldNames := table.FieldNames()
-	fields := slices.Concat(idNames, fieldNames)
-
-	idConditions := make([]string, len(idNames))
-	for i, idName := range idNames {
-		idConditions[i] = fmt.Sprintf("%s = ?", idName)
-	}
-	statement := fmt.Sprintf(
-		"SELECT %s FROM %s WHERE %s",
-		strings.Join(fields, ", "),
-		tableName,
-		strings.Join(idConditions, " AND "),
-	)
-	record := table.NewRecord()
-	err := p.DB.QueryRow(statement, ids...).Scan(slices.Concat(record.IDPointers(), record.FieldPointers())...)
-	if errors.Is(err, sql.ErrNoRows) {
-		var dataset DatasetType
-		return dataset, ErrNotFound
-	}
-	return record.Dataset(), err
-}
-
-func sqliteCreateDataset[TableType Table[RecordType, DatasetType], RecordType Record[DatasetType], DatasetType Dataset](p *sqliteImpl, table TableType, dataset DatasetType, updateExisting bool) error {
-	if err := dataset.Valid(); err != nil {
-		return err
-	}
-
-	tableName := table.Name()
-	idNames := table.IDNames()
-	fieldNames := table.FieldNames()
-	fields := slices.Concat(idNames, fieldNames)
-
-	statement := fmt.Sprintf(
-		"INSERT INTO %s (%s) VALUES(%s)",
-		tableName,
-		strings.Join(fields, ", "),
-		strings.Join(slices.Repeat([]string{"?"}, len(fields)), ", "),
-	)
-	if updateExisting && len(fieldNames) > 0 {
-		fieldMappings := make([]string, len(fieldNames))
-		for i, fieldName := range fieldNames {
-			fieldMappings[i] = fmt.Sprintf("%s = excluded.%s", fieldName, fieldName)
-		}
-		statement += fmt.Sprintf(
-			" ON CONFLICT(%s) DO UPDATE SET %s",
-			strings.Join(idNames, ", "),
-			strings.Join(fieldMappings, ", "),
-		)
-	}
-	_, err := p.DB.Exec(statement, slices.Concat(dataset.IDs(), dataset.Fields())...)
-	if sqliteErr, ok := err.(*sqlite.Error); ok && sqliteErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
-		return ErrConflict
-	}
-	return err
-}
-
-func sqliteUpdateDataset[TableType Table[RecordType, DatasetType], RecordType Record[DatasetType], DatasetType Dataset](p *sqliteImpl, table TableType, dataset DatasetType) error {
-	if err := dataset.Valid(); err != nil {
-		return err
-	}
-
-	tableName := table.Name()
-	idNames := table.IDNames()
-	fieldNames := table.FieldNames()
-
-	if len(fieldNames) == 0 {
-		return nil
-	}
-	fieldMappings := make([]string, len(fieldNames))
-	for i, fieldName := range fieldNames {
-		fieldMappings[i] = fmt.Sprintf("%s = ?", fieldName)
-	}
-	idConditions := make([]string, len(idNames))
-	for i, idName := range idNames {
-		idConditions[i] = fmt.Sprintf("%s = ?", idName)
-	}
-	statement := fmt.Sprintf(
-		"UPDATE %s SET %s WHERE %s",
-		tableName,
-		strings.Join(fieldMappings, ", "),
-		strings.Join(idConditions, " AND "),
-	)
-	result, err := p.DB.Exec(statement, slices.Concat(dataset.Fields(), dataset.IDs())...)
-	if err != nil {
-		return err
-	}
-	return requireFound(result)
-}
-
-func sqliteDeleteDataset[TableType Table[RecordType, DatasetType], RecordType Record[DatasetType], DatasetType Dataset](p *sqliteImpl, table TableType, ids ...any) error {
-	if err := table.IDsValid(ids...); err != nil {
-		return err
-	}
-
-	tableName := table.Name()
-	idNames := table.IDNames()
-
-	idConditions := make([]string, len(idNames))
-	for i, idName := range idNames {
-		idConditions[i] = fmt.Sprintf("%s = ?", idName)
-	}
-	statement := fmt.Sprintf(
-		"DELETE FROM %s WHERE %s",
-		tableName,
-		strings.Join(idConditions, " AND "),
-	)
-	result, err := p.DB.Exec(statement, ids...)
-	if err != nil {
-		return err
-	}
-	return requireFound(result)
 }

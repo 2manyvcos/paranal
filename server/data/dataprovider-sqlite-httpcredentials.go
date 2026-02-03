@@ -15,21 +15,24 @@ func (p *sqliteImpl) setupHTTPCredentials() error {
 }
 
 func (p *sqliteImpl) ListHTTPCredentials() ([]HTTPCredential, error) {
-	return sqliteListDatasets(p, HTTP_CREDENTIALS)
+	return sqliteListDatasets(p, HTTPCredentials)
 }
 
 func (p *sqliteImpl) GetHTTPCredential(name string) (result HTTPCredential, err error) {
-	return sqliteGetDataset(p, HTTP_CREDENTIALS, name)
+	return sqliteGetDataset(p, HTTPCredentials, HTTPCredentialName(name))
 }
 
 func (p *sqliteImpl) CreateHTTPCredential(record HTTPCredential, updateExisting bool) error {
-	return sqliteCreateDataset(p, HTTP_CREDENTIALS, record, updateExisting)
+	if updateExisting {
+		return sqliteCreateOrUpdateDataset(p, HTTPCredentials, record, HTTPCredentialNameIDs)
+	}
+	return sqliteCreateDataset(p, HTTPCredentials, record)
 }
 
 func (p *sqliteImpl) UpdateHTTPCredential(record HTTPCredential) error {
-	return sqliteUpdateDataset(p, HTTP_CREDENTIALS, record)
+	return sqliteUpdateDataset(p, HTTPCredentials, HTTPCredentialName(record.Name), record)
 }
 
 func (p *sqliteImpl) DeleteHTTPCredential(name string) error {
-	return sqliteDeleteDataset(p, HTTP_CREDENTIALS, name)
+	return sqliteDeleteDataset(p, HTTPCredentials, HTTPCredentialName(name))
 }
