@@ -102,6 +102,10 @@ func GetSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	credentialName := req.PathValue("credentialName")
+	if credentialName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	record, err := app.GetSSHCredential(credentialName)
 	if errors.Is(err, data.ErrNotFound) {
@@ -132,6 +136,10 @@ func PatchSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	credentialName := req.PathValue("credentialName")
+	if credentialName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
@@ -192,7 +200,7 @@ func PatchSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateSSHCredential(updatedRecord)
+	err = app.UpdateSSHCredential(credentialName, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -204,6 +212,10 @@ func DeleteSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	credentialName := req.PathValue("credentialName")
+	if credentialName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	err := app.DeleteSSHCredential(credentialName)
 	if errors.Is(err, data.ErrNotFound) {

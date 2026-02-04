@@ -15,24 +15,24 @@ func (p *sqliteImpl) setupHTTPCredentials() error {
 }
 
 func (p *sqliteImpl) ListHTTPCredentials() ([]HTTPCredential, error) {
-	return sqliteListDatasets(p, HTTPCredentials)
+	return sqliteSelectDatasets(p, HTTPCredentials, nil)
 }
 
 func (p *sqliteImpl) GetHTTPCredential(name string) (result HTTPCredential, err error) {
-	return sqliteGetDataset(p, HTTPCredentials, HTTPCredentialName(name))
+	return sqliteSelectDataset(p, HTTPCredentials, &Conditions{Condition: &Condition{Field: "name", Value: name}})
 }
 
 func (p *sqliteImpl) CreateHTTPCredential(record HTTPCredential, updateExisting bool) error {
 	if updateExisting {
-		return sqliteCreateOrUpdateDataset(p, HTTPCredentials, record, HTTPCredentialNameIDs)
+		return sqliteCreateOrUpdateDataset(p, HTTPCredentials, record, []string{"name"})
 	}
 	return sqliteCreateDataset(p, HTTPCredentials, record)
 }
 
-func (p *sqliteImpl) UpdateHTTPCredential(record HTTPCredential) error {
-	return sqliteUpdateDataset(p, HTTPCredentials, HTTPCredentialName(record.Name), record)
+func (p *sqliteImpl) UpdateHTTPCredential(name string, record HTTPCredential) error {
+	return sqliteUpdateDataset(p, HTTPCredentials, &Conditions{Condition: &Condition{Field: "name", Value: name}}, record)
 }
 
 func (p *sqliteImpl) DeleteHTTPCredential(name string) error {
-	return sqliteDeleteDataset(p, HTTPCredentials, HTTPCredentialName(name))
+	return sqliteDeleteDataset(p, HTTPCredentials, &Conditions{Condition: &Condition{Field: "name", Value: name}})
 }

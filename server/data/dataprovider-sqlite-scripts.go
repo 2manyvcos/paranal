@@ -15,28 +15,28 @@ func (p *sqliteImpl) setupScripts() error {
 }
 
 func (p *sqliteImpl) ListScripts() ([]Script, error) {
-	return sqliteListJoinedDatasets(p, Scripts)
+	return sqliteSelectJoinedDatasets(p, ScriptsInnerJoinServices, nil, nil)
 }
 
 func (p *sqliteImpl) CreateScript(record Script, updateExisting bool) error {
 	if updateExisting {
-		return sqliteCreateOrUpdateDataset(p, Scripts, record, ScriptIDIDs)
+		return sqliteCreateOrUpdateDataset(p, Scripts, record, []string{"id"})
 	}
 	return sqliteCreateDataset(p, Scripts, record)
 }
 
 func (p *sqliteImpl) ListScriptsByService(serviceID string) ([]Script, error) {
-	return sqliteGetJoinedDatasets(p, Scripts, ScriptServiceID(serviceID))
+	return sqliteSelectJoinedDatasets(p, ScriptsInnerJoinServices, nil, &JoinedConditions{LeftCondition: &Condition{Field: "serviceID", Value: serviceID}})
 }
 
-func (p *sqliteImpl) GetScriptByService(serviceID string, id int) (result Script, err error) {
-	return sqliteGetJoinedDataset(p, Scripts, ScriptIDAndServiceID{ID: id, ServiceID: serviceID})
+func (p *sqliteImpl) GetScriptByService(id int, serviceID string) (result Script, err error) {
+	return sqliteSelectJoinedDataset(p, ScriptsInnerJoinServices, nil, &JoinedConditions{Conditions: []JoinedConditions{{LeftCondition: &Condition{Field: "id", Value: id}}, {LeftCondition: &Condition{Field: "serviceID", Value: serviceID}}}})
 }
 
-func (p *sqliteImpl) UpdateScriptByService(record Script) error {
-	return sqliteUpdateDataset(p, Scripts, ScriptIDAndServiceID{ID: record.ID, ServiceID: record.ServiceID}, record)
+func (p *sqliteImpl) UpdateScriptByService(id int, serviceID string, record Script) error {
+	return sqliteUpdateDataset(p, Scripts, &Conditions{Conditions: []Conditions{{Condition: &Condition{Field: "id", Value: id}}, {Condition: &Condition{Field: "serviceID", Value: serviceID}}}}, record)
 }
 
-func (p *sqliteImpl) DeleteScriptByService(serviceID string, id int) error {
-	return sqliteDeleteDataset(p, Scripts, ScriptIDAndServiceID{ID: id, ServiceID: serviceID})
+func (p *sqliteImpl) DeleteScriptByService(id int, serviceID string) error {
+	return sqliteDeleteDataset(p, Scripts, &Conditions{Conditions: []Conditions{{Condition: &Condition{Field: "id", Value: id}}, {Condition: &Condition{Field: "serviceID", Value: serviceID}}}})
 }

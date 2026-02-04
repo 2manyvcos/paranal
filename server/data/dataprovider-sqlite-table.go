@@ -12,13 +12,17 @@ import (
 	sqlite3 "modernc.org/sqlite/lib"
 )
 
-func sqliteListDatasets[Dataset any](p *sqliteImpl, table Table[Dataset]) ([]Dataset, error) {
+func sqliteSelectDatasets[Dataset any](p *sqliteImpl, table Table[Dataset], where *Conditions) ([]Dataset, error) {
 	statement := fmt.Sprintf(
 		"SELECT %s FROM %s",
 		strings.Join(table.RecordFieldNames(), ", "),
 		table.TableName(),
 	)
-	rows, err := p.DB.Query(statement)
+	conditions, conditionPlaceholders, ok := sqliteResolveConditions(where)
+	if ok {
+		statement += " WHERE " + conditions
+	}
+	rows, err := p.DB.Query(statement, conditionPlaceholders...)
 	if err != nil {
 		return nil, err
 	}
@@ -37,58 +41,18 @@ func sqliteListDatasets[Dataset any](p *sqliteImpl, table Table[Dataset]) ([]Dat
 	return results, nil
 }
 
-func sqliteGetDatasets[Dataset any](p *sqliteImpl, table Table[Dataset], id Identifier[Dataset]) ([]Dataset, error) {
-	if err := id.Valid(); err != nil {
-		return nil, err
-	}
-	ids := id.IDNames()
-	conditions := make([]string, len(ids))
-	for i, name := range ids {
-		conditions[i] = fmt.Sprintf("%s = ?", name)
-	}
+func sqliteSelectDataset[Dataset any](p *sqliteImpl, table Table[Dataset], where *Conditions) (Dataset, error) {
 	statement := fmt.Sprintf(
-		"SELECT %s FROM %s WHERE %s",
+		"SELECT %s FROM %s",
 		strings.Join(table.RecordFieldNames(), ", "),
 		table.TableName(),
-		strings.Join(conditions, " AND "),
 	)
-	rows, err := p.DB.Query(statement, id.IDs()...)
-	if err != nil {
-		return nil, err
+	conditions, conditionPlaceholders, ok := sqliteResolveConditions(where)
+	if ok {
+		statement += " WHERE " + conditions
 	}
-	defer rows.Close()
-	var results []Dataset
-	for rows.Next() {
-		record := table.NewRecord()
-		if err := rows.Scan(record.RecordFields()...); err != nil {
-			return nil, err
-		}
-		results = append(results, record.Dataset())
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return results, nil
-}
-
-func sqliteGetDataset[Dataset any](p *sqliteImpl, table Table[Dataset], id Identifier[Dataset]) (Dataset, error) {
-	if err := id.Valid(); err != nil {
-		var dataset Dataset
-		return dataset, err
-	}
-	ids := id.IDNames()
-	conditions := make([]string, len(ids))
-	for i, name := range ids {
-		conditions[i] = fmt.Sprintf("%s = ?", name)
-	}
-	statement := fmt.Sprintf(
-		"SELECT %s FROM %s WHERE %s",
-		strings.Join(table.RecordFieldNames(), ", "),
-		table.TableName(),
-		strings.Join(conditions, " AND "),
-	)
 	record := table.NewRecord()
-	err := p.DB.QueryRow(statement, id.IDs()...).Scan(record.RecordFields()...)
+	err := p.DB.QueryRow(statement, conditionPlaceholders...).Scan(record.RecordFields()...)
 	if errors.Is(err, sql.ErrNoRows) {
 		var dataset Dataset
 		return dataset, ErrNotFound
@@ -139,10 +103,7 @@ func sqliteCreateOrUpdateDataset[Dataset any](p *sqliteImpl, table Table[Dataset
 	return err
 }
 
-func sqliteUpdateDataset[Dataset any](p *sqliteImpl, table Table[Dataset], id Identifier[Dataset], dataset Updatable[Dataset]) error {
-	if err := id.Valid(); err != nil {
-		return err
-	}
+func sqliteUpdateDataset[Dataset any](p *sqliteImpl, table Table[Dataset], where *Conditions, dataset Updatable[Dataset]) error {
 	if err := dataset.Valid(); err != nil {
 		return err
 	}
@@ -151,41 +112,64 @@ func sqliteUpdateDataset[Dataset any](p *sqliteImpl, table Table[Dataset], id Id
 	for i, name := range fields {
 		fieldMappings[i] = fmt.Sprintf("%s = ?", name)
 	}
-	ids := id.IDNames()
-	conditions := make([]string, len(ids))
-	for i, name := range ids {
-		conditions[i] = fmt.Sprintf("%s = ?", name)
-	}
 	statement := fmt.Sprintf(
-		"UPDATE %s SET %s WHERE %s",
+		"UPDATE %s SET %s",
 		table.TableName(),
 		strings.Join(fieldMappings, ", "),
-		strings.Join(conditions, " AND "),
 	)
-	result, err := p.DB.Exec(statement, slices.Concat(dataset.Updatables(), id.IDs())...)
+	conditions, conditionPlaceholders, ok := sqliteResolveConditions(where)
+	if ok {
+		statement += " WHERE " + conditions
+	}
+	result, err := p.DB.Exec(statement, slices.Concat(dataset.Updatables(), conditionPlaceholders)...)
 	if err != nil {
 		return err
 	}
 	return requireFound(result)
 }
 
-func sqliteDeleteDataset[Dataset any](p *sqliteImpl, table Table[Dataset], id Identifier[Dataset]) error {
-	if err := id.Valid(); err != nil {
-		return err
-	}
-	ids := id.IDNames()
-	conditions := make([]string, len(ids))
-	for i, name := range ids {
-		conditions[i] = fmt.Sprintf("%s = ?", name)
-	}
+func sqliteDeleteDataset[Dataset any](p *sqliteImpl, table Table[Dataset], where *Conditions) error {
 	statement := fmt.Sprintf(
-		"DELETE FROM %s WHERE %s",
+		"DELETE FROM %s",
 		table.TableName(),
-		strings.Join(conditions, " AND "),
 	)
-	result, err := p.DB.Exec(statement, id.IDs()...)
+	conditions, conditionPlaceholders, ok := sqliteResolveConditions(where)
+	if ok {
+		statement += " WHERE " + conditions
+	}
+	result, err := p.DB.Exec(statement, conditionPlaceholders...)
 	if err != nil {
 		return err
 	}
 	return requireFound(result)
+}
+
+func sqliteResolveConditions(where *Conditions) (string, []any, bool) {
+	if where == nil {
+		return "", nil, false
+	}
+	conditions := make([]string, 0, 1+len(where.Conditions))
+	placeholders := make([]any, 0, 1+len(where.Conditions))
+	if where.Condition != nil {
+		conditions = append(conditions, fmt.Sprintf("%s = ?", where.Condition.Field))
+		placeholders = append(placeholders, where.Condition.Value)
+	}
+	if len(where.Conditions) > 0 {
+		for _, sub := range where.Conditions {
+			subConditions, subPlaceholders, _ := sqliteResolveConditions(&sub)
+			conditions = append(conditions, subConditions)
+			placeholders = append(placeholders, subPlaceholders...)
+		}
+	}
+	merge := " AND "
+	if where.Or {
+		merge = " OR "
+	}
+	if len(conditions) == 0 {
+		return "", nil, false
+	}
+	if len(conditions) == 1 {
+		return conditions[0], placeholders, true
+	}
+	return "(" + strings.Join(conditions, merge) + ")", placeholders, len(conditions) > 0
 }

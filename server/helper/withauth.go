@@ -81,7 +81,7 @@ func authorizeRemoteUser(req *http.Request) *data.User {
 		}
 		newUser := data.User{
 			Name: username,
-			Role: map[bool]int{false: data.USER_ROLE_COMMON, true: data.USER_ROLE_ADMIN}[admin],
+			Role: map[bool]int{false: data.UserRoleCommon, true: data.UserRoleAdmin}[admin],
 		}
 		err := app.CreateUser(newUser, false)
 		if err != nil {
@@ -91,10 +91,10 @@ func authorizeRemoteUser(req *http.Request) *data.User {
 		return &newUser
 	}
 
-	if admin && authorizedUser.Role != data.USER_ROLE_ADMIN {
+	if admin && authorizedUser.Role != data.UserRoleAdmin {
 		newUser := *authorizedUser
-		newUser.Role = data.USER_ROLE_ADMIN
-		err := app.UpdateUser(newUser)
+		newUser.Role = data.UserRoleAdmin
+		err := app.UpdateUser(username, newUser)
 		if err != nil {
 			log.Printf("Error updating user - %s\n", err)
 		} else {
@@ -114,7 +114,7 @@ func authorizeBearer(req *http.Request) *data.User {
 	}
 
 	ok, username, err := crypto.ValidateJWTToken(app.Config.Auth.JWT.Secret, strings.TrimSpace(strings.TrimPrefix(bearer, "Bearer ")))
-	if !ok || err != nil {
+	if !ok || username == "" || err != nil {
 		// if err != nil {
 		// 	log.Printf("Error validating token - %s\n", err)
 		// }

@@ -16,8 +16,14 @@ import (
 
 func GetServices(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
+	authorizedUser := helper.GetAuthorizedUser(req)
 
-	records, err := app.ListServices()
+	if authorizedUser == nil || authorizedUser.Name == "" {
+		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	records, err := app.ListServicesWithFavorite(authorizedUser.Name)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -30,6 +36,7 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		Description string `json:"description"`
 		Logo        string `json:"logo"`
 		URL         string `json:"url"`
+		IsFavorite  bool   `json:"isFavorite"`
 	}, len(records))
 	for i, record := range records {
 		responsePayload[i].ID = record.ID
@@ -37,6 +44,7 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].Description = record.Description
 		responsePayload[i].Logo = record.Logo
 		responsePayload[i].URL = record.URL
+		responsePayload[i].IsFavorite = record.IsFavorite
 	}
 	res.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(res).Encode(responsePayload)
@@ -90,10 +98,20 @@ func PostServices(res http.ResponseWriter, req *http.Request) {
 
 func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
+	authorizedUser := helper.GetAuthorizedUser(req)
+
+	if authorizedUser == nil || authorizedUser.Name == "" {
+		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
 
 	serviceID := req.PathValue("serviceID")
+	if serviceID == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
-	record, err := app.GetService(serviceID)
+	record, err := app.GetServiceWithFavorite(serviceID, authorizedUser.Name)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -111,12 +129,14 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		Description string `json:"description"`
 		Logo        string `json:"logo"`
 		URL         string `json:"url"`
+		IsFavorite  bool   `json:"isFavorite"`
 	}{
 		ID:          record.ID,
 		Name:        record.Name,
 		Description: record.Description,
 		Logo:        record.Logo,
 		URL:         record.URL,
+		IsFavorite:  record.IsFavorite,
 	})
 }
 
@@ -124,6 +144,10 @@ func PatchServicesByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	serviceID := req.PathValue("serviceID")
+	if serviceID == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
@@ -164,7 +188,7 @@ func PatchServicesByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateService(updatedRecord)
+	err = app.UpdateService(serviceID, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -176,8 +200,86 @@ func DeleteServicesByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	serviceID := req.PathValue("serviceID")
+	if serviceID == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	err := app.DeleteService(serviceID)
+	if errors.Is(err, data.ErrNotFound) {
+		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Printf("Error deleting record - %s\n", err)
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+}
+
+func PostServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
+	app := helper.GetApp(req)
+	authorizedUser := helper.GetAuthorizedUser(req)
+
+	if authorizedUser == nil || authorizedUser.Name == "" {
+		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	serviceID := req.PathValue("serviceID")
+	if serviceID == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	_, err := app.GetService(serviceID)
+	if errors.Is(err, data.ErrNotFound) {
+		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Printf("Error loading record - %s\n", err)
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+
+	newRecord := data.Favorite{
+		UserName:  authorizedUser.Name,
+		ServiceID: serviceID,
+	}
+	if err := newRecord.Valid(); err != nil {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+	err = app.CreateFavorite(newRecord)
+	if errors.Is(err, data.ErrConflict) {
+		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	if err != nil {
+		log.Printf("Error creating record - %s\n", err)
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+	res.WriteHeader(http.StatusCreated)
+}
+
+func DeleteServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
+	app := helper.GetApp(req)
+	authorizedUser := helper.GetAuthorizedUser(req)
+
+	if authorizedUser == nil || authorizedUser.Name == "" {
+		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	serviceID := req.PathValue("serviceID")
+	if serviceID == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	err := app.DeleteFavorite(authorizedUser.Name, serviceID)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -193,6 +295,10 @@ func PostServicesByIDRunScript(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	serviceID := req.PathValue("serviceID")
+	if serviceID == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
@@ -247,6 +353,10 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	serviceID := req.PathValue("serviceID")
+	if serviceID == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	records, err := app.ListScriptsByService(serviceID)
 	if err != nil {
@@ -275,6 +385,10 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	serviceID := req.PathValue("serviceID")
+	if serviceID == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
@@ -333,12 +447,12 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 
 	serviceID := req.PathValue("serviceID")
 	scriptID, err := strconv.Atoi(req.PathValue("scriptID"))
-	if err != nil {
+	if serviceID == "" || err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	record, err := app.GetScriptByService(serviceID, scriptID)
+	record, err := app.GetScriptByService(scriptID, serviceID)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -366,7 +480,7 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 
 	serviceID := req.PathValue("serviceID")
 	scriptID, err := strconv.Atoi(req.PathValue("scriptID"))
-	if err != nil {
+	if serviceID == "" || err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -389,7 +503,7 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetScriptByService(serviceID, scriptID)
+	record, err := app.GetScriptByService(scriptID, serviceID)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -408,7 +522,7 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateScriptByService(updatedRecord)
+	err = app.UpdateScriptByService(scriptID, serviceID, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -421,12 +535,12 @@ func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 
 	serviceID := req.PathValue("serviceID")
 	scriptID, err := strconv.Atoi(req.PathValue("scriptID"))
-	if err != nil {
+	if serviceID == "" || err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	err = app.DeleteScriptByService(serviceID, scriptID)
+	err = app.DeleteScriptByService(scriptID, serviceID)
 	if errors.Is(err, data.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

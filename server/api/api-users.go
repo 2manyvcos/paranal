@@ -31,7 +31,7 @@ func GetUsers(res http.ResponseWriter, req *http.Request) {
 	for i, record := range records {
 		responsePayload[i].Name = record.Name
 		responsePayload[i].DisplayName = record.DisplayName
-		responsePayload[i].Role = data.USER_ROLE_NAMES[record.Role]
+		responsePayload[i].Role = data.UserRoleNames[record.Role]
 		responsePayload[i].HasPassword = record.PasswordHash != ""
 	}
 	res.Header().Set("Content-Type", "application/json")
@@ -63,7 +63,7 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 	newRecord := data.User{
 		Name:        requestPayload.Name,
 		DisplayName: requestPayload.DisplayName,
-		Role:        data.USER_ROLE_CODES[requestPayload.Role],
+		Role:        data.UserRoleCodes[requestPayload.Role],
 	}
 	if requestPayload.Password != "" {
 		newRecord.PasswordHash, err = crypto.Hash(requestPayload.Password)
@@ -94,6 +94,10 @@ func GetUsersByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	userName := req.PathValue("userName")
+	if userName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	record, err := app.GetUser(userName)
 	if errors.Is(err, data.ErrNotFound) {
@@ -115,7 +119,7 @@ func GetUsersByName(res http.ResponseWriter, req *http.Request) {
 	}{
 		Name:        record.Name,
 		DisplayName: record.DisplayName,
-		Role:        data.USER_ROLE_NAMES[record.Role],
+		Role:        data.UserRoleNames[record.Role],
 		HasPassword: record.PasswordHash != "",
 	})
 }
@@ -125,6 +129,10 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 	authorizedUser := helper.GetAuthorizedUser(req)
 
 	userName := req.PathValue("userName")
+	if userName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	if authorizedUser != nil && authorizedUser.Name == userName {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
@@ -162,7 +170,7 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 	updatedRecord := record
 	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
 	if requestPayload.Role.IsDefined {
-		updatedRecord.Role = data.USER_ROLE_CODES[requestPayload.Role.Value]
+		updatedRecord.Role = data.UserRoleCodes[requestPayload.Role.Value]
 	}
 	if requestPayload.Password.IsDefined {
 		if requestPayload.Password.Value == "" {
@@ -180,7 +188,7 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUser(updatedRecord)
+	err = app.UpdateUser(userName, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -193,6 +201,10 @@ func DeleteUsersByName(res http.ResponseWriter, req *http.Request) {
 	authorizedUser := helper.GetAuthorizedUser(req)
 
 	userName := req.PathValue("userName")
+	if userName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	if authorizedUser != nil && authorizedUser.Name == userName {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)

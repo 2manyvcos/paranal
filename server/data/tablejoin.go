@@ -1,6 +1,19 @@
 package data
 
+type JoinType int
+
+const (
+	JoinTypeInner JoinType = iota + 1
+	JoinTypeLeft
+)
+
+var JoinTypeVerbs = map[JoinType]string{
+	JoinTypeInner: "INNER",
+	JoinTypeLeft:  "LEFT",
+}
+
 type JoinedTable[Dataset any] interface {
+	JoinType() JoinType
 	LeftTableName() string
 	LeftRecordFieldNames() []string
 	RightTableName() string
@@ -15,20 +28,23 @@ type JoinedTableRecord[Dataset any] interface {
 	Dataset() Dataset
 }
 
-type JoinedIdentifier[Dataset any] interface {
-	JoinedTable() JoinedTable[Dataset]
-	Valid() error
-	LeftIDNames() []string
-	LeftIDs() []any
-	RightIDNames() []string
-	RightIDs() []any
+type JoinedConditions struct {
+	LeftCondition  *Condition
+	RightCondition *Condition
+	Conditions     []JoinedConditions
+	Or             bool
 }
 
 type JoinedTableHeader struct {
+	Type        JoinType
 	LeftName    string
 	LeftFields  []string
 	RightName   string
 	RightFields []string
+}
+
+func (t JoinedTableHeader) JoinType() JoinType {
+	return t.Type
 }
 
 func (t JoinedTableHeader) LeftTableName() string {
@@ -45,9 +61,4 @@ func (t JoinedTableHeader) RightTableName() string {
 
 func (t JoinedTableHeader) RightRecordFieldNames() []string {
 	return t.RightFields
-}
-
-type CombinedTable[Dataset any] interface {
-	JoinedTable[Dataset]
-	Table[Dataset]
 }

@@ -30,7 +30,7 @@ func GetHTTPCredentials(res http.ResponseWriter, req *http.Request) {
 	}, len(records))
 	for i, record := range records {
 		responsePayload[i].Name = record.Name
-		responsePayload[i].Type = data.HTTP_CREDENTIAL_TYPE_NAMES[record.Type]
+		responsePayload[i].Type = data.HttpCredentialTypeNames[record.Type]
 		responsePayload[i].Key = record.Key
 		responsePayload[i].HasValue = record.Value != ""
 
@@ -63,7 +63,7 @@ func PostHTTPCredentials(res http.ResponseWriter, req *http.Request) {
 
 	newRecord := data.HTTPCredential{
 		Name: requestPayload.Name,
-		Type: data.HTTP_CREDENTIAL_TYPE_CODES[requestPayload.Type],
+		Type: data.HttpCredentialTypeCodes[requestPayload.Type],
 		Key:  requestPayload.Key,
 	}
 	if requestPayload.Value != "" {
@@ -95,6 +95,10 @@ func GetHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	credentialName := req.PathValue("credentialName")
+	if credentialName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	record, err := app.GetHTTPCredential(credentialName)
 	if errors.Is(err, data.ErrNotFound) {
@@ -115,7 +119,7 @@ func GetHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		HasValue bool   `json:"hasValue"`
 	}{
 		Name:     record.Name,
-		Type:     data.HTTP_CREDENTIAL_TYPE_NAMES[record.Type],
+		Type:     data.HttpCredentialTypeNames[record.Type],
 		Key:      record.Key,
 		HasValue: record.Value != "",
 	})
@@ -125,6 +129,10 @@ func PatchHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	credentialName := req.PathValue("credentialName")
+	if credentialName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
@@ -157,7 +165,7 @@ func PatchHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 
 	updatedRecord := record
 	if requestPayload.Type.IsDefined {
-		updatedRecord.Type = data.HTTP_CREDENTIAL_TYPE_CODES[requestPayload.Type.Value]
+		updatedRecord.Type = data.HttpCredentialTypeCodes[requestPayload.Type.Value]
 	}
 	requestPayload.Key.ApplyIfDefined(&updatedRecord.Key)
 	if requestPayload.Value.IsDefined {
@@ -176,7 +184,7 @@ func PatchHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateHTTPCredential(updatedRecord)
+	err = app.UpdateHTTPCredential(credentialName, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -188,6 +196,10 @@ func DeleteHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	credentialName := req.PathValue("credentialName")
+	if credentialName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	err := app.DeleteHTTPCredential(credentialName)
 	if errors.Is(err, data.ErrNotFound) {

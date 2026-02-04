@@ -15,24 +15,24 @@ func (p *sqliteImpl) setupUsers() error {
 }
 
 func (p *sqliteImpl) ListUsers() ([]User, error) {
-	return sqliteListDatasets(p, Users)
+	return sqliteSelectDatasets(p, Users, nil)
 }
 
 func (p *sqliteImpl) GetUser(name string) (result User, err error) {
-	return sqliteGetDataset(p, Users, UserName(name))
+	return sqliteSelectDataset(p, Users, &Conditions{Condition: &Condition{Field: "name", Value: name}})
 }
 
 func (p *sqliteImpl) CreateUser(record User, updateExisting bool) error {
 	if updateExisting {
-		return sqliteCreateOrUpdateDataset(p, Users, record, UserNameIDs)
+		return sqliteCreateOrUpdateDataset(p, Users, record, []string{"name"})
 	}
 	return sqliteCreateDataset(p, Users, record)
 }
 
-func (p *sqliteImpl) UpdateUser(record User) error {
-	return sqliteUpdateDataset(p, Users, UserName(record.Name), record)
+func (p *sqliteImpl) UpdateUser(name string, record User) error {
+	return sqliteUpdateDataset(p, Users, &Conditions{Condition: &Condition{Field: "name", Value: name}}, record)
 }
 
 func (p *sqliteImpl) DeleteUser(name string) error {
-	return sqliteDeleteDataset(p, Users, UserName(name))
+	return sqliteDeleteDataset(p, Users, &Conditions{Condition: &Condition{Field: "name", Value: name}})
 }

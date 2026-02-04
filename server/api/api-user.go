@@ -28,7 +28,7 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 	}{
 		Name:        authorizedUser.Name,
 		DisplayName: authorizedUser.DisplayName,
-		Role:        data.USER_ROLE_NAMES[authorizedUser.Role],
+		Role:        data.UserRoleNames[authorizedUser.Role],
 		HasPassword: authorizedUser.PasswordHash != "",
 	})
 }
@@ -37,7 +37,7 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil {
+	if authorizedUser == nil || authorizedUser.Name == "" {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -59,7 +59,7 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 
 	updatedRecord := *authorizedUser
 	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
-	err = app.UpdateUser(updatedRecord)
+	err = app.UpdateUser(authorizedUser.Name, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -71,7 +71,7 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil {
+	if authorizedUser == nil || authorizedUser.Name == "" {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -118,7 +118,7 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUser(updatedRecord)
+	err = app.UpdateUser(authorizedUser.Name, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

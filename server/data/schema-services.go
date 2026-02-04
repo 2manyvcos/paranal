@@ -35,9 +35,7 @@ func (r *Service) Dataset() Service {
 
 var _ Upsertable[Service] = Service{}
 
-func (r Service) Table() Table[Service] {
-	return Services
-}
+func (r Service) TableType() Table[Service] { return nil }
 
 func (r Service) Valid() error {
 	if r.ID == "" {
@@ -69,27 +67,51 @@ func (r Service) Updatables() []any {
 	return []any{r.Name, r.Description, r.Logo, r.URL}
 }
 
-type ServiceID string
+type ServiceTableLeftJoinFavorites struct{ JoinedTableHeader }
 
-var _ Identifier[Service] = ServiceID("")
-
-func (i ServiceID) Table() Table[Service] {
-	return Services
+type ServiceWithFavorite struct {
+	Service
+	IsFavorite bool
 }
 
-func (i ServiceID) Valid() error {
-	if i == "" {
-		return fmt.Errorf("invalid ID")
+type serviceWithFavoriteRecord struct {
+	service  Service
+	userName *string
+}
+
+var ServicesLeftJoinFavorites JoinedTable[ServiceWithFavorite] = ServiceTableLeftJoinFavorites{
+	JoinedTableHeader{
+		Type:        JoinTypeLeft,
+		LeftName:    Services.TableName(),
+		LeftFields:  Services.RecordFieldNames(),
+		RightName:   Favorites.TableName(),
+		RightFields: serviceFavoriteRightFields,
+	},
+}
+
+func (t ServiceTableLeftJoinFavorites) TableCorrelations() [][2]string {
+	return ServiceFavoriteCorrelations
+}
+
+var ServiceFavoriteCorrelations = [][2]string{{"id", "serviceID"}}
+
+func (t ServiceTableLeftJoinFavorites) NewJoinedRecord() JoinedTableRecord[ServiceWithFavorite] {
+	return new(serviceWithFavoriteRecord)
+}
+
+func (r *serviceWithFavoriteRecord) LeftRecordFields() []any {
+	return r.service.RecordFields()
+}
+
+var serviceFavoriteRightFields = []string{"userName"}
+
+func (r *serviceWithFavoriteRecord) RightRecordFields() []any {
+	return []any{&r.userName}
+}
+
+func (r *serviceWithFavoriteRecord) Dataset() ServiceWithFavorite {
+	return ServiceWithFavorite{
+		Service:    r.service,
+		IsFavorite: r.userName != nil,
 	}
-	return nil
-}
-
-func (i ServiceID) IDNames() []string {
-	return ServiceIDIDs
-}
-
-var ServiceIDIDs = []string{"id"}
-
-func (i ServiceID) IDs() []any {
-	return []any{string(i)}
 }

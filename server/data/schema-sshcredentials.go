@@ -34,9 +34,7 @@ func (r *SSHCredential) Dataset() SSHCredential {
 
 var _ Upsertable[SSHCredential] = SSHCredential{}
 
-func (r SSHCredential) Table() Table[SSHCredential] {
-	return SSHCredentials
-}
+func (r SSHCredential) TableType() Table[SSHCredential] { return nil }
 
 func (r SSHCredential) Valid() error {
 	if r.Name == "" {
@@ -69,29 +67,4 @@ var sshCredentialUpdatables = []string{"name", "user", "password", "privateKey"}
 
 func (r SSHCredential) Updatables() []any {
 	return []any{r.Name, r.User, r.Password, r.PrivateKey}
-}
-
-type SSHCredentialName string
-
-var _ Identifier[SSHCredential] = SSHCredentialName("")
-
-func (i SSHCredentialName) Table() Table[SSHCredential] {
-	return SSHCredentials
-}
-
-func (i SSHCredentialName) Valid() error {
-	if i == "" {
-		return fmt.Errorf("invalid name")
-	}
-	return nil
-}
-
-func (i SSHCredentialName) IDNames() []string {
-	return SSHCredentialNameIDs
-}
-
-var SSHCredentialNameIDs = []string{"name"}
-
-func (i SSHCredentialName) IDs() []any {
-	return []any{string(i)}
 }

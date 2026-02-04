@@ -116,7 +116,7 @@ func (app *App) prepare() (err error) {
 			data.User{
 				Name:         app.Config.Admin.Username,
 				PasswordHash: app.Config.Admin.PasswordHash,
-				Role:         data.USER_ROLE_ADMIN,
+				Role:         data.UserRoleAdmin,
 			},
 			true,
 		)

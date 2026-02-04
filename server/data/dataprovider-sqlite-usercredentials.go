@@ -15,24 +15,24 @@ func (p *sqliteImpl) setupUserCredentials() error {
 }
 
 func (p *sqliteImpl) ListUserCredentials() ([]UserCredential, error) {
-	return sqliteListDatasets(p, UserCredentials)
+	return sqliteSelectDatasets(p, UserCredentials, nil)
 }
 
 func (p *sqliteImpl) GetUserCredential(name string) (result UserCredential, err error) {
-	return sqliteGetDataset(p, UserCredentials, UserCredentialName(name))
+	return sqliteSelectDataset(p, UserCredentials, &Conditions{Condition: &Condition{Field: "name", Value: name}})
 }
 
 func (p *sqliteImpl) CreateUserCredential(record UserCredential, updateExisting bool) error {
 	if updateExisting {
-		return sqliteCreateOrUpdateDataset(p, UserCredentials, record, UserCredentialNameIDs)
+		return sqliteCreateOrUpdateDataset(p, UserCredentials, record, []string{"name"})
 	}
 	return sqliteCreateDataset(p, UserCredentials, record)
 }
 
-func (p *sqliteImpl) UpdateUserCredential(record UserCredential) error {
-	return sqliteUpdateDataset(p, UserCredentials, UserCredentialName(record.Name), record)
+func (p *sqliteImpl) UpdateUserCredential(name string, record UserCredential) error {
+	return sqliteUpdateDataset(p, UserCredentials, &Conditions{Condition: &Condition{Field: "name", Value: name}}, record)
 }
 
 func (p *sqliteImpl) DeleteUserCredential(name string) error {
-	return sqliteDeleteDataset(p, UserCredentials, UserCredentialName(name))
+	return sqliteDeleteDataset(p, UserCredentials, &Conditions{Condition: &Condition{Field: "name", Value: name}})
 }

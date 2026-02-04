@@ -90,6 +90,10 @@ func GetUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	credentialName := req.PathValue("credentialName")
+	if credentialName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	record, err := app.GetUserCredential(credentialName)
 	if errors.Is(err, data.ErrNotFound) {
@@ -118,6 +122,10 @@ func PatchUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	credentialName := req.PathValue("credentialName")
+	if credentialName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
@@ -165,7 +173,7 @@ func PatchUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUserCredential(updatedRecord)
+	err = app.UpdateUserCredential(credentialName, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -177,6 +185,10 @@ func DeleteUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	credentialName := req.PathValue("credentialName")
+	if credentialName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
 
 	err := app.DeleteUserCredential(credentialName)
 	if errors.Is(err, data.ErrNotFound) {

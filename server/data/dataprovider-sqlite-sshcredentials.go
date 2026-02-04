@@ -15,24 +15,24 @@ func (p *sqliteImpl) setupSSHCredentials() error {
 }
 
 func (p *sqliteImpl) ListSSHCredentials() ([]SSHCredential, error) {
-	return sqliteListDatasets(p, SSHCredentials)
+	return sqliteSelectDatasets(p, SSHCredentials, nil)
 }
 
 func (p *sqliteImpl) GetSSHCredential(name string) (result SSHCredential, err error) {
-	return sqliteGetDataset(p, SSHCredentials, SSHCredentialName(name))
+	return sqliteSelectDataset(p, SSHCredentials, &Conditions{Condition: &Condition{Field: "name", Value: name}})
 }
 
 func (p *sqliteImpl) CreateSSHCredential(record SSHCredential, updateExisting bool) error {
 	if updateExisting {
-		return sqliteCreateOrUpdateDataset(p, SSHCredentials, record, SSHCredentialNameIDs)
+		return sqliteCreateOrUpdateDataset(p, SSHCredentials, record, []string{"name"})
 	}
 	return sqliteCreateDataset(p, SSHCredentials, record)
 }
 
-func (p *sqliteImpl) UpdateSSHCredential(record SSHCredential) error {
-	return sqliteUpdateDataset(p, SSHCredentials, SSHCredentialName(record.Name), record)
+func (p *sqliteImpl) UpdateSSHCredential(name string, record SSHCredential) error {
+	return sqliteUpdateDataset(p, SSHCredentials, &Conditions{Condition: &Condition{Field: "name", Value: name}}, record)
 }
 
 func (p *sqliteImpl) DeleteSSHCredential(name string) error {
-	return sqliteDeleteDataset(p, SSHCredentials, SSHCredentialName(name))
+	return sqliteDeleteDataset(p, SSHCredentials, &Conditions{Condition: &Condition{Field: "name", Value: name}})
 }

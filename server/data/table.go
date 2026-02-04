@@ -11,22 +11,26 @@ type TableRecord[Dataset any] interface {
 	Dataset() Dataset
 }
 
-type Identifier[Dataset any] interface {
-	Table() Table[Dataset]
-	Valid() error
-	IDNames() []string
-	IDs() []any
+type Condition struct {
+	Field string
+	Value any
+}
+
+type Conditions struct {
+	Condition  *Condition
+	Or         bool
+	Conditions []Conditions
 }
 
 type Insertable[Dataset any] interface {
-	Table() Table[Dataset]
+	TableType() Table[Dataset]
 	Valid() error
 	InsertableNames() []string
 	Insertables() []any
 }
 
 type Updatable[Dataset any] interface {
-	Table() Table[Dataset]
+	TableType() Table[Dataset]
 	Valid() error
 	UpdatableNames() []string
 	Updatables() []any

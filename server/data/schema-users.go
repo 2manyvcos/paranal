@@ -3,22 +3,22 @@ package data
 import "fmt"
 
 const (
-	USER_ROLE_COMMON = 1
-	USER_ROLE_ADMIN  = 2
+	UserRoleCommon = iota + 1
+	UserRoleAdmin
 )
 
 var (
-	USER_ROLE_NAMES = map[int]string{
-		USER_ROLE_COMMON: "common",
-		USER_ROLE_ADMIN:  "admin",
+	UserRoleNames = map[int]string{
+		UserRoleCommon: "common",
+		UserRoleAdmin:  "admin",
 	}
-	USER_ROLE_CODES map[string]int
+	UserRoleCodes map[string]int
 )
 
 func init() {
-	USER_ROLE_CODES = make(map[string]int, len(USER_ROLE_NAMES))
-	for code, name := range USER_ROLE_NAMES {
-		USER_ROLE_CODES[name] = code
+	UserRoleCodes = make(map[string]int, len(UserRoleNames))
+	for code, name := range UserRoleNames {
+		UserRoleCodes[name] = code
 	}
 }
 
@@ -54,15 +54,13 @@ func (r *User) Dataset() User {
 
 var _ Upsertable[User] = User{}
 
-func (r User) Table() Table[User] {
-	return Users
-}
+func (r User) TableType() Table[User] { return nil }
 
 func (r User) Valid() error {
 	if r.Name == "" {
 		return fmt.Errorf("invalid name")
 	}
-	if _, roleOk := USER_ROLE_NAMES[r.Role]; !roleOk {
+	if _, roleOk := UserRoleNames[r.Role]; !roleOk {
 		return fmt.Errorf("invalid role")
 	}
 	return nil
@@ -86,29 +84,4 @@ var userUpdatables = []string{"displayName", "role", "passwordHash"}
 
 func (r User) Updatables() []any {
 	return []any{r.DisplayName, r.Role, r.PasswordHash}
-}
-
-type UserName string
-
-var _ Identifier[User] = UserName("")
-
-func (i UserName) Table() Table[User] {
-	return Users
-}
-
-func (i UserName) Valid() error {
-	if i == "" {
-		return fmt.Errorf("invalid name")
-	}
-	return nil
-}
-
-func (i UserName) IDNames() []string {
-	return UserNameIDs
-}
-
-var UserNameIDs = []string{"name"}
-
-func (i UserName) IDs() []any {
-	return []any{string(i)}
 }

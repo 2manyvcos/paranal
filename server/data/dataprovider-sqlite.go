@@ -65,6 +65,10 @@ func (p *sqliteImpl) Setup() error {
 		return err
 	}
 
+	if err := p.setupFavorites(); err != nil {
+		return err
+	}
+
 	if err := p.setupScripts(); err != nil {
 		return err
 	}

@@ -5,26 +5,26 @@ import (
 )
 
 const (
-	HTTP_CREDENTIAL_TYPE_BASIC  = 1
-	HTTP_CREDENTIAL_TYPE_BEARER = 2
-	HTTP_CREDENTIAL_TYPE_HEADER = 3
-	HTTP_CREDENTIAL_TYPE_QUERY  = 4
+	HttpCredentialTypeBasic = iota + 1
+	HttpCredentialTypeBearer
+	HttpCredentialTypeHeader
+	HttpCredentialTypeQuery
 )
 
 var (
-	HTTP_CREDENTIAL_TYPE_NAMES = map[int]string{
-		HTTP_CREDENTIAL_TYPE_BASIC:  "basic",
-		HTTP_CREDENTIAL_TYPE_BEARER: "bearer",
-		HTTP_CREDENTIAL_TYPE_HEADER: "header",
-		HTTP_CREDENTIAL_TYPE_QUERY:  "query",
+	HttpCredentialTypeNames = map[int]string{
+		HttpCredentialTypeBasic:  "basic",
+		HttpCredentialTypeBearer: "bearer",
+		HttpCredentialTypeHeader: "header",
+		HttpCredentialTypeQuery:  "query",
 	}
-	HTTP_CREDENTIAL_TYPE_CODES map[string]int
+	HttpCredentialTypeCodes map[string]int
 )
 
 func init() {
-	HTTP_CREDENTIAL_TYPE_CODES = make(map[string]int, len(HTTP_CREDENTIAL_TYPE_NAMES))
-	for code, name := range HTTP_CREDENTIAL_TYPE_NAMES {
-		HTTP_CREDENTIAL_TYPE_CODES[name] = code
+	HttpCredentialTypeCodes = make(map[string]int, len(HttpCredentialTypeNames))
+	for code, name := range HttpCredentialTypeNames {
+		HttpCredentialTypeCodes[name] = code
 	}
 }
 
@@ -60,34 +60,32 @@ func (r *HTTPCredential) Dataset() HTTPCredential {
 
 var _ Upsertable[HTTPCredential] = HTTPCredential{}
 
-func (r HTTPCredential) Table() Table[HTTPCredential] {
-	return HTTPCredentials
-}
+func (r HTTPCredential) TableType() Table[HTTPCredential] { return nil }
 
 func (r HTTPCredential) Valid() error {
 	if r.Name == "" {
 		return fmt.Errorf("invalid name")
 	}
 	switch r.Type {
-	case HTTP_CREDENTIAL_TYPE_BASIC:
+	case HttpCredentialTypeBasic:
 		if r.Key == "" {
 			return fmt.Errorf("invalid user")
 		}
 		if r.Value == "" {
 			return fmt.Errorf("invalid password")
 		}
-	case HTTP_CREDENTIAL_TYPE_BEARER:
+	case HttpCredentialTypeBearer:
 		if r.Value == "" {
 			return fmt.Errorf("invalid token")
 		}
-	case HTTP_CREDENTIAL_TYPE_HEADER:
+	case HttpCredentialTypeHeader:
 		if r.Key == "" {
 			return fmt.Errorf("invalid header name")
 		}
 		if r.Value == "" {
 			return fmt.Errorf("invalid header value")
 		}
-	case HTTP_CREDENTIAL_TYPE_QUERY:
+	case HttpCredentialTypeQuery:
 		if r.Key == "" {
 			return fmt.Errorf("invalid query key")
 		}
@@ -118,29 +116,4 @@ var httpCredentialUpdatables = []string{"name", "type", "key", "value"}
 
 func (r HTTPCredential) Updatables() []any {
 	return []any{r.Name, r.Type, r.Key, r.Value}
-}
-
-type HTTPCredentialName string
-
-var _ Identifier[HTTPCredential] = HTTPCredentialName("")
-
-func (i HTTPCredentialName) Table() Table[HTTPCredential] {
-	return HTTPCredentials
-}
-
-func (i HTTPCredentialName) Valid() error {
-	if i == "" {
-		return fmt.Errorf("invalid name")
-	}
-	return nil
-}
-
-func (i HTTPCredentialName) IDNames() []string {
-	return HTTPCredentialNameIDs
-}
-
-var HTTPCredentialNameIDs = []string{"name"}
-
-func (i HTTPCredentialName) IDs() []any {
-	return []any{string(i)}
 }

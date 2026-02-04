@@ -33,9 +33,7 @@ func (r *UserCredential) Dataset() UserCredential {
 
 var _ Upsertable[UserCredential] = UserCredential{}
 
-func (r UserCredential) Table() Table[UserCredential] {
-	return UserCredentials
-}
+func (r UserCredential) TableType() Table[UserCredential] { return nil }
 
 func (r UserCredential) Valid() error {
 	if r.Name == "" {
@@ -65,29 +63,4 @@ var userCredentialUpdatables = []string{"name", "description", "value"}
 
 func (r UserCredential) Updatables() []any {
 	return []any{r.Name, r.Description, r.Value}
-}
-
-type UserCredentialName string
-
-var _ Identifier[UserCredential] = UserCredentialName("")
-
-func (i UserCredentialName) Table() Table[UserCredential] {
-	return UserCredentials
-}
-
-func (i UserCredentialName) Valid() error {
-	if i == "" {
-		return fmt.Errorf("invalid name")
-	}
-	return nil
-}
-
-func (i UserCredentialName) IDNames() []string {
-	return UserCredentialNameIDs
-}
-
-var UserCredentialNameIDs = []string{"name"}
-
-func (i UserCredentialName) IDs() []any {
-	return []any{string(i)}
 }
