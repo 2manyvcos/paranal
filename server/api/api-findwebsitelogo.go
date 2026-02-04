@@ -12,7 +12,7 @@ import (
 	"github.com/thanhpk/go-favicon"
 )
 
-func PostGetWebsiteLogo(res http.ResponseWriter, req *http.Request) {
+func PostFindWebsiteLogo(res http.ResponseWriter, req *http.Request) {
 	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
@@ -36,41 +36,53 @@ func PostGetWebsiteLogo(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	logo := selectLogo(icons)
-	if logo == nil {
+	if logo == "" {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-	}
-	if logo.MimeType == "image/vnd.microsoft.icon" {
-		logo.MimeType = "image/x-icon"
-	}
-	resp, err := http.Get(logo.URL)
-	if err != nil {
-		log.Printf("Error fetching logo - %s\n", err)
-		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("Error fetching logo - %s\n", err)
-		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
 	}
 
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(struct {
 		Logo string `json:"logo"`
 	}{
-		Logo: fmt.Sprintf("data:%s;base64,%s", logo.MimeType, base64.StdEncoding.EncodeToString(data)),
+		Logo: logo,
 	})
 }
 
-func selectLogo(icons []*favicon.Icon) *favicon.Icon {
+func selectLogo(icons []*favicon.Icon) string {
+	remaining := make([]*favicon.Icon, 0, len(icons))
 	for _, icon := range icons {
 		if icon.FileExt == "svg" {
-			return icon
+			logo, err := fetchLogo(icon)
+			if err == nil {
+				return logo
+			}
+		} else {
+			remaining = append(remaining, icon)
 		}
 	}
-	if len(icons) > 0 {
-		return icons[0]
+	for _, icon := range remaining {
+		logo, err := fetchLogo(icon)
+		if err == nil {
+			return logo
+		}
 	}
-	return nil
+	return ""
+}
+
+func fetchLogo(icon *favicon.Icon) (string, error) {
+	mimeType := icon.MimeType
+	if mimeType == "image/vnd.microsoft.icon" {
+		mimeType = "image/x-icon"
+	}
+	resp, err := http.Get(icon.URL)
+	if err != nil {
+		log.Printf("Error fetching logo - %s\n", err)
+		return "", err
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("data:%s;base64,%s", mimeType, base64.StdEncoding.EncodeToString(data)), nil
 }
