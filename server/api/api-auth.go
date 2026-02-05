@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/2manyvcos/paranal/crypto"
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/utils"
 )
@@ -34,8 +34,8 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetUser(requestPayload.Username)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetUser(schema.UserQuery{Name: &requestPayload.Username})
+	if errors.Is(err, schema.ErrNotFound) {
 		maskAuthRejection()
 		http.Error(res, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 		return

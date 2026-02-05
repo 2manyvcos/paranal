@@ -12,7 +12,7 @@ import (
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/application"
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/utils"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/jplorg/jpl/go/v2/jpl"
@@ -88,10 +88,10 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 			}
 		}
 
-		var credential data.HTTPCredential
+		var credential schema.HTTPCredential
 		if options.Auth != "" {
-			credential, err = app.GetHTTPCredential(options.Auth)
-			if errors.Is(err, data.ErrNotFound) {
+			credential, err = app.GetHTTPCredential(schema.HTTPCredentialQuery{Name: &options.Auth})
+			if errors.Is(err, schema.ErrNotFound) {
 				return nil, fmt.Errorf("HTTP credential \"%s\" not found", options.Auth)
 			}
 			if err != nil {
@@ -128,19 +128,19 @@ func FuncHTTP(app *application.App) jpl.JPLFunc {
 		}
 		switch credential.Type {
 		case 0:
-		case data.HttpCredentialTypeBasic:
+		case schema.HTTPCredentialTypeBasic:
 			if credential.Key == "" {
 				return nil, fmt.Errorf("HTTP credential \"%s\" has no key", credential.Name)
 			}
 			req.SetBasicAuth(credential.Key, credential.Value)
-		case data.HttpCredentialTypeBearer:
+		case schema.HTTPCredentialTypeBearer:
 			req.Header.Add("Authorization", "Bearer "+credential.Value)
-		case data.HttpCredentialTypeHeader:
+		case schema.HTTPCredentialTypeHeader:
 			if credential.Key == "" {
 				return nil, fmt.Errorf("HTTP credential \"%s\" has no key", credential.Name)
 			}
 			req.Header.Add(credential.Key, credential.Value)
-		case data.HttpCredentialTypeQuery:
+		case schema.HTTPCredentialTypeQuery:
 			if credential.Key == "" {
 				return nil, fmt.Errorf("HTTP credential \"%s\" has no key", credential.Name)
 			}

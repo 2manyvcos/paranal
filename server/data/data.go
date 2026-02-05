@@ -2,6 +2,9 @@ package data
 
 import (
 	"fmt"
+
+	"github.com/2manyvcos/paranal/server/data/schema"
+	"github.com/2manyvcos/paranal/server/data/sqlite"
 )
 
 type Config struct {
@@ -9,10 +12,10 @@ type Config struct {
 	Path string
 }
 
-func Load(config Config) (DataProvider, error) {
+func Load(config Config) (schema.DataProvider, error) {
 	switch config.Type {
 	case "sqlite":
-		return SQLite(config.Path)
+		return sqlite.NewProvider(config.Path)
 
 	default:
 		return nil, fmt.Errorf("invalid DB type \"%s\"", config.Type)

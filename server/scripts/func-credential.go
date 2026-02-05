@@ -6,7 +6,7 @@ import (
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/application"
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/jplorg/jpl/go/v2/jpl"
 	"github.com/jplorg/jpl/go/v2/library"
 )
@@ -26,12 +26,12 @@ func FuncCredential(app *application.App) jpl.JPLFunc {
 			return nil, err
 		}
 		name, ok := unwrappedArg.(string)
-		if !ok {
+		if !ok || name == "" {
 			return nil, fmt.Errorf("invalid name")
 		}
 
-		credential, err := app.GetUserCredential(name)
-		if errors.Is(err, data.ErrNotFound) {
+		credential, err := app.GetUserCredential(schema.UserCredentialQuery{Name: &name})
+		if errors.Is(err, schema.ErrNotFound) {
 			return nil, fmt.Errorf("user credential \"%s\" not found", name)
 		}
 		if err != nil {

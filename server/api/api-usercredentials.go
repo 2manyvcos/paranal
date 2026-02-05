@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/2manyvcos/paranal/crypto"
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/utils"
 )
@@ -15,7 +15,7 @@ import (
 func GetUserCredentials(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	records, err := app.ListUserCredentials()
+	records, err := app.ListUserCredentials(nil)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -57,7 +57,7 @@ func PostUserCredentials(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := data.UserCredential{
+	newRecord := schema.UserCredential{
 		Name:        requestPayload.Name,
 		Description: requestPayload.Description,
 	}
@@ -73,8 +73,8 @@ func PostUserCredentials(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.CreateUserCredential(newRecord, false)
-	if errors.Is(err, data.ErrConflict) {
+	err = app.CreateUserCredential(newRecord)
+	if errors.Is(err, schema.ErrConflict) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -95,8 +95,8 @@ func GetUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetUserCredential(credentialName)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetUserCredential(schema.UserCredentialQuery{Name: &credentialName})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -144,8 +144,8 @@ func PatchUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetUserCredential(credentialName)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetUserCredential(schema.UserCredentialQuery{Name: &credentialName})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -173,7 +173,7 @@ func PatchUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUserCredential(credentialName, updatedRecord)
+	err = app.UpdateUserCredential(schema.UserCredentialQuery{Name: &credentialName}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -190,8 +190,8 @@ func DeleteUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteUserCredential(credentialName)
-	if errors.Is(err, data.ErrNotFound) {
+	err := app.DeleteUserCredential(schema.UserCredentialQuery{Name: &credentialName})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}

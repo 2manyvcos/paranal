@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/server/scripts"
 	"github.com/2manyvcos/paranal/utils"
@@ -23,7 +23,7 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	records, err := app.ListServicesWithFavorite(authorizedUser.Name)
+	records, err := app.ListServicesWithFavorite(authorizedUser.Name, nil)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -72,7 +72,7 @@ func PostServices(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := data.Service{
+	newRecord := schema.Service{
 		ID:          uuid.New().String(),
 		Name:        requestPayload.Name,
 		Description: requestPayload.Description,
@@ -83,8 +83,8 @@ func PostServices(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.CreateService(newRecord, false)
-	if errors.Is(err, data.ErrConflict) {
+	err = app.CreateService(newRecord)
+	if errors.Is(err, schema.ErrConflict) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -111,8 +111,8 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetServiceWithFavorite(serviceID, authorizedUser.Name)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetServiceWithFavorite(authorizedUser.Name, schema.ServiceQuery{ID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -168,8 +168,8 @@ func PatchServicesByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetService(serviceID)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetService(schema.ServiceQuery{ID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -188,7 +188,7 @@ func PatchServicesByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateService(serviceID, updatedRecord)
+	err = app.UpdateService(schema.ServiceQuery{ID: &serviceID}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -205,8 +205,8 @@ func DeleteServicesByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteService(serviceID)
-	if errors.Is(err, data.ErrNotFound) {
+	err := app.DeleteService(schema.ServiceQuery{ID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -232,8 +232,8 @@ func PostServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_, err := app.GetService(serviceID)
-	if errors.Is(err, data.ErrNotFound) {
+	_, err := app.GetService(schema.ServiceQuery{ID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -243,7 +243,7 @@ func PostServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := data.Favorite{
+	newRecord := schema.Favorite{
 		UserName:  authorizedUser.Name,
 		ServiceID: serviceID,
 	}
@@ -252,7 +252,7 @@ func PostServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	err = app.CreateFavorite(newRecord)
-	if errors.Is(err, data.ErrConflict) {
+	if errors.Is(err, schema.ErrConflict) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -279,8 +279,8 @@ func DeleteServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteFavorite(authorizedUser.Name, serviceID)
-	if errors.Is(err, data.ErrNotFound) {
+	err := app.DeleteFavorite(schema.FavoriteQuery{UserName: &authorizedUser.Name, ServiceID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -316,8 +316,8 @@ func PostServicesByIDRunScript(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_, err = app.GetService(serviceID)
-	if errors.Is(err, data.ErrNotFound) {
+	_, err = app.GetService(schema.ServiceQuery{ID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -358,7 +358,7 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	records, err := app.ListScriptsByService(serviceID)
+	records, err := app.ListScripts(&schema.ScriptQuery{ServiceID: &serviceID})
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -408,8 +408,8 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_, err = app.GetService(serviceID)
-	if errors.Is(err, data.ErrNotFound) {
+	_, err = app.GetService(schema.ServiceQuery{ID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -419,7 +419,7 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := data.Script{
+	newRecord := schema.Script{
 		Name:      requestPayload.Name,
 		Schedule:  requestPayload.Schedule,
 		Source:    requestPayload.Source,
@@ -429,8 +429,8 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.CreateScript(newRecord, false)
-	if errors.Is(err, data.ErrConflict) {
+	err = app.CreateScript(newRecord)
+	if errors.Is(err, schema.ErrConflict) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -452,8 +452,8 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetScriptByService(scriptID, serviceID)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetScript(schema.ScriptQuery{ID: &scriptID, ServiceID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -503,8 +503,8 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetScriptByService(scriptID, serviceID)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetScript(schema.ScriptQuery{ID: &scriptID, ServiceID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -522,7 +522,7 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateScriptByService(scriptID, serviceID, updatedRecord)
+	err = app.UpdateScript(schema.ScriptQuery{ID: &scriptID, ServiceID: &serviceID}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -540,8 +540,8 @@ func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = app.DeleteScriptByService(scriptID, serviceID)
-	if errors.Is(err, data.ErrNotFound) {
+	err = app.DeleteScript(schema.ScriptQuery{ID: &scriptID, ServiceID: &serviceID})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}

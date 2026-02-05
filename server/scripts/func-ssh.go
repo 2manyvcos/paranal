@@ -13,7 +13,7 @@ import (
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/application"
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/jplorg/jpl/go/v2/jpl"
 	"github.com/jplorg/jpl/go/v2/library"
@@ -105,10 +105,10 @@ func FuncSSH(app *application.App) jpl.JPLFunc {
 			}
 		}
 
-		var credential data.SSHCredential
+		var credential schema.SSHCredential
 		if host.Auth != "" {
-			credential, err = app.GetSSHCredential(host.Auth)
-			if errors.Is(err, data.ErrNotFound) {
+			credential, err = app.GetSSHCredential(schema.SSHCredentialQuery{Name: &host.Auth})
+			if errors.Is(err, schema.ErrNotFound) {
 				return nil, fmt.Errorf("SSH credential \"%s\" not found", host.Auth)
 			}
 			if err != nil {

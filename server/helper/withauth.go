@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/2manyvcos/paranal/crypto"
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/utils"
 )
 
@@ -26,11 +26,11 @@ func WithAuth(handler http.Handler) http.Handler {
 	})
 }
 
-func GetAuthorizedUser(req *http.Request) *data.User {
-	return req.Context().Value("authorizedUser").(*data.User)
+func GetAuthorizedUser(req *http.Request) *schema.User {
+	return req.Context().Value("authorizedUser").(*schema.User)
 }
 
-func authorize(req *http.Request) *data.User {
+func authorize(req *http.Request) *schema.User {
 	if authorizedUser := authorizeRemoteUser(req); authorizedUser != nil {
 		return authorizedUser
 	}
@@ -38,15 +38,15 @@ func authorize(req *http.Request) *data.User {
 	return authorizeBearer(req)
 }
 
-func authorizeRemoteUser(req *http.Request) *data.User {
+func authorizeRemoteUser(req *http.Request) *schema.User {
 	app := GetApp(req)
 
 	if !app.Config.Auth.RemoteUser.Enabled {
 		return nil
 	}
 
-	username := req.Header.Get(app.Config.Auth.RemoteUser.HeaderName)
-	if username == "" {
+	userName := req.Header.Get(app.Config.Auth.RemoteUser.HeaderName)
+	if userName == "" {
 		return nil
 	}
 
@@ -59,9 +59,9 @@ func authorizeRemoteUser(req *http.Request) *data.User {
 		return nil
 	}
 
-	var authorizedUser *data.User
-	if user, err := app.GetUser(username); err != nil {
-		if !errors.Is(err, data.ErrNotFound) {
+	var authorizedUser *schema.User
+	if user, err := app.GetUser(schema.UserQuery{Name: &userName}); err != nil {
+		if !errors.Is(err, schema.ErrNotFound) {
 			log.Printf("Error loading user - %s\n", err)
 			return nil
 		}
@@ -79,11 +79,11 @@ func authorizeRemoteUser(req *http.Request) *data.User {
 		if !app.Config.Auth.RemoteUser.CreateUnknownUsers {
 			return nil
 		}
-		newUser := data.User{
-			Name: username,
-			Role: map[bool]int{false: data.UserRoleCommon, true: data.UserRoleAdmin}[admin],
+		newUser := schema.User{
+			Name: userName,
+			Role: map[bool]int{false: schema.UserRoleCommon, true: schema.UserRoleAdmin}[admin],
 		}
-		err := app.CreateUser(newUser, false)
+		err := app.CreateUser(newUser)
 		if err != nil {
 			log.Printf("Error creating user - %s\n", err)
 			return nil
@@ -91,10 +91,10 @@ func authorizeRemoteUser(req *http.Request) *data.User {
 		return &newUser
 	}
 
-	if admin && authorizedUser.Role != data.UserRoleAdmin {
+	if admin && authorizedUser.Role != schema.UserRoleAdmin {
 		newUser := *authorizedUser
-		newUser.Role = data.UserRoleAdmin
-		err := app.UpdateUser(username, newUser)
+		newUser.Role = schema.UserRoleAdmin
+		err := app.UpdateUser(schema.UserQuery{Name: &userName}, newUser)
 		if err != nil {
 			log.Printf("Error updating user - %s\n", err)
 		} else {
@@ -105,7 +105,7 @@ func authorizeRemoteUser(req *http.Request) *data.User {
 	return authorizedUser
 }
 
-func authorizeBearer(req *http.Request) *data.User {
+func authorizeBearer(req *http.Request) *schema.User {
 	app := GetApp(req)
 
 	bearer := req.Header.Get("Authorization")
@@ -113,16 +113,16 @@ func authorizeBearer(req *http.Request) *data.User {
 		return nil
 	}
 
-	ok, username, err := crypto.ValidateJWTToken(app.Config.Auth.JWT.Secret, strings.TrimSpace(strings.TrimPrefix(bearer, "Bearer ")))
-	if !ok || username == "" || err != nil {
+	ok, userName, err := crypto.ValidateJWTToken(app.Config.Auth.JWT.Secret, strings.TrimSpace(strings.TrimPrefix(bearer, "Bearer ")))
+	if !ok || userName == "" || err != nil {
 		// if err != nil {
 		// 	log.Printf("Error validating token - %s\n", err)
 		// }
 		return nil
 	}
 
-	user, err := app.GetUser(username)
-	if errors.Is(err, data.ErrNotFound) {
+	user, err := app.GetUser(schema.UserQuery{Name: &userName})
+	if errors.Is(err, schema.ErrNotFound) {
 		return nil
 	}
 	if err != nil {

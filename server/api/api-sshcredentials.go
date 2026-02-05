@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/2manyvcos/paranal/crypto"
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/utils"
 )
@@ -15,7 +15,7 @@ import (
 func GetSSHCredentials(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	records, err := app.ListSSHCredentials()
+	records, err := app.ListSSHCredentials(nil)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -61,7 +61,7 @@ func PostSSHCredentials(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := data.SSHCredential{
+	newRecord := schema.SSHCredential{
 		Name: requestPayload.Name,
 		User: requestPayload.User,
 	}
@@ -85,8 +85,8 @@ func PostSSHCredentials(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.CreateSSHCredential(newRecord, false)
-	if errors.Is(err, data.ErrConflict) {
+	err = app.CreateSSHCredential(newRecord)
+	if errors.Is(err, schema.ErrConflict) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -107,8 +107,8 @@ func GetSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetSSHCredential(credentialName)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetSSHCredential(schema.SSHCredentialQuery{Name: &credentialName})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -159,8 +159,8 @@ func PatchSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetSSHCredential(credentialName)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetSSHCredential(schema.SSHCredentialQuery{Name: &credentialName})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -200,7 +200,7 @@ func PatchSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateSSHCredential(credentialName, updatedRecord)
+	err = app.UpdateSSHCredential(schema.SSHCredentialQuery{Name: &credentialName}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -217,8 +217,8 @@ func DeleteSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteSSHCredential(credentialName)
-	if errors.Is(err, data.ErrNotFound) {
+	err := app.DeleteSSHCredential(schema.SSHCredentialQuery{Name: &credentialName})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}

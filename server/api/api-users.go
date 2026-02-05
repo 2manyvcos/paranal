@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/2manyvcos/paranal/crypto"
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/utils"
 )
@@ -15,7 +15,7 @@ import (
 func GetUsers(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	records, err := app.ListUsers()
+	records, err := app.ListUsers(nil)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -31,7 +31,7 @@ func GetUsers(res http.ResponseWriter, req *http.Request) {
 	for i, record := range records {
 		responsePayload[i].Name = record.Name
 		responsePayload[i].DisplayName = record.DisplayName
-		responsePayload[i].Role = data.UserRoleNames[record.Role]
+		responsePayload[i].Role = schema.UserRoleNames[record.Role]
 		responsePayload[i].HasPassword = record.PasswordHash != ""
 	}
 	res.Header().Set("Content-Type", "application/json")
@@ -60,10 +60,10 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := data.User{
+	newRecord := schema.User{
 		Name:        requestPayload.Name,
 		DisplayName: requestPayload.DisplayName,
-		Role:        data.UserRoleCodes[requestPayload.Role],
+		Role:        schema.UserRoleCodes[requestPayload.Role],
 	}
 	if requestPayload.Password != "" {
 		newRecord.PasswordHash, err = crypto.Hash(requestPayload.Password)
@@ -77,8 +77,8 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.CreateUser(newRecord, false)
-	if errors.Is(err, data.ErrConflict) {
+	err = app.CreateUser(newRecord)
+	if errors.Is(err, schema.ErrConflict) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
@@ -99,8 +99,8 @@ func GetUsersByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetUser(userName)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetUser(schema.UserQuery{Name: &userName})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -119,7 +119,7 @@ func GetUsersByName(res http.ResponseWriter, req *http.Request) {
 	}{
 		Name:        record.Name,
 		DisplayName: record.DisplayName,
-		Role:        data.UserRoleNames[record.Role],
+		Role:        schema.UserRoleNames[record.Role],
 		HasPassword: record.PasswordHash != "",
 	})
 }
@@ -156,8 +156,8 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetUser(userName)
-	if errors.Is(err, data.ErrNotFound) {
+	record, err := app.GetUser(schema.UserQuery{Name: &userName})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
@@ -170,7 +170,7 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 	updatedRecord := record
 	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
 	if requestPayload.Role.IsDefined {
-		updatedRecord.Role = data.UserRoleCodes[requestPayload.Role.Value]
+		updatedRecord.Role = schema.UserRoleCodes[requestPayload.Role.Value]
 	}
 	if requestPayload.Password.IsDefined {
 		if requestPayload.Password.Value == "" {
@@ -188,7 +188,7 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUser(userName, updatedRecord)
+	err = app.UpdateUser(schema.UserQuery{Name: &userName}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -211,8 +211,8 @@ func DeleteUsersByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteUser(userName)
-	if errors.Is(err, data.ErrNotFound) {
+	err := app.DeleteUser(schema.UserQuery{Name: &userName})
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}

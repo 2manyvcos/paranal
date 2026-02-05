@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/2manyvcos/paranal/crypto"
-	"github.com/2manyvcos/paranal/server/data"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/utils"
 )
@@ -28,7 +28,7 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 	}{
 		Name:        authorizedUser.Name,
 		DisplayName: authorizedUser.DisplayName,
-		Role:        data.UserRoleNames[authorizedUser.Role],
+		Role:        schema.UserRoleNames[authorizedUser.Role],
 		HasPassword: authorizedUser.PasswordHash != "",
 	})
 }
@@ -59,7 +59,7 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 
 	updatedRecord := *authorizedUser
 	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
-	err = app.UpdateUser(authorizedUser.Name, updatedRecord)
+	err = app.UpdateUser(schema.UserQuery{Name: &authorizedUser.Name}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -118,7 +118,7 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUser(authorizedUser.Name, updatedRecord)
+	err = app.UpdateUser(schema.UserQuery{Name: &authorizedUser.Name}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
