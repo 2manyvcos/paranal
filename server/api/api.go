@@ -42,13 +42,13 @@ func New() http.Handler {
 	api.Handle("PATCH /usercredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchUserCredentialsByName))))
 	api.Handle("DELETE /usercredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteUserCredentialsByName))))
 
-	api.Handle("GET /services", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetServices))))
+	api.Handle("GET /services", helper.WithAuth(http.HandlerFunc(GetServices)))
 	api.Handle("POST /services", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostServices))))
-	api.Handle("GET /services/{serviceID}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetServicesByID))))
+	api.Handle("GET /services/{serviceID}", helper.WithAuth(http.HandlerFunc(GetServicesByID)))
 	api.Handle("PATCH /services/{serviceID}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchServicesByID))))
 	api.Handle("DELETE /services/{serviceID}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteServicesByID))))
-	api.Handle("POST /services/{serviceID}/favorite", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostServicesByIDFavorite))))
-	api.Handle("DELETE /services/{serviceID}/favorite", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteServicesByIDFavorite))))
+	api.Handle("POST /services/{serviceID}/favorite", helper.WithAuth(http.HandlerFunc(PostServicesByIDFavorite)))
+	api.Handle("DELETE /services/{serviceID}/favorite", helper.WithAuth(http.HandlerFunc(DeleteServicesByIDFavorite)))
 	api.Handle("POST /services/{serviceID}/run-script", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostServicesByIDRunScript))))
 	api.Handle("GET /services/{serviceID}/scripts", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetServicesByIDScripts))))
 	api.Handle("POST /services/{serviceID}/scripts", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostServicesByIDScripts))))
@@ -56,7 +56,7 @@ func New() http.Handler {
 	api.Handle("PATCH /services/{serviceID}/scripts/{scriptID}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchServicesByIDScriptsByID))))
 	api.Handle("DELETE /services/{serviceID}/scripts/{scriptID}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteServicesByIDScriptsByID))))
 
-	api.Handle("POST /find-website-logo", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostFindWebsiteLogo))))
+	api.Handle("POST /find-website-logo", helper.WithAuth(http.HandlerFunc(PostFindWebsiteLogo)))
 
 	return api
 }
