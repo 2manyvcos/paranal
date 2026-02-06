@@ -14,10 +14,10 @@ func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
       CREATE TABLE IF NOT EXISTS httpcredentials (
-        name TEXT PRIMARY KEY,
-        type INTEGER,
-        key TEXT,
-        value TEXT
+        name TEXT PRIMARY KEY NOT NULL,
+        type INTEGER NOT NULL,
+        key TEXT NOT NULL,
+        value TEXT NOT NULL
       )
     `)
 		if err != nil {

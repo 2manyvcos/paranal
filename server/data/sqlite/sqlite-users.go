@@ -14,10 +14,10 @@ func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
       CREATE TABLE IF NOT EXISTS users (
-        name TEXT PRIMARY KEY,
-        displayName TEXT,
-        role INTEGER,
-        passwordHash TEXT
+        name TEXT PRIMARY KEY NOT NULL,
+        displayName TEXT NOT NULL,
+        role INTEGER NOT NULL,
+        passwordHash TEXT NOT NULL
       )
     `)
 		if err != nil {

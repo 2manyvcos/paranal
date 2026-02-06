@@ -14,11 +14,11 @@ func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
       CREATE TABLE IF NOT EXISTS servicescripts (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        schedule TEXT,
-        source TEXT,
-        serviceID INTEGER
+        id INTEGER PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        schedule TEXT NOT NULL,
+        source TEXT NOT NULL,
+        serviceID INTEGER NOT NULL
       )
     `)
 		if err != nil {

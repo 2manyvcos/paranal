@@ -11,11 +11,11 @@ func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
       CREATE TABLE IF NOT EXISTS serviceuserconfigs (
-        userName TEXT,
-        serviceID TEXT,
-        favorite BOOLEAN,
-        uptimeAlert BOOLEAN,
-        versionAlert BOOLEAN,
+        userName TEXT NOT NULL,
+        serviceID TEXT NOT NULL,
+        favorite BOOLEAN NOT NULL,
+        uptimeAlert BOOLEAN NOT NULL,
+        versionAlert BOOLEAN NOT NULL,
         PRIMARY KEY (userName, serviceID)
       )
     `)

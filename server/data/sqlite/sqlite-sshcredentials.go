@@ -14,10 +14,10 @@ func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
       CREATE TABLE IF NOT EXISTS sshcredentials (
-        name TEXT PRIMARY KEY,
-        user TEXT,
-        password TEXT,
-        privateKey TEXT
+        name TEXT PRIMARY KEY NOT NULL,
+        user TEXT NOT NULL,
+        password TEXT NOT NULL,
+        privateKey TEXT NOT NULL
       )
     `)
 		if err != nil {
