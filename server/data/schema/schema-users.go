@@ -5,14 +5,18 @@ import (
 )
 
 type UserQuery struct {
-	Name *string
+	Name          *string
+	UptimeAlerts  *bool
+	VersionAlerts *bool
 }
 
 type User struct {
-	Name         string
-	DisplayName  string
-	Role         int
-	PasswordHash string
+	Name          string
+	DisplayName   string
+	Role          int
+	PasswordHash  string
+	UptimeAlerts  bool
+	VersionAlerts bool
 }
 
 const (

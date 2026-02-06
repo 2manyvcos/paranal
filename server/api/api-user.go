@@ -21,15 +21,19 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 
 	res.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(res).Encode(struct {
-		Name        string `json:"name"`
-		DisplayName string `json:"displayName"`
-		Role        string `json:"role"`
-		HasPassword bool   `json:"hasPassword"`
+		Name          string `json:"name"`
+		DisplayName   string `json:"displayName"`
+		Role          string `json:"role"`
+		HasPassword   bool   `json:"hasPassword"`
+		UptimeAlerts  bool   `json:"uptimeAlerts"`
+		VersionAlerts bool   `json:"versionAlerts"`
 	}{
-		Name:        authorizedUser.Name,
-		DisplayName: authorizedUser.DisplayName,
-		Role:        schema.UserRoleNames[authorizedUser.Role],
-		HasPassword: authorizedUser.PasswordHash != "",
+		Name:          authorizedUser.Name,
+		DisplayName:   authorizedUser.DisplayName,
+		Role:          schema.UserRoleNames[authorizedUser.Role],
+		HasPassword:   authorizedUser.PasswordHash != "",
+		UptimeAlerts:  authorizedUser.UptimeAlerts,
+		VersionAlerts: authorizedUser.VersionAlerts,
 	})
 }
 
@@ -47,7 +51,9 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var requestPayload struct {
-		DisplayName utils.Optional[string] `json:"displayName"`
+		DisplayName   utils.Optional[string] `json:"displayName"`
+		UptimeAlerts  utils.Optional[bool]   `json:"uptimeAlerts"`
+		VersionAlerts utils.Optional[bool]   `json:"versionAlerts"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
@@ -59,6 +65,8 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 
 	updatedRecord := *authorizedUser
 	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
+	requestPayload.UptimeAlerts.ApplyIfDefined(&updatedRecord.UptimeAlerts)
+	requestPayload.VersionAlerts.ApplyIfDefined(&updatedRecord.VersionAlerts)
 	err = app.UpdateUsers(schema.UserQuery{Name: &authorizedUser.Name}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)

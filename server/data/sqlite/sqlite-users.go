@@ -17,7 +17,9 @@ func init() {
         name TEXT PRIMARY KEY NOT NULL,
         displayName TEXT NOT NULL,
         role INTEGER NOT NULL,
-        passwordHash TEXT NOT NULL
+        passwordHash TEXT NOT NULL,
+        uptimeAlerts BOOLEAN NOT NULL,
+        versionAlerts BOOLEAN NOT NULL
       )
     `)
 		if err != nil {
@@ -36,6 +38,14 @@ func UserQuery(query *schema.UserQuery) (clause string, placeholders []any) {
 		conditions = append(conditions, "name = ?")
 		placeholders = append(placeholders, *query.Name)
 	}
+	if query.UptimeAlerts != nil {
+		conditions = append(conditions, "uptimeAlerts = ?")
+		placeholders = append(placeholders, *query.UptimeAlerts)
+	}
+	if query.VersionAlerts != nil {
+		conditions = append(conditions, "versionAlerts = ?")
+		placeholders = append(placeholders, *query.VersionAlerts)
+	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}
@@ -47,7 +57,7 @@ func (i *impl) ListUsers(query *schema.UserQuery) ([]schema.User, error) {
 	where, wherePlaceholders := UserQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT name, displayName, role, passwordHash
+      SELECT name, displayName, role, passwordHash, uptimeAlerts, versionAlerts
       FROM users
       WHERE `+where+`
     `,
@@ -60,7 +70,7 @@ func (i *impl) ListUsers(query *schema.UserQuery) ([]schema.User, error) {
 	var records []schema.User
 	for rows.Next() {
 		var record schema.User
-		if err := rows.Scan(&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash); err != nil {
+		if err := rows.Scan(&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.UptimeAlerts, &record.VersionAlerts); err != nil {
 			return nil, err
 		}
 		records = append(records, record)
@@ -76,12 +86,12 @@ func (i *impl) GetUser(query schema.UserQuery) (schema.User, error) {
 	var record schema.User
 	err := i.QueryRow(
 		`
-      SELECT name, displayName, role, passwordHash
+      SELECT name, displayName, role, passwordHash, uptimeAlerts, versionAlerts
       FROM users
       WHERE `+where+`
     `,
 		wherePlaceholders...,
-	).Scan(&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash)
+	).Scan(&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.UptimeAlerts, &record.VersionAlerts)
 	if errors.Is(err, sql.ErrNoRows) {
 		return schema.User{}, schema.ErrNotFound
 	}
@@ -94,10 +104,10 @@ func (i *impl) CreateUser(record schema.User) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO users (name, displayName, role, passwordHash)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO users (name, displayName, role, passwordHash, uptimeAlerts, versionAlerts)
+      VALUES (?, ?, ?, ?, ?, ?)
     `,
-		&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash,
+		&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.UptimeAlerts, &record.VersionAlerts,
 	)
 	return requireNoConflict(err)
 }
@@ -108,16 +118,18 @@ func (i *impl) CreateOrUpdateUser(record schema.User) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO users (name, displayName, role, passwordHash)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO users (name, displayName, role, passwordHash, uptimeAlerts, versionAlerts)
+      VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT (name)
       DO UPDATE
       SET
         displayName = excluded.displayName,
         role = excluded.role,
-        passwordHash = excluded.passwordHash
+        passwordHash = excluded.passwordHash,
+        uptimeAlerts = excluded.uptimeAlerts,
+        versionAlerts = excluded.versionAlerts
     `,
-		&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash,
+		&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.UptimeAlerts, &record.VersionAlerts,
 	)
 	return err
 }
@@ -134,11 +146,13 @@ func (i *impl) UpdateUsers(query schema.UserQuery, record schema.User) error {
         name = ?,
         displayName = ?,
         role = ?,
-        passwordHash = ?
+        passwordHash = ?,
+        uptimeAlerts = ?,
+        versionAlerts = ?
       WHERE `+where+`
     `,
 		slices.Concat(
-			[]any{&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash},
+			[]any{&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.UptimeAlerts, &record.VersionAlerts},
 			wherePlaceholders,
 		)...,
 	)
