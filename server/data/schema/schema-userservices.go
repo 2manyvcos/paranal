@@ -3,6 +3,7 @@ package schema
 type UserServiceQuery struct {
 	ID           *string
 	Favorite     *bool
+	Hidden       *bool
 	UptimeAlert  *bool
 	VersionAlert *bool
 }
@@ -10,6 +11,7 @@ type UserServiceQuery struct {
 type UserService struct {
 	Service
 	Favorite     bool
+	Hidden       bool
 	UptimeAlert  bool
 	VersionAlert bool
 }

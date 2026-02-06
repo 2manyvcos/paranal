@@ -6,6 +6,7 @@ type ServiceUserConfigQuery struct {
 	UserName     *string
 	ServiceID    *string
 	Favorite     *bool
+	Hidden       *bool
 	UptimeAlert  *bool
 	VersionAlert *bool
 }
@@ -14,6 +15,7 @@ type ServiceUserConfig struct {
 	UserName     string
 	ServiceID    string
 	Favorite     bool
+	Hidden       bool
 	UptimeAlert  bool
 	VersionAlert bool
 }

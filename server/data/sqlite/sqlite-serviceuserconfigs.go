@@ -14,6 +14,7 @@ func init() {
         userName TEXT NOT NULL,
         serviceID TEXT NOT NULL,
         favorite BOOLEAN NOT NULL,
+        hidden BOOLEAN NOT NULL,
         uptimeAlert BOOLEAN NOT NULL,
         versionAlert BOOLEAN NOT NULL,
         PRIMARY KEY (userName, serviceID)
@@ -43,6 +44,10 @@ func ServiceUserConfigQuery(query *schema.ServiceUserConfigQuery) (clause string
 		conditions = append(conditions, "favorite = ?")
 		placeholders = append(placeholders, *query.Favorite)
 	}
+	if query.Hidden != nil {
+		conditions = append(conditions, "hidden = ?")
+		placeholders = append(placeholders, *query.Hidden)
+	}
 	if query.UptimeAlert != nil {
 		conditions = append(conditions, "uptimeAlert = ?")
 		placeholders = append(placeholders, *query.UptimeAlert)
@@ -62,7 +67,7 @@ func (i *impl) ListServiceUserConfigs(query *schema.ServiceUserConfigQuery) ([]s
 	where, wherePlaceholders := ServiceUserConfigQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT userName, serviceID, favorite, uptimeAlert, versionAlert
+      SELECT userName, serviceID, favorite, hidden, uptimeAlert, versionAlert
       FROM serviceuserconfigs
       WHERE `+where+`
     `,
@@ -75,7 +80,7 @@ func (i *impl) ListServiceUserConfigs(query *schema.ServiceUserConfigQuery) ([]s
 	var records []schema.ServiceUserConfig
 	for rows.Next() {
 		var record schema.ServiceUserConfig
-		if err := rows.Scan(&record.UserName, &record.ServiceID, &record.Favorite, &record.UptimeAlert, &record.VersionAlert); err != nil {
+		if err := rows.Scan(&record.UserName, &record.ServiceID, &record.Favorite, &record.Hidden, &record.UptimeAlert, &record.VersionAlert); err != nil {
 			return nil, err
 		}
 		records = append(records, record)
@@ -92,16 +97,17 @@ func (i *impl) CreateOrUpdateServiceUserConfig(record schema.ServiceUserConfig) 
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO serviceuserconfigs (userName, serviceID, favorite, uptimeAlert, versionAlert)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO serviceuserconfigs (userName, serviceID, favorite, hidden, uptimeAlert, versionAlert)
+      VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT (userName, serviceID)
       DO UPDATE
       SET
         favorite = excluded.favorite,
+        hidden = excluded.hidden,
         uptimeAlert = excluded.uptimeAlert,
         versionAlert = excluded.versionAlert
     `,
-		&record.UserName, &record.ServiceID, &record.Favorite, &record.UptimeAlert, &record.VersionAlert,
+		&record.UserName, &record.ServiceID, &record.Favorite, &record.Hidden, &record.UptimeAlert, &record.VersionAlert,
 	)
 	return err
 }

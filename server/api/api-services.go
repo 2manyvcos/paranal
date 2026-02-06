@@ -38,6 +38,7 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		URL         string `json:"url"`
 		Config      struct {
 			Favorite     bool `json:"favorite"`
+			Hidden       bool `json:"hidden"`
 			UptimeAlert  bool `json:"uptimeAlert"`
 			VersionAlert bool `json:"versionAlert"`
 		} `json:"config"`
@@ -49,6 +50,7 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].Logo = record.Logo
 		responsePayload[i].URL = record.URL
 		responsePayload[i].Config.Favorite = record.Favorite
+		responsePayload[i].Config.Hidden = record.Hidden
 		responsePayload[i].Config.UptimeAlert = record.UptimeAlert
 		responsePayload[i].Config.VersionAlert = record.VersionAlert
 	}
@@ -137,6 +139,7 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		URL         string `json:"url"`
 		Config      struct {
 			Favorite     bool `json:"favorite"`
+			Hidden       bool `json:"hidden"`
 			UptimeAlert  bool `json:"uptimeAlert"`
 			VersionAlert bool `json:"versionAlert"`
 		} `json:"config"`
@@ -148,10 +151,12 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		URL:         record.URL,
 		Config: struct {
 			Favorite     bool `json:"favorite"`
+			Hidden       bool `json:"hidden"`
 			UptimeAlert  bool `json:"uptimeAlert"`
 			VersionAlert bool `json:"versionAlert"`
 		}{
 			Favorite:     record.Favorite,
+			Hidden:       record.Hidden,
 			UptimeAlert:  record.UptimeAlert,
 			VersionAlert: record.VersionAlert,
 		},
@@ -267,6 +272,7 @@ func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 
 	var requestPayload struct {
 		Favorite     utils.Optional[bool] `json:"favorite"`
+		Hidden       utils.Optional[bool] `json:"hidden"`
 		UptimeAlert  utils.Optional[bool] `json:"uptimeAlert"`
 		VersionAlert utils.Optional[bool] `json:"versionAlert"`
 	}
@@ -282,10 +288,12 @@ func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 		UserName:     authorizedUser.Name,
 		ServiceID:    serviceID,
 		Favorite:     record.Favorite,
+		Hidden:       record.Hidden,
 		UptimeAlert:  record.UptimeAlert,
 		VersionAlert: record.VersionAlert,
 	}
 	requestPayload.Favorite.ApplyIfDefined(&updatedRecord.Favorite)
+	requestPayload.Hidden.ApplyIfDefined(&updatedRecord.Hidden)
 	requestPayload.UptimeAlert.ApplyIfDefined(&updatedRecord.UptimeAlert)
 	requestPayload.VersionAlert.ApplyIfDefined(&updatedRecord.VersionAlert)
 	if err := updatedRecord.Valid(); err != nil {
