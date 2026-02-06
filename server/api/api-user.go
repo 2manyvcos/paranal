@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 
@@ -70,6 +71,27 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 	err = app.UpdateUsers(schema.UserQuery{Name: &authorizedUser.Name}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
+	}
+}
+
+func DeleteUser(res http.ResponseWriter, req *http.Request) {
+	app := helper.GetApp(req)
+	authorizedUser := helper.GetAuthorizedUser(req)
+
+	if authorizedUser == nil || authorizedUser.Name == "" {
+		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	err := app.DeleteUsers(schema.UserQuery{Name: &authorizedUser.Name})
+	if errors.Is(err, schema.ErrNotFound) {
+		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if err != nil {
+		log.Printf("Error deleting record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}

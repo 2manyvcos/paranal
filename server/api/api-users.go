@@ -23,20 +23,14 @@ func GetUsers(res http.ResponseWriter, req *http.Request) {
 	}
 
 	responsePayload := make([]struct {
-		Name          string `json:"name"`
-		DisplayName   string `json:"displayName"`
-		Role          string `json:"role"`
-		HasPassword   bool   `json:"hasPassword"`
-		UptimeAlerts  bool   `json:"uptimeAlerts"`
-		VersionAlerts bool   `json:"versionAlerts"`
+		Name        string `json:"name"`
+		Role        string `json:"role"`
+		HasPassword bool   `json:"hasPassword"`
 	}, len(records))
 	for i, record := range records {
 		responsePayload[i].Name = record.Name
-		responsePayload[i].DisplayName = record.DisplayName
 		responsePayload[i].Role = schema.UserRoleNames[record.Role]
 		responsePayload[i].HasPassword = record.PasswordHash != ""
-		responsePayload[i].UptimeAlerts = record.UptimeAlerts
-		responsePayload[i].VersionAlerts = record.VersionAlerts
 	}
 	res.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(res).Encode(responsePayload)
@@ -51,12 +45,9 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var requestPayload struct {
-		Name          string `json:"name"`
-		DisplayName   string `json:"displayName"`
-		Role          string `json:"role"`
-		Password      string `json:"password"`
-		UptimeAlerts  bool   `json:"uptimeAlerts"`
-		VersionAlerts bool   `json:"versionAlerts"`
+		Name     string `json:"name"`
+		Role     string `json:"role"`
+		Password string `json:"password"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
@@ -67,11 +58,8 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 	}
 
 	newRecord := schema.User{
-		Name:          requestPayload.Name,
-		DisplayName:   requestPayload.DisplayName,
-		Role:          schema.UserRoleCodes[requestPayload.Role],
-		UptimeAlerts:  requestPayload.UptimeAlerts,
-		VersionAlerts: requestPayload.VersionAlerts,
+		Name: requestPayload.Name,
+		Role: schema.UserRoleCodes[requestPayload.Role],
 	}
 	if requestPayload.Password != "" {
 		newRecord.PasswordHash, err = crypto.Hash(requestPayload.Password)
@@ -120,19 +108,13 @@ func GetUsersByName(res http.ResponseWriter, req *http.Request) {
 
 	res.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(res).Encode(struct {
-		Name          string `json:"name"`
-		DisplayName   string `json:"displayName"`
-		Role          string `json:"role"`
-		HasPassword   bool   `json:"hasPassword"`
-		UptimeAlerts  bool   `json:"uptimeAlerts"`
-		VersionAlerts bool   `json:"versionAlerts"`
+		Name        string `json:"name"`
+		Role        string `json:"role"`
+		HasPassword bool   `json:"hasPassword"`
 	}{
-		Name:          record.Name,
-		DisplayName:   record.DisplayName,
-		Role:          schema.UserRoleNames[record.Role],
-		HasPassword:   record.PasswordHash != "",
-		UptimeAlerts:  record.UptimeAlerts,
-		VersionAlerts: record.VersionAlerts,
+		Name:        record.Name,
+		Role:        schema.UserRoleNames[record.Role],
+		HasPassword: record.PasswordHash != "",
 	})
 }
 
@@ -156,11 +138,8 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var requestPayload struct {
-		DisplayName   utils.Optional[string] `json:"displayName"`
-		Role          utils.Optional[string] `json:"role"`
-		Password      utils.Optional[string] `json:"password"`
-		UptimeAlerts  utils.Optional[bool]   `json:"uptimeAlerts"`
-		VersionAlerts utils.Optional[bool]   `json:"versionAlerts"`
+		Role     utils.Optional[string] `json:"role"`
+		Password utils.Optional[string] `json:"password"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
@@ -182,9 +161,6 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 	}
 
 	updatedRecord := record
-	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
-	requestPayload.UptimeAlerts.ApplyIfDefined(&updatedRecord.UptimeAlerts)
-	requestPayload.VersionAlerts.ApplyIfDefined(&updatedRecord.VersionAlerts)
 	if requestPayload.Role.IsDefined {
 		updatedRecord.Role = schema.UserRoleCodes[requestPayload.Role.Value]
 	}
