@@ -18,6 +18,12 @@ type DataProvider interface {
 	UpdateUsers(query UserQuery, record User) error
 	DeleteUsers(query UserQuery) error
 
+	ListUserAlertChannels(query *UserAlertChannelQuery) ([]UserAlertChannel, error)
+	GetUserAlertChannel(query UserAlertChannelQuery) (UserAlertChannel, error)
+	CreateUserAlertChannel(record UserAlertChannel) error
+	UpdateUserAlertChannels(query UserAlertChannelQuery, record UserAlertChannel) error
+	DeleteUserAlertChannels(query UserAlertChannelQuery) error
+
 	ListHTTPCredentials(query *HTTPCredentialQuery) ([]HTTPCredential, error)
 	GetHTTPCredential(query HTTPCredentialQuery) (HTTPCredential, error)
 	CreateHTTPCredential(record HTTPCredential) error

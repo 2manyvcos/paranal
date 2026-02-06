@@ -6,6 +6,7 @@ import (
 
 type UserQuery struct {
 	Name          *string
+	ErrorAlerts   *bool
 	UptimeAlerts  *bool
 	VersionAlerts *bool
 }
@@ -15,6 +16,7 @@ type User struct {
 	DisplayName   string
 	Role          int
 	PasswordHash  string
+	ErrorAlerts   bool
 	UptimeAlerts  bool
 	VersionAlerts bool
 }

@@ -18,6 +18,11 @@ func New() http.Handler {
 	api.Handle("PATCH /user", helper.WithAuth(http.HandlerFunc(PatchUser)))
 	api.Handle("DELETE /user", helper.WithAuth(http.HandlerFunc(DeleteUser)))
 	api.Handle("PUT /user/password", helper.WithAuth(http.HandlerFunc(PutUserPassword)))
+	api.Handle("GET /user/alertchannels", helper.WithAuth(http.HandlerFunc(GetUserAlertChannels)))
+	api.Handle("POST /user/alertchannels", helper.WithAuth(http.HandlerFunc(PostUserAlertChannels)))
+	api.Handle("GET /user/alertchannels/{channelID}", helper.WithAuth(http.HandlerFunc(GetUserAlertChannelsByID)))
+	api.Handle("PATCH /user/alertchannels/{channelID}", helper.WithAuth(http.HandlerFunc(PatchUserAlertChannelsByID)))
+	api.Handle("DELETE /user/alertchannels/{channelID}", helper.WithAuth(http.HandlerFunc(DeleteUserAlertChannelsByID)))
 
 	api.Handle("GET /users", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetUsers))))
 	api.Handle("POST /users", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostUsers))))
