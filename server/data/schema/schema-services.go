@@ -23,8 +23,3 @@ func (r Service) Valid() error {
 	}
 	return nil
 }
-
-type ServiceWithFavorite struct {
-	Service
-	IsFavorite bool
-}

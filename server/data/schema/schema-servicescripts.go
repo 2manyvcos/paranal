@@ -2,12 +2,12 @@ package schema
 
 import "fmt"
 
-type ScriptQuery struct {
+type ServiceScriptQuery struct {
 	ID        *int
 	ServiceID *string
 }
 
-type Script struct {
+type ServiceScript struct {
 	ID        int
 	Name      string
 	Schedule  string
@@ -15,7 +15,7 @@ type Script struct {
 	ServiceID string
 }
 
-func (r Script) Valid() error {
+func (r ServiceScript) Valid() error {
 	if r.Name == "" {
 		return fmt.Errorf("invalid name")
 	}

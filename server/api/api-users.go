@@ -188,7 +188,7 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUser(schema.UserQuery{Name: &userName}, updatedRecord)
+	err = app.UpdateUsers(schema.UserQuery{Name: &userName}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -211,7 +211,7 @@ func DeleteUsersByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteUser(schema.UserQuery{Name: &userName})
+	err := app.DeleteUsers(schema.UserQuery{Name: &userName})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

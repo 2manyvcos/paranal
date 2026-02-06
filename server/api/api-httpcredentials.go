@@ -184,7 +184,7 @@ func PatchHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateHTTPCredential(schema.HTTPCredentialQuery{Name: &credentialName}, updatedRecord)
+	err = app.UpdateHTTPCredentials(schema.HTTPCredentialQuery{Name: &credentialName}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -201,7 +201,7 @@ func DeleteHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteHTTPCredential(schema.HTTPCredentialQuery{Name: &credentialName})
+	err := app.DeleteHTTPCredentials(schema.HTTPCredentialQuery{Name: &credentialName})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

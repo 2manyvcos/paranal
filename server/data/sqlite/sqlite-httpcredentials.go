@@ -12,7 +12,14 @@ import (
 
 func init() {
 	setups = append(setups, func(i *impl) error {
-		_, err := i.Exec("CREATE TABLE IF NOT EXISTS httpcredentials (name TEXT PRIMARY KEY, type INTEGER, key TEXT, value TEXT)")
+		_, err := i.Exec(`
+      CREATE TABLE IF NOT EXISTS httpcredentials (
+        name TEXT PRIMARY KEY,
+        type INTEGER,
+        key TEXT,
+        value TEXT
+      )
+    `)
 		if err != nil {
 			return fmt.Errorf("creating table \"httpcredentials\" failed - %s", err)
 		}
@@ -95,7 +102,7 @@ func (i *impl) CreateHTTPCredential(record schema.HTTPCredential) error {
 	return requireNoConflict(err)
 }
 
-func (i *impl) UpdateHTTPCredential(query schema.HTTPCredentialQuery, record schema.HTTPCredential) error {
+func (i *impl) UpdateHTTPCredentials(query schema.HTTPCredentialQuery, record schema.HTTPCredential) error {
 	if err := record.Valid(); err != nil {
 		return err
 	}
@@ -118,7 +125,7 @@ func (i *impl) UpdateHTTPCredential(query schema.HTTPCredentialQuery, record sch
 	return requireFound(result, err)
 }
 
-func (i *impl) DeleteHTTPCredential(query schema.HTTPCredentialQuery) error {
+func (i *impl) DeleteHTTPCredentials(query schema.HTTPCredentialQuery) error {
 	where, wherePlaceholders := HTTPCredentialQuery(&query)
 	result, err := i.Exec(
 		`

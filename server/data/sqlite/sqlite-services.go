@@ -12,7 +12,15 @@ import (
 
 func init() {
 	setups = append(setups, func(i *impl) error {
-		_, err := i.Exec("CREATE TABLE IF NOT EXISTS services (id TEXT PRIMARY KEY, name TEXT, description TEXT, logo TEXT, url TEXT)")
+		_, err := i.Exec(`
+      CREATE TABLE IF NOT EXISTS services (
+        id TEXT PRIMARY KEY,
+        name TEXT,
+        description TEXT,
+        logo TEXT,
+        url TEXT
+      )
+    `)
 		if err != nil {
 			return fmt.Errorf("creating table \"services\" failed - %s", err)
 		}
@@ -26,7 +34,7 @@ func ServiceQuery(query *schema.ServiceQuery) (clause string, placeholders []any
 	}
 	var conditions []string
 	if query.ID != nil {
-		conditions = append(conditions, "services.id = ?")
+		conditions = append(conditions, "id = ?")
 		placeholders = append(placeholders, *query.ID)
 	}
 	if len(conditions) == 0 {
@@ -36,33 +44,26 @@ func ServiceQuery(query *schema.ServiceQuery) (clause string, placeholders []any
 	return
 }
 
-func (i *impl) ListServicesWithFavorite(userName string, query *schema.ServiceQuery) ([]schema.ServiceWithFavorite, error) {
+func (i *impl) ListServices(query *schema.ServiceQuery) ([]schema.Service, error) {
 	where, wherePlaceholders := ServiceQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, servicefavorites.userName
+      SELECT id, name, description, logo, url
       FROM services
-      LEFT JOIN servicefavorites
-      ON services.id = servicefavorites.serviceID AND servicefavorites.userName = ?
       WHERE `+where+`
     `,
-		slices.Concat(
-			[]any{userName},
-			wherePlaceholders,
-		)...,
+		wherePlaceholders...,
 	)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var records []schema.ServiceWithFavorite
+	var records []schema.Service
 	for rows.Next() {
-		var record schema.ServiceWithFavorite
-		var favoriteUserName *string
-		if err := rows.Scan(&record.ID, &record.Name, &record.Description, &record.Logo, &record.URL, &favoriteUserName); err != nil {
+		var record schema.Service
+		if err := rows.Scan(&record.ID, &record.Name, &record.Description, &record.Logo, &record.URL); err != nil {
 			return nil, err
 		}
-		record.IsFavorite = favoriteUserName != nil
 		records = append(records, record)
 	}
 	if err = rows.Err(); err != nil {
@@ -88,30 +89,6 @@ func (i *impl) GetService(query schema.ServiceQuery) (schema.Service, error) {
 	return record, err
 }
 
-func (i *impl) GetServiceWithFavorite(userName string, query schema.ServiceQuery) (schema.ServiceWithFavorite, error) {
-	where, wherePlaceholders := ServiceQuery(&query)
-	var record schema.ServiceWithFavorite
-	var favoriteUserName *string
-	err := i.QueryRow(
-		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, servicefavorites.userName
-      FROM services
-      LEFT JOIN servicefavorites
-      ON services.id = servicefavorites.serviceID AND servicefavorites.userName = ?
-      WHERE `+where+`
-    `,
-		slices.Concat(
-			[]any{userName},
-			wherePlaceholders,
-		)...,
-	).Scan(&record.ID, &record.Name, &record.Description, &record.Logo, &record.URL, &favoriteUserName)
-	record.IsFavorite = favoriteUserName != nil
-	if errors.Is(err, sql.ErrNoRows) {
-		return schema.ServiceWithFavorite{}, schema.ErrNotFound
-	}
-	return record, err
-}
-
 func (i *impl) CreateService(record schema.Service) error {
 	if err := record.Valid(); err != nil {
 		return err
@@ -126,7 +103,7 @@ func (i *impl) CreateService(record schema.Service) error {
 	return requireNoConflict(err)
 }
 
-func (i *impl) UpdateService(query schema.ServiceQuery, record schema.Service) error {
+func (i *impl) UpdateServices(query schema.ServiceQuery, record schema.Service) error {
 	if err := record.Valid(); err != nil {
 		return err
 	}
@@ -150,7 +127,7 @@ func (i *impl) UpdateService(query schema.ServiceQuery, record schema.Service) e
 	return requireFound(result, err)
 }
 
-func (i *impl) DeleteService(query schema.ServiceQuery) error {
+func (i *impl) DeleteServices(query schema.ServiceQuery) error {
 	where, wherePlaceholders := ServiceQuery(&query)
 	result, err := i.Exec(
 		`

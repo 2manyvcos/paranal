@@ -12,7 +12,13 @@ import (
 
 func init() {
 	setups = append(setups, func(i *impl) error {
-		_, err := i.Exec("CREATE TABLE IF NOT EXISTS usercredentials (name TEXT PRIMARY KEY, description TEXT, value TEXT)")
+		_, err := i.Exec(`
+      CREATE TABLE IF NOT EXISTS usercredentials (
+        name TEXT PRIMARY KEY,
+        description TEXT,
+        value TEXT
+      )
+    `)
 		if err != nil {
 			return fmt.Errorf("creating table \"usercredentials\" failed - %s", err)
 		}
@@ -95,7 +101,7 @@ func (i *impl) CreateUserCredential(record schema.UserCredential) error {
 	return requireNoConflict(err)
 }
 
-func (i *impl) UpdateUserCredential(query schema.UserCredentialQuery, record schema.UserCredential) error {
+func (i *impl) UpdateUserCredentials(query schema.UserCredentialQuery, record schema.UserCredential) error {
 	if err := record.Valid(); err != nil {
 		return err
 	}
@@ -117,7 +123,7 @@ func (i *impl) UpdateUserCredential(query schema.UserCredentialQuery, record sch
 	return requireFound(result, err)
 }
 
-func (i *impl) DeleteUserCredential(query schema.UserCredentialQuery) error {
+func (i *impl) DeleteUserCredentials(query schema.UserCredentialQuery) error {
 	where, wherePlaceholders := UserCredentialQuery(&query)
 	result, err := i.Exec(
 		`

@@ -12,7 +12,14 @@ import (
 
 func init() {
 	setups = append(setups, func(i *impl) error {
-		_, err := i.Exec("CREATE TABLE IF NOT EXISTS sshcredentials (name TEXT PRIMARY KEY, user TEXT, password TEXT, privateKey TEXT)")
+		_, err := i.Exec(`
+      CREATE TABLE IF NOT EXISTS sshcredentials (
+        name TEXT PRIMARY KEY,
+        user TEXT,
+        password TEXT,
+        privateKey TEXT
+      )
+    `)
 		if err != nil {
 			return fmt.Errorf("creating table \"sshcredentials\" failed - %s", err)
 		}
@@ -95,7 +102,7 @@ func (i *impl) CreateSSHCredential(record schema.SSHCredential) error {
 	return requireNoConflict(err)
 }
 
-func (i *impl) UpdateSSHCredential(query schema.SSHCredentialQuery, record schema.SSHCredential) error {
+func (i *impl) UpdateSSHCredentials(query schema.SSHCredentialQuery, record schema.SSHCredential) error {
 	if err := record.Valid(); err != nil {
 		return err
 	}
@@ -118,7 +125,7 @@ func (i *impl) UpdateSSHCredential(query schema.SSHCredentialQuery, record schem
 	return requireFound(result, err)
 }
 
-func (i *impl) DeleteSSHCredential(query schema.SSHCredentialQuery) error {
+func (i *impl) DeleteSSHCredentials(query schema.SSHCredentialQuery) error {
 	where, wherePlaceholders := SSHCredentialQuery(&query)
 	result, err := i.Exec(
 		`

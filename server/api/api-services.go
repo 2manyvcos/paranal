@@ -23,7 +23,7 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	records, err := app.ListServicesWithFavorite(authorizedUser.Name, nil)
+	records, err := app.ListUserServices(authorizedUser.Name, nil)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -36,7 +36,11 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		Description string `json:"description"`
 		Logo        string `json:"logo"`
 		URL         string `json:"url"`
-		IsFavorite  bool   `json:"isFavorite"`
+		Config      struct {
+			Favorite     bool `json:"favorite"`
+			UptimeAlert  bool `json:"uptimeAlert"`
+			VersionAlert bool `json:"versionAlert"`
+		} `json:"config"`
 	}, len(records))
 	for i, record := range records {
 		responsePayload[i].ID = record.ID
@@ -44,7 +48,9 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].Description = record.Description
 		responsePayload[i].Logo = record.Logo
 		responsePayload[i].URL = record.URL
-		responsePayload[i].IsFavorite = record.IsFavorite
+		responsePayload[i].Config.Favorite = record.Favorite
+		responsePayload[i].Config.UptimeAlert = record.UptimeAlert
+		responsePayload[i].Config.VersionAlert = record.VersionAlert
 	}
 	res.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(res).Encode(responsePayload)
@@ -111,7 +117,7 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetServiceWithFavorite(authorizedUser.Name, schema.ServiceQuery{ID: &serviceID})
+	record, err := app.GetUserService(authorizedUser.Name, schema.UserServiceQuery{ID: &serviceID})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -129,14 +135,26 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		Description string `json:"description"`
 		Logo        string `json:"logo"`
 		URL         string `json:"url"`
-		IsFavorite  bool   `json:"isFavorite"`
+		Config      struct {
+			Favorite     bool `json:"favorite"`
+			UptimeAlert  bool `json:"uptimeAlert"`
+			VersionAlert bool `json:"versionAlert"`
+		} `json:"config"`
 	}{
 		ID:          record.ID,
 		Name:        record.Name,
 		Description: record.Description,
 		Logo:        record.Logo,
 		URL:         record.URL,
-		IsFavorite:  record.IsFavorite,
+		Config: struct {
+			Favorite     bool `json:"favorite"`
+			UptimeAlert  bool `json:"uptimeAlert"`
+			VersionAlert bool `json:"versionAlert"`
+		}{
+			Favorite:     record.Favorite,
+			UptimeAlert:  record.UptimeAlert,
+			VersionAlert: record.VersionAlert,
+		},
 	})
 }
 
@@ -188,7 +206,7 @@ func PatchServicesByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateService(schema.ServiceQuery{ID: &serviceID}, updatedRecord)
+	err = app.UpdateServices(schema.ServiceQuery{ID: &serviceID}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -205,7 +223,7 @@ func DeleteServicesByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteService(schema.ServiceQuery{ID: &serviceID})
+	err := app.DeleteServices(schema.ServiceQuery{ID: &serviceID})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -217,12 +235,16 @@ func DeleteServicesByID(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func PostServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
+func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
 	if authorizedUser == nil || authorizedUser.Name == "" {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
+		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
 	}
 
@@ -232,7 +254,7 @@ func PostServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	_, err := app.GetService(schema.ServiceQuery{ID: &serviceID})
+	record, err := app.GetUserService(authorizedUser.Name, schema.UserServiceQuery{ID: &serviceID})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -243,49 +265,36 @@ func PostServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := schema.ServiceFavorite{
-		UserName:  authorizedUser.Name,
-		ServiceID: serviceID,
+	var requestPayload struct {
+		Favorite     utils.Optional[bool] `json:"favorite"`
+		UptimeAlert  utils.Optional[bool] `json:"uptimeAlert"`
+		VersionAlert utils.Optional[bool] `json:"versionAlert"`
 	}
-	if err := newRecord.Valid(); err != nil {
-		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-		return
-	}
-	err = app.CreateServiceFavorite(newRecord)
-	if errors.Is(err, schema.ErrConflict) {
-		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
-		return
-	}
+	decoder := json.NewDecoder(req.Body)
+	decoder.DisallowUnknownFields()
+	err = decoder.Decode(&requestPayload)
 	if err != nil {
-		log.Printf("Error creating record - %s\n", err)
-		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-		return
-	}
-	res.WriteHeader(http.StatusCreated)
-}
-
-func DeleteServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
-	app := helper.GetApp(req)
-	authorizedUser := helper.GetAuthorizedUser(req)
-
-	if authorizedUser == nil || authorizedUser.Name == "" {
-		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-		return
-	}
-
-	serviceID := req.PathValue("serviceID")
-	if serviceID == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	err := app.DeleteServiceFavorite(schema.ServiceFavoriteQuery{UserName: &authorizedUser.Name, ServiceID: &serviceID})
-	if errors.Is(err, schema.ErrNotFound) {
-		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+	updatedRecord := schema.ServiceUserConfig{
+		UserName:     authorizedUser.Name,
+		ServiceID:    serviceID,
+		Favorite:     record.Favorite,
+		UptimeAlert:  record.UptimeAlert,
+		VersionAlert: record.VersionAlert,
+	}
+	requestPayload.Favorite.ApplyIfDefined(&updatedRecord.Favorite)
+	requestPayload.UptimeAlert.ApplyIfDefined(&updatedRecord.UptimeAlert)
+	requestPayload.VersionAlert.ApplyIfDefined(&updatedRecord.VersionAlert)
+	if err := updatedRecord.Valid(); err != nil {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
+	err = app.CreateOrUpdateServiceUserConfig(updatedRecord)
 	if err != nil {
-		log.Printf("Error deleting record - %s\n", err)
+		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
@@ -358,7 +367,7 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	records, err := app.ListScripts(&schema.ScriptQuery{ServiceID: &serviceID})
+	records, err := app.ListServiceScripts(&schema.ServiceScriptQuery{ServiceID: &serviceID})
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -419,7 +428,7 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := schema.Script{
+	newRecord := schema.ServiceScript{
 		Name:      requestPayload.Name,
 		Schedule:  requestPayload.Schedule,
 		Source:    requestPayload.Source,
@@ -429,7 +438,7 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.CreateScript(newRecord)
+	err = app.CreateServiceScript(newRecord)
 	if errors.Is(err, schema.ErrConflict) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
@@ -452,7 +461,7 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetScript(schema.ScriptQuery{ID: &scriptID, ServiceID: &serviceID})
+	record, err := app.GetServiceScript(schema.ServiceScriptQuery{ID: &scriptID, ServiceID: &serviceID})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -503,7 +512,7 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	record, err := app.GetScript(schema.ScriptQuery{ID: &scriptID, ServiceID: &serviceID})
+	record, err := app.GetServiceScript(schema.ServiceScriptQuery{ID: &scriptID, ServiceID: &serviceID})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
@@ -522,7 +531,7 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateScript(schema.ScriptQuery{ID: &scriptID, ServiceID: &serviceID}, updatedRecord)
+	err = app.UpdateServiceScripts(schema.ServiceScriptQuery{ID: &scriptID, ServiceID: &serviceID}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -540,7 +549,7 @@ func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = app.DeleteScript(schema.ScriptQuery{ID: &scriptID, ServiceID: &serviceID})
+	err = app.DeleteServiceScripts(schema.ServiceScriptQuery{ID: &scriptID, ServiceID: &serviceID})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

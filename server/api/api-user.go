@@ -59,7 +59,7 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 
 	updatedRecord := *authorizedUser
 	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
-	err = app.UpdateUser(schema.UserQuery{Name: &authorizedUser.Name}, updatedRecord)
+	err = app.UpdateUsers(schema.UserQuery{Name: &authorizedUser.Name}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -118,7 +118,7 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUser(schema.UserQuery{Name: &authorizedUser.Name}, updatedRecord)
+	err = app.UpdateUsers(schema.UserQuery{Name: &authorizedUser.Name}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

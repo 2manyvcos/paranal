@@ -119,10 +119,10 @@ func (i *impl) CreateOrUpdateUser(record schema.User) error {
     `,
 		&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash,
 	)
-	return requireNoConflict(err)
+	return err
 }
 
-func (i *impl) UpdateUser(query schema.UserQuery, record schema.User) error {
+func (i *impl) UpdateUsers(query schema.UserQuery, record schema.User) error {
 	if err := record.Valid(); err != nil {
 		return err
 	}
@@ -145,7 +145,7 @@ func (i *impl) UpdateUser(query schema.UserQuery, record schema.User) error {
 	return requireFound(result, err)
 }
 
-func (i *impl) DeleteUser(query schema.UserQuery) error {
+func (i *impl) DeleteUsers(query schema.UserQuery) error {
 	where, wherePlaceholders := UserQuery(&query)
 	result, err := i.Exec(
 		`

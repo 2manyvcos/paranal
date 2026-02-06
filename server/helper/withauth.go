@@ -94,7 +94,7 @@ func authorizeRemoteUser(req *http.Request) *schema.User {
 	if admin && authorizedUser.Role != schema.UserRoleAdmin {
 		newUser := *authorizedUser
 		newUser.Role = schema.UserRoleAdmin
-		err := app.UpdateUser(schema.UserQuery{Name: &userName}, newUser)
+		err := app.UpdateUsers(schema.UserQuery{Name: &userName}, newUser)
 		if err != nil {
 			log.Printf("Error updating user - %s\n", err)
 		} else {

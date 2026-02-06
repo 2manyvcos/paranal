@@ -173,7 +173,7 @@ func PatchUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateUserCredential(schema.UserCredentialQuery{Name: &credentialName}, updatedRecord)
+	err = app.UpdateUserCredentials(schema.UserCredentialQuery{Name: &credentialName}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -190,7 +190,7 @@ func DeleteUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteUserCredential(schema.UserCredentialQuery{Name: &credentialName})
+	err := app.DeleteUserCredentials(schema.UserCredentialQuery{Name: &credentialName})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

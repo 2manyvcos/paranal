@@ -200,7 +200,7 @@ func PatchSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.UpdateSSHCredential(schema.SSHCredentialQuery{Name: &credentialName}, updatedRecord)
+	err = app.UpdateSSHCredentials(schema.SSHCredentialQuery{Name: &credentialName}, updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -217,7 +217,7 @@ func DeleteSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteSSHCredential(schema.SSHCredentialQuery{Name: &credentialName})
+	err := app.DeleteSSHCredentials(schema.SSHCredentialQuery{Name: &credentialName})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

@@ -15,40 +15,42 @@ type DataProvider interface {
 	GetUser(query UserQuery) (User, error)
 	CreateUser(record User) error
 	CreateOrUpdateUser(record User) error
-	UpdateUser(query UserQuery, record User) error
-	DeleteUser(query UserQuery) error
+	UpdateUsers(query UserQuery, record User) error
+	DeleteUsers(query UserQuery) error
 
 	ListHTTPCredentials(query *HTTPCredentialQuery) ([]HTTPCredential, error)
 	GetHTTPCredential(query HTTPCredentialQuery) (HTTPCredential, error)
 	CreateHTTPCredential(record HTTPCredential) error
-	UpdateHTTPCredential(query HTTPCredentialQuery, record HTTPCredential) error
-	DeleteHTTPCredential(query HTTPCredentialQuery) error
+	UpdateHTTPCredentials(query HTTPCredentialQuery, record HTTPCredential) error
+	DeleteHTTPCredentials(query HTTPCredentialQuery) error
 
 	ListSSHCredentials(query *SSHCredentialQuery) ([]SSHCredential, error)
 	GetSSHCredential(query SSHCredentialQuery) (SSHCredential, error)
 	CreateSSHCredential(record SSHCredential) error
-	UpdateSSHCredential(query SSHCredentialQuery, record SSHCredential) error
-	DeleteSSHCredential(query SSHCredentialQuery) error
+	UpdateSSHCredentials(query SSHCredentialQuery, record SSHCredential) error
+	DeleteSSHCredentials(query SSHCredentialQuery) error
 
 	ListUserCredentials(query *UserCredentialQuery) ([]UserCredential, error)
 	GetUserCredential(query UserCredentialQuery) (UserCredential, error)
 	CreateUserCredential(record UserCredential) error
-	UpdateUserCredential(query UserCredentialQuery, record UserCredential) error
-	DeleteUserCredential(query UserCredentialQuery) error
+	UpdateUserCredentials(query UserCredentialQuery, record UserCredential) error
+	DeleteUserCredentials(query UserCredentialQuery) error
 
-	ListServicesWithFavorite(userName string, query *ServiceQuery) ([]ServiceWithFavorite, error)
+	ListServices(query *ServiceQuery) ([]Service, error)
 	GetService(query ServiceQuery) (Service, error)
-	GetServiceWithFavorite(userName string, query ServiceQuery) (ServiceWithFavorite, error)
 	CreateService(record Service) error
-	UpdateService(query ServiceQuery, record Service) error
-	DeleteService(query ServiceQuery) error
+	UpdateServices(query ServiceQuery, record Service) error
+	DeleteServices(query ServiceQuery) error
 
-	CreateServiceFavorite(record ServiceFavorite) error
-	DeleteServiceFavorite(query ServiceFavoriteQuery) error
+	ListServiceUserConfigs(query *ServiceUserConfigQuery) ([]ServiceUserConfig, error)
+	CreateOrUpdateServiceUserConfig(record ServiceUserConfig) error
 
-	ListScripts(query *ScriptQuery) ([]Script, error)
-	GetScript(query ScriptQuery) (Script, error)
-	CreateScript(record Script) error
-	UpdateScript(query ScriptQuery, record Script) error
-	DeleteScript(query ScriptQuery) error
+	ListUserServices(userName string, query *UserServiceQuery) ([]UserService, error)
+	GetUserService(userName string, query UserServiceQuery) (UserService, error)
+
+	ListServiceScripts(query *ServiceScriptQuery) ([]ServiceScript, error)
+	GetServiceScript(query ServiceScriptQuery) (ServiceScript, error)
+	CreateServiceScript(record ServiceScript) error
+	UpdateServiceScripts(query ServiceScriptQuery, record ServiceScript) error
+	DeleteServiceScripts(query ServiceScriptQuery) error
 }
