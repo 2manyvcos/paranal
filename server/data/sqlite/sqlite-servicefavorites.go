@@ -9,17 +9,17 @@ import (
 
 func init() {
 	setups = append(setups, func(i *impl) error {
-		_, err := i.Exec("CREATE TABLE IF NOT EXISTS favorites (userName TEXT, serviceID TEXT, PRIMARY KEY (userName, serviceID))")
+		_, err := i.Exec("CREATE TABLE IF NOT EXISTS servicefavorites (userName TEXT, serviceID TEXT, PRIMARY KEY (userName, serviceID))")
 		if err != nil {
-			return fmt.Errorf("creating table \"favorites\" failed - %s", err)
+			return fmt.Errorf("creating table \"servicefavorites\" failed - %s", err)
 		}
 		return nil
 	})
 }
 
-func FavoriteQuery(query *schema.FavoriteQuery) (clause string, placeholders []any) {
+func ServiceFavoriteQuery(query *schema.ServiceFavoriteQuery) (clause string, placeholders []any) {
 	if query == nil {
-		query = new(schema.FavoriteQuery)
+		query = new(schema.ServiceFavoriteQuery)
 	}
 	var conditions []string
 	if query.UserName != nil {
@@ -37,13 +37,13 @@ func FavoriteQuery(query *schema.FavoriteQuery) (clause string, placeholders []a
 	return
 }
 
-func (i *impl) CreateFavorite(record schema.Favorite) error {
+func (i *impl) CreateServiceFavorite(record schema.ServiceFavorite) error {
 	if err := record.Valid(); err != nil {
 		return err
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO favorites (userName, serviceID)
+      INSERT INTO servicefavorites (userName, serviceID)
       VALUES (?, ?)
     `,
 		&record.UserName, &record.ServiceID,
@@ -51,11 +51,11 @@ func (i *impl) CreateFavorite(record schema.Favorite) error {
 	return requireNoConflict(err)
 }
 
-func (i *impl) DeleteFavorite(query schema.FavoriteQuery) error {
-	where, wherePlaceholders := FavoriteQuery(&query)
+func (i *impl) DeleteServiceFavorite(query schema.ServiceFavoriteQuery) error {
+	where, wherePlaceholders := ServiceFavoriteQuery(&query)
 	result, err := i.Exec(
 		`
-      DELETE FROM favorites
+      DELETE FROM servicefavorites
       WHERE `+where+`
     `,
 		wherePlaceholders...,

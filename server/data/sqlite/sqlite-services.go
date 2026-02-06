@@ -40,10 +40,10 @@ func (i *impl) ListServicesWithFavorite(userName string, query *schema.ServiceQu
 	where, wherePlaceholders := ServiceQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, favorites.userName
+      SELECT services.id, services.name, services.description, services.logo, services.url, servicefavorites.userName
       FROM services
-      LEFT JOIN favorites
-      ON services.id = favorites.serviceID AND favorites.userName = ?
+      LEFT JOIN servicefavorites
+      ON services.id = servicefavorites.serviceID AND servicefavorites.userName = ?
       WHERE `+where+`
     `,
 		slices.Concat(
@@ -94,10 +94,10 @@ func (i *impl) GetServiceWithFavorite(userName string, query schema.ServiceQuery
 	var favoriteUserName *string
 	err := i.QueryRow(
 		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, favorites.userName
+      SELECT services.id, services.name, services.description, services.logo, services.url, servicefavorites.userName
       FROM services
-      LEFT JOIN favorites
-      ON services.id = favorites.serviceID AND favorites.userName = ?
+      LEFT JOIN servicefavorites
+      ON services.id = servicefavorites.serviceID AND servicefavorites.userName = ?
       WHERE `+where+`
     `,
 		slices.Concat(

@@ -43,8 +43,8 @@ type DataProvider interface {
 	UpdateService(query ServiceQuery, record Service) error
 	DeleteService(query ServiceQuery) error
 
-	CreateFavorite(record Favorite) error
-	DeleteFavorite(query FavoriteQuery) error
+	CreateServiceFavorite(record ServiceFavorite) error
+	DeleteServiceFavorite(query ServiceFavoriteQuery) error
 
 	ListScripts(query *ScriptQuery) ([]Script, error)
 	GetScript(query ScriptQuery) (Script, error)

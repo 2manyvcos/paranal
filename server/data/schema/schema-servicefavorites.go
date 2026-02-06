@@ -2,17 +2,17 @@ package schema
 
 import "fmt"
 
-type FavoriteQuery struct {
+type ServiceFavoriteQuery struct {
 	UserName  *string
 	ServiceID *string
 }
 
-type Favorite struct {
+type ServiceFavorite struct {
 	UserName  string
 	ServiceID string
 }
 
-func (r Favorite) Valid() error {
+func (r ServiceFavorite) Valid() error {
 	if r.UserName == "" {
 		return fmt.Errorf("invalid user name")
 	}

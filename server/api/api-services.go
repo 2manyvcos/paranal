@@ -243,7 +243,7 @@ func PostServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	newRecord := schema.Favorite{
+	newRecord := schema.ServiceFavorite{
 		UserName:  authorizedUser.Name,
 		ServiceID: serviceID,
 	}
@@ -251,7 +251,7 @@ func PostServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.CreateFavorite(newRecord)
+	err = app.CreateServiceFavorite(newRecord)
 	if errors.Is(err, schema.ErrConflict) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
@@ -279,7 +279,7 @@ func DeleteServicesByIDFavorite(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := app.DeleteFavorite(schema.FavoriteQuery{UserName: &authorizedUser.Name, ServiceID: &serviceID})
+	err := app.DeleteServiceFavorite(schema.ServiceFavoriteQuery{UserName: &authorizedUser.Name, ServiceID: &serviceID})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
