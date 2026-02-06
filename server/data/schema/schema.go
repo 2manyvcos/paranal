@@ -59,4 +59,16 @@ type DataProvider interface {
 	CreateServiceScript(record ServiceScript) error
 	UpdateServiceScripts(query ServiceScriptQuery, record ServiceScript) error
 	DeleteServiceScripts(query ServiceScriptQuery) error
+
+	ListServiceUptimeStatuses(query *ServiceUptimeStatusQuery) ([]ServiceUptimeStatus, error)
+	GetServiceUptimeStatus(query ServiceUptimeStatusQuery) (ServiceUptimeStatus, error)
+	CreateServiceUptimeStatus(record ServiceUptimeStatus) error
+	UpdateServiceUptimeStatuses(query ServiceUptimeStatusQuery, record ServiceUptimeStatus) error
+	DeleteServiceUptimeStatuses(query ServiceUptimeStatusQuery) error
+
+	ListServiceVersions(query *ServiceVersionQuery) ([]ServiceVersion, error)
+	GetServiceVersion(query ServiceVersionQuery) (ServiceVersion, error)
+	CreateServiceVersion(record ServiceVersion) error
+	UpdateServiceVersions(query ServiceVersionQuery, record ServiceVersion) error
+	DeleteServiceVersions(query ServiceVersionQuery) error
 }

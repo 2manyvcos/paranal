@@ -1,11 +1,7 @@
 package schema
 
 type UserServiceQuery struct {
-	ID           *string
-	Favorite     *bool
-	Hidden       *bool
-	UptimeAlert  *bool
-	VersionAlert *bool
+	ID *string
 }
 
 type UserService struct {

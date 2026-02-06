@@ -18,7 +18,7 @@ func init() {
         name TEXT NOT NULL,
         schedule TEXT NOT NULL,
         source TEXT NOT NULL,
-        serviceID INTEGER NOT NULL
+        serviceID TEXT NOT NULL
       )
     `)
 		if err != nil {

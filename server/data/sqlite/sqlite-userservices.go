@@ -18,22 +18,6 @@ func UserServiceQuery(query *schema.UserServiceQuery) (clause string, placeholde
 		conditions = append(conditions, "services.id = ?")
 		placeholders = append(placeholders, *query.ID)
 	}
-	if query.Favorite != nil {
-		conditions = append(conditions, "serviceuserconfigs.favorite = ?")
-		placeholders = append(placeholders, *query.Favorite)
-	}
-	if query.Hidden != nil {
-		conditions = append(conditions, "serviceuserconfigs.hidden = ?")
-		placeholders = append(placeholders, *query.Hidden)
-	}
-	if query.UptimeAlert != nil {
-		conditions = append(conditions, "serviceuserconfigs.uptimeAlert = ?")
-		placeholders = append(placeholders, *query.UptimeAlert)
-	}
-	if query.VersionAlert != nil {
-		conditions = append(conditions, "serviceuserconfigs.versionAlert = ?")
-		placeholders = append(placeholders, *query.VersionAlert)
-	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}
