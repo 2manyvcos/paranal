@@ -110,7 +110,7 @@ func (i *impl) CreateUser(record schema.User) error {
 	_, err := i.Exec(
 		`
       INSERT INTO users (name, displayName, role, passwordHash, errorAlerts, uptimeAlerts, versionAlerts)
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `,
 		&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts,
 	)
@@ -124,7 +124,7 @@ func (i *impl) CreateOrUpdateUser(record schema.User) error {
 	_, err := i.Exec(
 		`
       INSERT INTO users (name, displayName, role, passwordHash, errorAlerts, uptimeAlerts, versionAlerts)
-      VALUES (?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT (name)
       DO UPDATE
       SET
