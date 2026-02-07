@@ -7,6 +7,7 @@ import (
 	"github.com/2manyvcos/paranal/server/data"
 	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/utils"
+	"github.com/go-co-op/gocron/v2"
 )
 
 type App struct {
@@ -58,6 +59,7 @@ type App struct {
 	}
 
 	schema.DataProvider
+	Scheduler gocron.Scheduler
 }
 
 func Setup() (app *App, err error) {
@@ -67,6 +69,7 @@ func Setup() (app *App, err error) {
 	app.Config.Tagline = utils.LoadConfigValue("TAGLINE", "Advanced Service Dashboard with Health and Version Monitoring")
 	app.Config.ScriptsPath = utils.LoadConfigValue("SCRIPTS_PATH", ".paranal/scripts")
 	if app.Config.SecretKey, err = utils.LoadRequiredConfigValue("SECRET_KEY"); err != nil {
+		app.Close()
 		return nil, err
 	}
 
@@ -99,14 +102,38 @@ func Setup() (app *App, err error) {
 
 	app.DataProvider, err = data.Load(app.Config.DB)
 	if err != nil {
+		app.Close()
 		return nil, err
 	}
+
+	app.Scheduler, err = gocron.NewScheduler()
+	if err != nil {
+		app.Close()
+		return nil, err
+	}
+	app.Scheduler.Start()
 
 	err = app.prepare()
 	if err != nil {
 		app.Close()
 		return nil, err
 	}
+
+	// job, err := app.Scheduler.NewJob(
+	// 	gocron.CronJob("*/5 * * * * *", true),
+	// 	gocron.NewTask(func() {
+	// 		log.Println("yes")
+	// 	}),
+	// 	gocron.WithSingletonMode(gocron.LimitModeReschedule),
+	// )
+	// if err != nil {
+	// 	app.Close()
+	// 	return nil, err
+	// }
+	// err = job.RunNow()
+	// if err != nil {
+	// 	log.Printf("Error running job - %s\n", err)
+	// }
 
 	return
 }
@@ -127,4 +154,14 @@ func (app *App) prepare() (err error) {
 	}
 
 	return nil
+}
+
+func (app *App) Close() {
+	if app.DataProvider != nil {
+		app.DataProvider.Close()
+	}
+
+	if app.Scheduler != nil {
+		app.Scheduler.Shutdown()
+	}
 }
