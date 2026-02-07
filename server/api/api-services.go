@@ -55,7 +55,10 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].Config.VersionAlert = record.VersionAlert
 	}
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(responsePayload)
+	err = json.NewEncoder(res).Encode(responsePayload)
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PostServices(res http.ResponseWriter, req *http.Request) {
@@ -131,7 +134,7 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(struct {
+	err = json.NewEncoder(res).Encode(struct {
 		ID          string `json:"id"`
 		Name        string `json:"name"`
 		Description string `json:"description"`
@@ -161,6 +164,9 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 			VersionAlert: record.VersionAlert,
 		},
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PatchServicesByID(res http.ResponseWriter, req *http.Request) {
@@ -347,23 +353,29 @@ func PostServicesByIDRunScript(res http.ResponseWriter, req *http.Request) {
 	results, err := scripts.Run(app, serviceID, requestPayload.Source)
 	if err != nil {
 		res.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(res).Encode(struct {
+		err = json.NewEncoder(res).Encode(struct {
 			Success bool   `json:"success"`
 			Error   string `json:"error"`
 		}{
 			Success: false,
 			Error:   err.Error(),
 		})
+		if err != nil {
+			log.Printf("Error encoding response payload - %s\n", err)
+		}
 		return
 	}
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(struct {
+	err = json.NewEncoder(res).Encode(struct {
 		Success bool  `json:"success"`
 		Results []any `json:"results"`
 	}{
 		Success: true,
 		Results: results,
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
@@ -395,7 +407,10 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].Source = record.Source
 	}
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(responsePayload)
+	err = json.NewEncoder(res).Encode(responsePayload)
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
@@ -481,7 +496,7 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(struct {
+	err = json.NewEncoder(res).Encode(struct {
 		ID       string `json:"id"`
 		Name     string `json:"name"`
 		Schedule string `json:"schedule"`
@@ -490,6 +505,9 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		Name:     record.Name,
 		Schedule: record.Schedule,
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {

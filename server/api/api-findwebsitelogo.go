@@ -46,6 +46,9 @@ func PostFindWebsiteLogo(res http.ResponseWriter, req *http.Request) {
 	}{
 		Logo: logo,
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func selectLogo(icons []*favicon.Icon) string {

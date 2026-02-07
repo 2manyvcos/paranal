@@ -36,7 +36,10 @@ func GetSSHCredentials(res http.ResponseWriter, req *http.Request) {
 
 	}
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(responsePayload)
+	err = json.NewEncoder(res).Encode(responsePayload)
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PostSSHCredentials(res http.ResponseWriter, req *http.Request) {
@@ -119,7 +122,7 @@ func GetSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(struct {
+	err = json.NewEncoder(res).Encode(struct {
 		Name          string `json:"name"`
 		User          string `json:"user"`
 		HasPassword   bool   `json:"hasPassword"`
@@ -130,6 +133,9 @@ func GetSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		HasPassword:   record.Password != "",
 		HasPrivateKey: record.PrivateKey != "",
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PatchSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {

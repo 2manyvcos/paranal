@@ -33,7 +33,10 @@ func GetUserCredentials(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].HasValue = record.Value != ""
 	}
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(responsePayload)
+	err = json.NewEncoder(res).Encode(responsePayload)
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PostUserCredentials(res http.ResponseWriter, req *http.Request) {
@@ -107,7 +110,7 @@ func GetUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(struct {
+	err = json.NewEncoder(res).Encode(struct {
 		Name        string `json:"name"`
 		Description string `json:"description"`
 		HasValue    bool   `json:"hasValue"`
@@ -116,6 +119,9 @@ func GetUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		Description: record.Description,
 		HasValue:    record.Value != "",
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PatchUserCredentialsByName(res http.ResponseWriter, req *http.Request) {

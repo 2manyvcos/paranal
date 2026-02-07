@@ -14,6 +14,9 @@ func New() http.Handler {
 
 	api.Handle("POST /auth", http.HandlerFunc(PostAuth))
 
+	api.Handle("GET /layout", helper.WithAuth(http.HandlerFunc(GetLayout)))
+	api.Handle("PUT /layout", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PutLayout))))
+
 	api.Handle("GET /user", helper.WithAuth(http.HandlerFunc(GetUser)))
 	api.Handle("PATCH /user", helper.WithAuth(http.HandlerFunc(PatchUser)))
 	api.Handle("DELETE /user", helper.WithAuth(http.HandlerFunc(DeleteUser)))

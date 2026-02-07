@@ -22,7 +22,7 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(struct {
+	err := json.NewEncoder(res).Encode(struct {
 		Name          string `json:"name"`
 		DisplayName   string `json:"displayName"`
 		Role          string `json:"role"`
@@ -39,6 +39,9 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 		UptimeAlerts:  authorizedUser.UptimeAlerts,
 		VersionAlerts: authorizedUser.VersionAlerts,
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PatchUser(res http.ResponseWriter, req *http.Request) {
@@ -193,7 +196,10 @@ func GetUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(responsePayload)
+	err = json.NewEncoder(res).Encode(responsePayload)
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PostUserAlertChannels(res http.ResponseWriter, req *http.Request) {
@@ -284,13 +290,16 @@ func GetUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(struct {
+	err = json.NewEncoder(res).Encode(struct {
 		ID  string `json:"id"`
 		URL string `json:"url"`
 	}{
 		ID:  strconv.Itoa(record.ID),
 		URL: url,
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PatchUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {

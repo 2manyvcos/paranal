@@ -33,7 +33,10 @@ func GetUsers(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].HasPassword = record.PasswordHash != ""
 	}
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(responsePayload)
+	err = json.NewEncoder(res).Encode(responsePayload)
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PostUsers(res http.ResponseWriter, req *http.Request) {
@@ -107,7 +110,7 @@ func GetUsersByName(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(struct {
+	err = json.NewEncoder(res).Encode(struct {
 		Name        string `json:"name"`
 		Role        string `json:"role"`
 		HasPassword bool   `json:"hasPassword"`
@@ -116,6 +119,9 @@ func GetUsersByName(res http.ResponseWriter, req *http.Request) {
 		Role:        schema.UserRoleNames[record.Role],
 		HasPassword: record.PasswordHash != "",
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PatchUsersByName(res http.ResponseWriter, req *http.Request) {

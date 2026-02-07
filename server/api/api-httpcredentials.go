@@ -36,7 +36,10 @@ func GetHTTPCredentials(res http.ResponseWriter, req *http.Request) {
 
 	}
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(responsePayload)
+	err = json.NewEncoder(res).Encode(responsePayload)
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PostHTTPCredentials(res http.ResponseWriter, req *http.Request) {
@@ -112,7 +115,7 @@ func GetHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 	}
 
 	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(struct {
+	err = json.NewEncoder(res).Encode(struct {
 		Name     string `json:"name"`
 		Type     string `json:"type"`
 		Key      string `json:"key"`
@@ -123,6 +126,9 @@ func GetHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		Key:      record.Key,
 		HasValue: record.Value != "",
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func PatchHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {

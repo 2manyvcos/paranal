@@ -78,6 +78,9 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 		AccessToken: accessToken,
 		Expires:     expires,
 	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 // Obscures the existence of the requested user and adds a random delay as a simple (but not too effective) brute force protection mechanism

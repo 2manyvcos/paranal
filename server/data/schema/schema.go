@@ -11,6 +11,9 @@ var ErrNotFound = errors.New("no record found")
 type DataProvider interface {
 	io.Closer
 
+	GetSetting(name string) (string, error)
+	CreateOrUpdateSetting(name string, value string) error
+
 	ListUsers(query *UserQuery) ([]User, error)
 	GetUser(query UserQuery) (User, error)
 	CreateUser(record User) error
