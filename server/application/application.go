@@ -60,6 +60,7 @@ type App struct {
 
 	schema.DataProvider
 	Scheduler gocron.Scheduler
+	State     State
 }
 
 func Setup() (app *App, err error) {
@@ -111,7 +112,6 @@ func Setup() (app *App, err error) {
 		app.Close()
 		return nil, err
 	}
-	app.Scheduler.Start()
 
 	err = app.prepare()
 	if err != nil {

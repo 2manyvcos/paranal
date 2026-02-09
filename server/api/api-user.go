@@ -5,12 +5,12 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/utils"
+	"github.com/google/uuid"
 )
 
 func GetUser(res http.ResponseWriter, req *http.Request) {
@@ -185,7 +185,7 @@ func GetUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 		URL string `json:"url"`
 	}, len(records))
 	for i, record := range records {
-		responsePayload[i].ID = strconv.Itoa(record.ID)
+		responsePayload[i].ID = record.ID
 		if record.URL != "" {
 			responsePayload[i].URL, err = crypto.Decrypt(app.Config.SecretKey, record.URL)
 			if err != nil {
@@ -227,6 +227,7 @@ func PostUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 	}
 
 	newRecord := schema.UserAlertChannel{
+		ID:       uuid.NewString(),
 		UserName: authorizedUser.Name,
 	}
 	if requestPayload.URL != "" {
@@ -263,8 +264,8 @@ func GetUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	channelID, err := strconv.Atoi(req.PathValue("channelID"))
-	if err != nil {
+	channelID := req.PathValue("channelID")
+	if channelID == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -294,7 +295,7 @@ func GetUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 		ID  string `json:"id"`
 		URL string `json:"url"`
 	}{
-		ID:  strconv.Itoa(record.ID),
+		ID:  record.ID,
 		URL: url,
 	})
 	if err != nil {
@@ -315,8 +316,8 @@ func PatchUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	channelID, err := strconv.Atoi(req.PathValue("channelID"))
-	if err != nil {
+	channelID := req.PathValue("channelID")
+	if channelID == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -377,13 +378,13 @@ func DeleteUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	channelID, err := strconv.Atoi(req.PathValue("channelID"))
-	if err != nil {
+	channelID := req.PathValue("channelID")
+	if channelID == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	err = app.DeleteUserAlertChannels(schema.UserAlertChannelQuery{ID: &channelID, UserName: &authorizedUser.Name})
+	err := app.DeleteUserAlertChannels(schema.UserAlertChannelQuery{ID: &channelID, UserName: &authorizedUser.Name})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

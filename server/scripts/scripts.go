@@ -6,7 +6,7 @@ import (
 	"github.com/jplorg/jpl/go/v2/jpl"
 )
 
-func Config(app *application.App, serviceID string) *jpl.JPLInterpreterConfig {
+func ServiceScriptConfig(app *application.App, serviceID string) *jpl.JPLInterpreterConfig {
 	return &jpl.JPLInterpreterConfig{
 		Runtime: jpl.JPLRuntimeOptions{
 			Vars: map[string]any{
@@ -20,10 +20,10 @@ func Config(app *application.App, serviceID string) *jpl.JPLInterpreterConfig {
 	}
 }
 
-func Parse(app *application.App, serviceID string, script string) (jpl.JPLProgram, error) {
-	return gojpl.Parse(script, Config(app, serviceID))
+func ParseServiceScript(app *application.App, serviceID string, script string) (jpl.JPLProgram, error) {
+	return gojpl.Parse(script, ServiceScriptConfig(app, serviceID))
 }
 
-func Run(app *application.App, serviceID string, script string) ([]any, error) {
-	return gojpl.Run(script, []any{nil}, Config(app, serviceID))
+func RunServiceScript(app *application.App, serviceID string, script string) ([]any, error) {
+	return gojpl.Run(script, []any{nil}, ServiceScriptConfig(app, serviceID))
 }

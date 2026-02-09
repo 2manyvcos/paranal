@@ -14,7 +14,7 @@ func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
       CREATE TABLE IF NOT EXISTS useralertchannels (
-        id INTEGER PRIMARY KEY NOT NULL,
+        id TEXT PRIMARY KEY NOT NULL,
         userName TEXT NOT NULL,
         url TEXT NOT NULL
       )
@@ -101,10 +101,10 @@ func (i *impl) CreateUserAlertChannel(record schema.UserAlertChannel) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO useralertchannels (userName, url)
-      VALUES (?, ?)
+      INSERT INTO useralertchannels (id, userName, url)
+      VALUES (?, ?, ?)
     `,
-		&record.UserName, &record.URL,
+		&record.ID, &record.UserName, &record.URL,
 	)
 	return requireNoConflict(err)
 }
@@ -118,12 +118,13 @@ func (i *impl) UpdateUserAlertChannels(query schema.UserAlertChannelQuery, recor
 		`
       UPDATE useralertchannels
       SET
+        id = ?,
         userName = ?,
         url = ?
       WHERE `+where+`
     `,
 		slices.Concat(
-			[]any{&record.UserName, &record.URL},
+			[]any{&record.ID, &record.UserName, &record.URL},
 			wherePlaceholders,
 		)...,
 	)

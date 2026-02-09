@@ -14,7 +14,7 @@ func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
       CREATE TABLE IF NOT EXISTS servicescripts (
-        id INTEGER PRIMARY KEY NOT NULL,
+        id TEXT PRIMARY KEY NOT NULL,
         name TEXT NOT NULL,
         schedule TEXT NOT NULL,
         source TEXT NOT NULL,
@@ -99,10 +99,10 @@ func (i *impl) CreateServiceScript(record schema.ServiceScript) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO servicescripts (name, schedule, source, serviceID)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO servicescripts (id, name, schedule, source, serviceID)
+      VALUES (?, ?, ?, ?, ?)
     `,
-		&record.Name, &record.Schedule, &record.Source, &record.ServiceID,
+		&record.ID, &record.Name, &record.Schedule, &record.Source, &record.ServiceID,
 	)
 	return requireNoConflict(err)
 }
@@ -116,6 +116,7 @@ func (i *impl) UpdateServiceScripts(query schema.ServiceScriptQuery, record sche
 		`
       UPDATE servicescripts
       SET
+        id = ?,
         name = ?,
         schedule = ?,
         source = ?,
@@ -123,7 +124,7 @@ func (i *impl) UpdateServiceScripts(query schema.ServiceScriptQuery, record sche
       WHERE `+where+`
     `,
 		slices.Concat(
-			[]any{&record.Name, &record.Schedule, &record.Source, &record.ServiceID},
+			[]any{&record.ID, &record.Name, &record.Schedule, &record.Source, &record.ServiceID},
 			wherePlaceholders,
 		)...,
 	)

@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
@@ -84,7 +83,7 @@ func PostServices(res http.ResponseWriter, req *http.Request) {
 	}
 
 	newRecord := schema.Service{
-		ID:          uuid.New().String(),
+		ID:          uuid.NewString(),
 		Name:        requestPayload.Name,
 		Description: requestPayload.Description,
 		Logo:        requestPayload.Logo,
@@ -350,7 +349,7 @@ func PostServicesByIDRunScript(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	results, err := scripts.Run(app, serviceID, requestPayload.Source)
+	results, err := scripts.RunServiceScript(app, serviceID, requestPayload.Source)
 	if err != nil {
 		res.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(res).Encode(struct {
@@ -401,7 +400,7 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		Source   string `json:"source"`
 	}, len(records))
 	for i, record := range records {
-		responsePayload[i].ID = strconv.Itoa(record.ID)
+		responsePayload[i].ID = record.ID
 		responsePayload[i].Name = record.Name
 		responsePayload[i].Schedule = record.Schedule
 		responsePayload[i].Source = record.Source
@@ -452,6 +451,7 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 	}
 
 	newRecord := schema.ServiceScript{
+		ID:        uuid.NewString(),
 		Name:      requestPayload.Name,
 		Schedule:  requestPayload.Schedule,
 		Source:    requestPayload.Source,
@@ -478,8 +478,8 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	serviceID := req.PathValue("serviceID")
-	scriptID, err := strconv.Atoi(req.PathValue("scriptID"))
-	if serviceID == "" || err != nil {
+	scriptID := req.PathValue("scriptID")
+	if serviceID == "" || scriptID == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -501,7 +501,7 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		Name     string `json:"name"`
 		Schedule string `json:"schedule"`
 	}{
-		ID:       strconv.Itoa(record.ID),
+		ID:       record.ID,
 		Name:     record.Name,
 		Schedule: record.Schedule,
 	})
@@ -514,8 +514,8 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	serviceID := req.PathValue("serviceID")
-	scriptID, err := strconv.Atoi(req.PathValue("scriptID"))
-	if serviceID == "" || err != nil {
+	scriptID := req.PathValue("scriptID")
+	if serviceID == "" || scriptID == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
@@ -532,7 +532,7 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
-	err = decoder.Decode(&requestPayload)
+	err := decoder.Decode(&requestPayload)
 	if err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
@@ -569,13 +569,13 @@ func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
 	serviceID := req.PathValue("serviceID")
-	scriptID, err := strconv.Atoi(req.PathValue("scriptID"))
-	if serviceID == "" || err != nil {
+	scriptID := req.PathValue("scriptID")
+	if serviceID == "" || scriptID == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	err = app.DeleteServiceScripts(schema.ServiceScriptQuery{ID: &scriptID, ServiceID: &serviceID})
+	err := app.DeleteServiceScripts(schema.ServiceScriptQuery{ID: &scriptID, ServiceID: &serviceID})
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
