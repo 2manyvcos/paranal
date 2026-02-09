@@ -170,9 +170,13 @@ type ServiceContextOptionState struct {
 func runScript(s *State, serviceState *serviceState, scriptState *serviceScriptState, script schema.ServiceScript) {
 	results, err := scripts.RunServiceScript(s.app, script.ServiceID, script.Source)
 	if err != nil {
-		log.Printf("Script error [%s:%s]: %+v", script.ServiceID, script.ID, err)
+		log.Printf("Script error [%s:%s]: %s", script.ServiceID, script.ID, err)
 		return
 	}
 	log.Printf("Script result [%s:%s]: %+v", script.ServiceID, script.ID, results)
 	// TODO:
+	/*
+	  - handle script results (and errors)
+	  - integrate state into the rest api (fetching; update on data change)
+	*/
 }
