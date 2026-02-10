@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
@@ -22,7 +23,22 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	records, err := app.ListUserServices(authorizedUser.Name, nil)
+	query := new(schema.UserServiceQuery)
+	q := req.URL.Query()
+	if q.Has("hidden") {
+		v := q.Get("hidden")
+		if v == "" {
+			v = "true"
+		}
+		if p, err := strconv.ParseBool(v); err == nil {
+			query.Hidden = &p
+		} else {
+			log.Printf("Error parsing query parameter - %s\n", err)
+			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+	}
+	records, err := app.ListUserServices(authorizedUser.Name, query)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
@@ -243,6 +259,8 @@ func DeleteServicesByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
+	app.State.OnServiceDeleted(serviceID)
 }
 
 func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
@@ -471,6 +489,9 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
+	app.State.OnServiceScriptChanged(newRecord)
+
 	res.WriteHeader(http.StatusCreated)
 }
 
@@ -500,10 +521,12 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		ID       string `json:"id"`
 		Name     string `json:"name"`
 		Schedule string `json:"schedule"`
+		Source   string `json:"source"`
 	}{
 		ID:       record.ID,
 		Name:     record.Name,
 		Schedule: record.Schedule,
+		Source:   record.Source,
 	})
 	if err != nil {
 		log.Printf("Error encoding response payload - %s\n", err)
@@ -563,6 +586,8 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
+	app.State.OnServiceScriptChanged(updatedRecord)
 }
 
 func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
@@ -585,4 +610,6 @@ func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+
+	app.State.OnServiceScriptDeleted(serviceID, scriptID)
 }

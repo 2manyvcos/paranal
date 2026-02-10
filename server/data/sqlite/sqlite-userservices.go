@@ -18,6 +18,10 @@ func UserServiceQuery(query *schema.UserServiceQuery) (clause string, placeholde
 		conditions = append(conditions, "services.id = ?")
 		placeholders = append(placeholders, *query.ID)
 	}
+	if query.Hidden != nil {
+		conditions = append(conditions, "IFNULL(serviceuserconfigs.hidden, FALSE) = ?")
+		placeholders = append(placeholders, *query.Hidden)
+	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}

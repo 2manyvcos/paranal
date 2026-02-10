@@ -19,12 +19,10 @@ import (
 // - GET /serviceversions/{versionName}/details # change notes etc.
 // - GET /services/{serviceID}/contextactions
 // - POST /services/{serviceID}/contextactions/{actionID}/run
+// - POST /services/{serviceID}/scripts/{scriptID}/run
 // - [admin] GET /maintenancetasks
 // - [admin] POST /maintenancetasks/{taskID}/run
-
-// - "hidden" query param for GET /services/{...}
-// - test all alert constellations
-// - integrate state into the rest api (fetching; update on data change)
+//
 // - remove unused data APIs and filters
 
 func alertScriptError(app *application.App, script schema.ServiceScript, _ error) {

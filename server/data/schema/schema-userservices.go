@@ -3,7 +3,8 @@ package schema
 // index for services joined to serviceuserconfigs
 
 type UserServiceQuery struct {
-	ID *string
+	ID     *string
+	Hidden *bool
 }
 
 type UserService struct {

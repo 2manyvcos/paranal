@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/2manyvcos/paranal/server/application"
+	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -19,27 +20,7 @@ func Setup(app *application.App) error {
 
 	s.services = make(map[string]*serviceState)
 	for _, script := range scripts {
-		service, ok := s.services[script.ServiceID]
-		if !ok {
-			service = &serviceState{
-				scripts: make(map[string]*serviceScriptState),
-			}
-			s.services[script.ServiceID] = service
-		}
-		if script, ok := service.scripts[script.ID]; ok {
-			app.Scheduler.RemoveJob(script.job.ID())
-		}
-		var scriptState serviceScriptState
-		scriptState.job, err = app.Scheduler.NewJob(
-			gocron.CronJob(script.Schedule, true),
-			gocron.NewTask(newServiceScriptRunner(&s, service, &scriptState, script)),
-			gocron.WithSingletonMode(gocron.LimitModeReschedule),
-		)
-		if err != nil {
-			log.Printf("Error scheduling script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
-			continue
-		}
-		service.scripts[script.ID] = &scriptState
+		s.updateServiceScript(script)
 	}
 
 	app.State = &s
@@ -55,6 +36,79 @@ func Setup(app *application.App) error {
 	}
 
 	return nil
+}
+
+func (s *State) OnServiceDeleted(serviceID string) {
+	s.servicesLock.Lock()
+	defer s.servicesLock.Unlock()
+	if service, ok := s.services[serviceID]; ok {
+		service.lock.Lock()
+		for _, script := range service.scripts {
+			s.app.Scheduler.RemoveJob(script.job.ID())
+		}
+		service.lock.Unlock()
+		delete(s.services, serviceID)
+	}
+}
+
+func (s *State) OnServiceScriptChanged(script schema.ServiceScript) {
+	scriptState := s.updateServiceScript(script)
+	if scriptState != nil {
+		err := scriptState.job.RunNow()
+		if err != nil {
+			log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
+		}
+	}
+}
+
+func (s *State) updateServiceScript(script schema.ServiceScript) *serviceScriptState {
+	s.servicesLock.Lock()
+	defer s.servicesLock.Unlock()
+	service, ok := s.services[script.ServiceID]
+	if !ok {
+		service = &serviceState{
+			scripts: make(map[string]*serviceScriptState),
+		}
+		s.services[script.ServiceID] = service
+	}
+	service.lock.Lock()
+	defer service.lock.Unlock()
+	if script, ok := service.scripts[script.ID]; ok {
+		s.app.Scheduler.RemoveJob(script.job.ID())
+	}
+	var scriptState serviceScriptState
+	var err error
+	scriptState.job, err = s.app.Scheduler.NewJob(
+		gocron.CronJob(script.Schedule, true),
+		gocron.NewTask(newServiceScriptRunner(s, service, &scriptState, script)),
+		gocron.WithSingletonMode(gocron.LimitModeReschedule),
+	)
+	if err != nil {
+		log.Printf("Error scheduling script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
+		return nil
+	}
+	service.scripts[script.ID] = &scriptState
+	return &scriptState
+}
+
+func (s *State) OnServiceScriptDeleted(serviceID string, scriptID string) {
+	s.servicesLock.Lock()
+	defer s.servicesLock.Unlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return
+	}
+	service.lock.Lock()
+	defer service.lock.Unlock()
+	if script, ok := service.scripts[scriptID]; ok {
+		s.app.Scheduler.RemoveJob(script.job.ID())
+		delete(service.scripts, scriptID)
+	}
+	if len(service.scripts) == 0 {
+		delete(s.services, serviceID)
+	} else {
+		updateServiceState(service)
+	}
 }
 
 type State struct {
