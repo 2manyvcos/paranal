@@ -17,12 +17,13 @@ import (
 // - GET /serviceuptimestatuses
 // - GET /serviceversions
 // - GET /serviceversions/{versionName}/details # change notes etc.
-// - GET /services/{serviceID}/contextactions
-// - POST /services/{serviceID}/contextactions/{actionID}/run
+// - GET /services/{serviceID}/contextoptions (with sections, filtered by role)
+// - POST /services/{serviceID}/contextoptions/{actionID}/run
 // - POST /services/{serviceID}/scripts/{scriptID}/run
 // - [admin] GET /maintenancetasks
 // - [admin] POST /maintenancetasks/{taskID}/run
 //
+// - add script information (last run, next run, error) to API
 // - remove unused data APIs and filters
 
 func alertScriptError(app *application.App, script schema.ServiceScript, _ error) {
