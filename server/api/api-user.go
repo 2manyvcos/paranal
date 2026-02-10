@@ -181,11 +181,17 @@ func GetUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 	}
 
 	responsePayload := make([]struct {
-		ID  string `json:"id"`
-		URL string `json:"url"`
+		ID            string `json:"id"`
+		URL           string `json:"url"`
+		ErrorAlerts   bool   `json:"errorAlerts"`
+		UptimeAlerts  bool   `json:"uptimeAlerts"`
+		VersionAlerts bool   `json:"versionAlerts"`
 	}, len(records))
 	for i, record := range records {
 		responsePayload[i].ID = record.ID
+		responsePayload[i].ErrorAlerts = record.ErrorAlerts
+		responsePayload[i].UptimeAlerts = record.UptimeAlerts
+		responsePayload[i].VersionAlerts = record.VersionAlerts
 		if record.URL != "" {
 			responsePayload[i].URL, err = crypto.Decrypt(app.Config.SecretKey, record.URL)
 			if err != nil {
@@ -216,7 +222,10 @@ func PostUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var requestPayload struct {
-		URL string `json:"url"`
+		URL           string `json:"url"`
+		ErrorAlerts   bool   `json:"errorAlerts"`
+		UptimeAlerts  bool   `json:"uptimeAlerts"`
+		VersionAlerts bool   `json:"versionAlerts"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
@@ -227,8 +236,11 @@ func PostUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 	}
 
 	newRecord := schema.UserAlertChannel{
-		ID:       uuid.NewString(),
-		UserName: authorizedUser.Name,
+		ID:            uuid.NewString(),
+		UserName:      authorizedUser.Name,
+		ErrorAlerts:   requestPayload.ErrorAlerts,
+		UptimeAlerts:  requestPayload.UptimeAlerts,
+		VersionAlerts: requestPayload.VersionAlerts,
 	}
 	if requestPayload.URL != "" {
 		newRecord.URL, err = crypto.Encrypt(app.Config.SecretKey, requestPayload.URL)
@@ -292,11 +304,17 @@ func GetUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(struct {
-		ID  string `json:"id"`
-		URL string `json:"url"`
+		ID            string `json:"id"`
+		URL           string `json:"url"`
+		ErrorAlerts   bool   `json:"errorAlerts"`
+		UptimeAlerts  bool   `json:"uptimeAlerts"`
+		VersionAlerts bool   `json:"versionAlerts"`
 	}{
-		ID:  record.ID,
-		URL: url,
+		ID:            record.ID,
+		URL:           url,
+		ErrorAlerts:   record.ErrorAlerts,
+		UptimeAlerts:  record.UptimeAlerts,
+		VersionAlerts: record.VersionAlerts,
 	})
 	if err != nil {
 		log.Printf("Error encoding response payload - %s\n", err)
@@ -334,7 +352,10 @@ func PatchUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var requestPayload struct {
-		URL utils.Optional[string] `json:"url"`
+		URL           utils.Optional[string] `json:"url"`
+		ErrorAlerts   utils.Optional[bool]   `json:"errorAlerts"`
+		UptimeAlerts  utils.Optional[bool]   `json:"uptimeAlerts"`
+		VersionAlerts utils.Optional[bool]   `json:"versionAlerts"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
@@ -345,6 +366,9 @@ func PatchUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 	}
 
 	updatedRecord := record
+	requestPayload.ErrorAlerts.ApplyIfDefined(&updatedRecord.ErrorAlerts)
+	requestPayload.UptimeAlerts.ApplyIfDefined(&updatedRecord.UptimeAlerts)
+	requestPayload.VersionAlerts.ApplyIfDefined(&updatedRecord.VersionAlerts)
 	if requestPayload.URL.IsDefined {
 		if requestPayload.URL.Value == "" {
 			updatedRecord.URL = ""

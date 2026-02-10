@@ -6,51 +6,11 @@ import (
 	"time"
 
 	"github.com/2manyvcos/paranal/server/application"
-	"github.com/2manyvcos/paranal/server/data/schema"
-	"github.com/2manyvcos/paranal/server/scripts"
 	"github.com/go-co-op/gocron/v2"
 )
 
 func Setup(app *application.App) error {
 	s := State{app: app}
-
-	lastKnownUptimeStatuses, err := app.ListServiceUptimeStatuses(nil)
-	if err != nil {
-		return err
-	}
-	lastKnownUptimeStatusMap := make(map[string]map[string]ServiceUptimeStatusState)
-	for _, uptimeStatus := range lastKnownUptimeStatuses {
-		service, ok := lastKnownUptimeStatusMap[uptimeStatus.ServiceID]
-		if !ok {
-			service = make(map[string]ServiceUptimeStatusState)
-			lastKnownUptimeStatusMap[uptimeStatus.ServiceID] = service
-		}
-		service[uptimeStatus.Name] = ServiceUptimeStatusState{
-			Name:   uptimeStatus.Name,
-			Order:  uptimeStatus.Name,
-			Status: uptimeStatus.Status,
-			hidden: true,
-		}
-	}
-
-	lastKnownVersions, err := app.ListServiceVersions(nil)
-	if err != nil {
-		return err
-	}
-	lastKnownVersionMap := make(map[string]map[string]ServiceVersionState)
-	for _, version := range lastKnownVersions {
-		service, ok := lastKnownVersionMap[version.ServiceID]
-		if !ok {
-			service = make(map[string]ServiceVersionState)
-			lastKnownVersionMap[version.ServiceID] = service
-		}
-		service[version.Name] = ServiceVersionState{
-			Name:          version.Name,
-			Order:         version.Name,
-			LatestVersion: version.Version,
-			hidden:        true,
-		}
-	}
 
 	scripts, err := app.ListServiceScripts(nil)
 	if err != nil {
@@ -62,27 +22,24 @@ func Setup(app *application.App) error {
 		service, ok := s.services[script.ServiceID]
 		if !ok {
 			service = &serviceState{
-				scripts: make(map[string]serviceScriptState),
+				scripts: make(map[string]*serviceScriptState),
 			}
 			s.services[script.ServiceID] = service
 		}
 		if script, ok := service.scripts[script.ID]; ok {
 			app.Scheduler.RemoveJob(script.job.ID())
 		}
-		scriptState := serviceScriptState{
-			uptimeStatuses: lastKnownUptimeStatusMap[script.ServiceID],
-			versions:       lastKnownVersionMap[script.ServiceID],
-		}
+		var scriptState serviceScriptState
 		scriptState.job, err = app.Scheduler.NewJob(
 			gocron.CronJob(script.Schedule, true),
-			gocron.NewTask(runScript, &s, service, &scriptState, script),
+			gocron.NewTask(newServiceScriptRunner(&s, service, &scriptState, script)),
 			gocron.WithSingletonMode(gocron.LimitModeReschedule),
 		)
 		if err != nil {
 			log.Printf("Error scheduling script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
 			continue
 		}
-		service.scripts[script.ID] = scriptState
+		service.scripts[script.ID] = &scriptState
 	}
 
 	app.State = &s
@@ -107,76 +64,86 @@ type State struct {
 }
 
 type serviceState struct {
-	lock            sync.Mutex
-	scripts         map[string]serviceScriptState
-	uptimeStatuses  []ServiceUptimeStatusState
-	versions        []ServiceVersionState
-	contextSections []ServiceContextSectionState
-	contextOptions  []ServiceContextOptionState
+	lock                  sync.Mutex
+	scripts               map[string]*serviceScriptState
+	uptimeStatuses        map[string]ServiceUptimeStatusState
+	uptimeStatusesSorted  []ServiceUptimeStatusState
+	versions              map[string]ServiceVersionState
+	versionsSorted        []ServiceVersionState
+	contextSections       map[string]ServiceContextSectionState
+	contextSectionsSorted []ServiceContextSectionState
+	contextOptions        map[string]ServiceContextOptionState
+	contextOptionsSorted  []ServiceContextOptionState
 }
 
 type serviceScriptState struct {
 	job             gocron.Job
+	error           error
 	uptimeStatuses  map[string]ServiceUptimeStatusState
 	versions        map[string]ServiceVersionState
 	contextSections map[string]ServiceContextSectionState
 	contextOptions  map[string]ServiceContextOptionState
 }
 
+const (
+	ServiceUptimeStatusDown = iota + 1
+	ServiceUptimeStatusUp
+)
+
+var (
+	ServiceUptimeStatusNames = map[int]string{
+		ServiceUptimeStatusDown: "down",
+		ServiceUptimeStatusUp:   "up",
+	}
+	ServiceUptimeStatusCodes map[string]int
+)
+
+func init() {
+	ServiceUptimeStatusCodes = make(map[string]int, len(ServiceUptimeStatusNames))
+	for code, name := range ServiceUptimeStatusNames {
+		ServiceUptimeStatusCodes[name] = code
+	}
+}
+
 type ServiceUptimeStatusState struct {
-	Name   string    `json:"name"`
-	Time   time.Time `json:"time"`
-	Order  string    `json:"order"`
+	Name   string `mapstructure:"name"`
+	Time   time.Time
+	Order  string `mapstructure:"order"`
 	Status int
-	hidden bool
 }
 
 type ServiceVersionState struct {
-	Name                string              `json:"name"`
-	Time                time.Time           `json:"time"`
-	Order               string              `json:"order"`
-	CurrentVersion      string              `json:"currentVersion"`
-	CurrentVersionNotes string              `json:"currentVersionNotes"`
-	CurrentVersionCVEs  []ServiceVersionCVE `json:"currentVersionCVEs"`
-	LatestVersion       string              `json:"latestVersion"`
-	LatestVersionNotes  string              `json:"latestVersionNotes"`
-	LatestVersionCVEs   []ServiceVersionCVE `json:"latestVersionCVEs"`
-	hidden              bool
+	Name                string `mapstructure:"name"`
+	Time                time.Time
+	Order               string              `mapstructure:"order"`
+	CurrentVersion      string              `mapstructure:"currentVersion"`
+	CurrentVersionNotes string              `mapstructure:"currentVersionNotes"`
+	CurrentVersionCVEs  []ServiceVersionCVE `mapstructure:"currentVersionCVEs"`
+	LatestVersion       string              `mapstructure:"latestVersion"`
+	LatestVersionNotes  string              `mapstructure:"latestVersionNotes"`
+	LatestVersionCVEs   []ServiceVersionCVE `mapstructure:"latestVersionCVEs"`
 }
 
 type ServiceVersionCVE struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	URL         string `json:"url"`
+	Name        string `mapstructure:"name"`
+	Description string `mapstructure:"description"`
+	URL         string `mapstructure:"url"`
 }
 
 type ServiceContextSectionState struct {
-	Name  string    `json:"name"`
-	Time  time.Time `json:"time"`
-	Order string    `json:"order"`
-	Icon  string    `json:"icon"`
+	Name  string `mapstructure:"name"`
+	Time  time.Time
+	Order string `mapstructure:"order"`
+	Icon  string `mapstructure:"icon"`
 }
 
 type ServiceContextOptionState struct {
-	Name             string    `json:"name"`
-	Time             time.Time `json:"time"`
-	Order            string    `json:"order"`
-	Icon             string    `json:"icon"`
-	URL              string    `json:"url"`
-	Script           string    `json:"script"`
-	RestrictToAdmins bool      `json:"restrictToAdmins"`
-}
-
-func runScript(s *State, serviceState *serviceState, scriptState *serviceScriptState, script schema.ServiceScript) {
-	results, err := scripts.RunServiceScript(s.app, script.ServiceID, script.Source)
-	if err != nil {
-		log.Printf("Script error [%s:%s]: %s", script.ServiceID, script.ID, err)
-		return
-	}
-	log.Printf("Script result [%s:%s]: %+v", script.ServiceID, script.ID, results)
-	// TODO:
-	/*
-	  - handle script results (and errors)
-	  - integrate state into the rest api (fetching; update on data change)
-	*/
+	Name             string `mapstructure:"name"`
+	Time             time.Time
+	Order            string `mapstructure:"order"`
+	Icon             string `mapstructure:"icon"`
+	URL              string `mapstructure:"url"`
+	Script           string `mapstructure:"script"`
+	Section          string `mapstructure:"section"`
+	RestrictToAdmins bool   `mapstructure:"restrictToAdmins"`
 }

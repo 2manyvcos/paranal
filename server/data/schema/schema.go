@@ -57,21 +57,11 @@ type DataProvider interface {
 	ListUserServices(userName string, query *UserServiceQuery) ([]UserService, error)
 	GetUserService(userName string, query UserServiceQuery) (UserService, error)
 
+	ListServiceUserAlertChannels(serviceID string, query *ServiceUserAlertChannelQuery) ([]ServiceUserAlertChannel, error)
+
 	ListServiceScripts(query *ServiceScriptQuery) ([]ServiceScript, error)
 	GetServiceScript(query ServiceScriptQuery) (ServiceScript, error)
 	CreateServiceScript(record ServiceScript) error
 	UpdateServiceScripts(query ServiceScriptQuery, record ServiceScript) error
 	DeleteServiceScripts(query ServiceScriptQuery) error
-
-	ListServiceUptimeStatuses(query *ServiceUptimeStatusQuery) ([]ServiceUptimeStatus, error)
-	GetServiceUptimeStatus(query ServiceUptimeStatusQuery) (ServiceUptimeStatus, error)
-	CreateServiceUptimeStatus(record ServiceUptimeStatus) error
-	UpdateServiceUptimeStatuses(query ServiceUptimeStatusQuery, record ServiceUptimeStatus) error
-	DeleteServiceUptimeStatuses(query ServiceUptimeStatusQuery) error
-
-	ListServiceVersions(query *ServiceVersionQuery) ([]ServiceVersion, error)
-	GetServiceVersion(query ServiceVersionQuery) (ServiceVersion, error)
-	CreateServiceVersion(record ServiceVersion) error
-	UpdateServiceVersions(query ServiceVersionQuery, record ServiceVersion) error
-	DeleteServiceVersions(query ServiceVersionQuery) error
 }

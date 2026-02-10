@@ -3,14 +3,20 @@ package schema
 import "fmt"
 
 type UserAlertChannelQuery struct {
-	ID       *string
-	UserName *string
+	ID                *string
+	UserName          *string
+	ErrorAlerts       *bool
+	UptimeAlerts      *bool
+	VersionAlerts     *bool
 }
 
 type UserAlertChannel struct {
-	ID       string
-	UserName string
-	URL      string
+	ID            string
+	UserName      string
+	URL           string
+	ErrorAlerts   bool
+	UptimeAlerts  bool
+	VersionAlerts bool
 }
 
 func (r UserAlertChannel) Valid() error {

@@ -29,10 +29,10 @@ func (i *impl) ListUserServices(userName string, query *schema.UserServiceQuery)
 	where, wherePlaceholders := UserServiceQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, serviceuserconfigs.favorite, serviceuserconfigs.hidden, serviceuserconfigs.uptimeAlert, serviceuserconfigs.versionAlert
+      SELECT services.id, services.name, services.description, services.logo, services.url, serviceuserconfigs.favorite, serviceuserconfigs.hidden, serviceuserconfigs.uptimeAlerts, serviceuserconfigs.versionAlerts
       FROM services
       LEFT JOIN serviceuserconfigs
-      ON services.id = serviceuserconfigs.serviceID AND serviceuserconfigs.userName = ?
+      ON serviceuserconfigs.serviceID = services.id AND serviceuserconfigs.userName = ?
       WHERE `+where+`
     `,
 		slices.Concat(
@@ -49,9 +49,9 @@ func (i *impl) ListUserServices(userName string, query *schema.UserServiceQuery)
 		var record schema.UserService
 		var favorite *bool
 		var hidden *bool
-		var uptimeAlert *bool
-		var versionAlert *bool
-		if err := rows.Scan(&record.ID, &record.Name, &record.Description, &record.Logo, &record.URL, &favorite, &hidden, &uptimeAlert, &versionAlert); err != nil {
+		var uptimeAlerts *bool
+		var versionAlerts *bool
+		if err := rows.Scan(&record.ID, &record.Name, &record.Description, &record.Logo, &record.URL, &favorite, &hidden, &uptimeAlerts, &versionAlerts); err != nil {
 			return nil, err
 		}
 		if favorite != nil {
@@ -60,11 +60,11 @@ func (i *impl) ListUserServices(userName string, query *schema.UserServiceQuery)
 		if hidden != nil {
 			record.Hidden = *hidden
 		}
-		if uptimeAlert != nil {
-			record.UptimeAlert = *uptimeAlert
+		if uptimeAlerts != nil {
+			record.UptimeAlerts = *uptimeAlerts
 		}
-		if versionAlert != nil {
-			record.VersionAlert = *versionAlert
+		if versionAlerts != nil {
+			record.VersionAlerts = *versionAlerts
 		}
 		records = append(records, record)
 	}
@@ -79,11 +79,11 @@ func (i *impl) GetUserService(userName string, query schema.UserServiceQuery) (s
 	var record schema.UserService
 	var favorite *bool
 	var hidden *bool
-	var uptimeAlert *bool
-	var versionAlert *bool
+	var uptimeAlerts *bool
+	var versionAlerts *bool
 	err := i.QueryRow(
 		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, serviceuserconfigs.favorite, serviceuserconfigs.hidden, serviceuserconfigs.uptimeAlert, serviceuserconfigs.versionAlert
+      SELECT services.id, services.name, services.description, services.logo, services.url, serviceuserconfigs.favorite, serviceuserconfigs.hidden, serviceuserconfigs.uptimeAlerts, serviceuserconfigs.versionAlerts
       FROM services
       LEFT JOIN serviceuserconfigs
       ON services.id = serviceuserconfigs.serviceID AND serviceuserconfigs.userName = ?
@@ -93,18 +93,18 @@ func (i *impl) GetUserService(userName string, query schema.UserServiceQuery) (s
 			[]any{userName},
 			wherePlaceholders,
 		)...,
-	).Scan(&record.ID, &record.Name, &record.Description, &record.Logo, &record.URL, &favorite, &hidden, &uptimeAlert, &versionAlert)
+	).Scan(&record.ID, &record.Name, &record.Description, &record.Logo, &record.URL, &favorite, &hidden, &uptimeAlerts, &versionAlerts)
 	if favorite != nil {
 		record.Favorite = *favorite
 	}
 	if hidden != nil {
 		record.Hidden = *hidden
 	}
-	if uptimeAlert != nil {
-		record.UptimeAlert = *uptimeAlert
+	if uptimeAlerts != nil {
+		record.UptimeAlerts = *uptimeAlerts
 	}
-	if versionAlert != nil {
-		record.VersionAlert = *versionAlert
+	if versionAlerts != nil {
+		record.VersionAlerts = *versionAlerts
 	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return schema.UserService{}, schema.ErrNotFound

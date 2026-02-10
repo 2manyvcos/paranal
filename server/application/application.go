@@ -1,6 +1,8 @@
 package application
 
 import (
+	"errors"
+	"fmt"
 	"log"
 
 	"github.com/2manyvcos/paranal/crypto"
@@ -119,35 +121,21 @@ func Setup() (app *App, err error) {
 		return nil, err
 	}
 
-	// job, err := app.Scheduler.NewJob(
-	// 	gocron.CronJob("*/5 * * * * *", true),
-	// 	gocron.NewTask(func() {
-	// 		log.Println("yes")
-	// 	}),
-	// 	gocron.WithSingletonMode(gocron.LimitModeReschedule),
-	// )
-	// if err != nil {
-	// 	app.Close()
-	// 	return nil, err
-	// }
-	// err = job.RunNow()
-	// if err != nil {
-	// 	log.Printf("Error running job - %s\n", err)
-	// }
-
 	return
 }
 
 func (app *App) prepare() (err error) {
 	if app.Config.Admin.Username != "" {
 		log.Printf("Setting up admin user \"%s\"\n", app.Config.Admin.Username)
-		err = app.CreateOrUpdateUser(
-			schema.User{
-				Name:         app.Config.Admin.Username,
-				PasswordHash: app.Config.Admin.PasswordHash,
-				Role:         schema.UserRoleAdmin,
-			},
-		)
+		existing, err := app.GetUser(schema.UserQuery{Name: &app.Config.Admin.Username})
+		if err != nil && !errors.Is(err, schema.ErrNotFound) {
+			return fmt.Errorf("Error loading record - %s\n", err)
+		}
+		newUser := existing
+		newUser.Name = app.Config.Admin.Username
+		newUser.PasswordHash = app.Config.Admin.PasswordHash
+		newUser.Role = schema.UserRoleAdmin
+		err = app.CreateOrUpdateUser(newUser)
 		if err != nil {
 			return err
 		}

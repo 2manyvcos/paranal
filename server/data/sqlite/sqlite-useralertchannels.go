@@ -16,7 +16,10 @@ func init() {
       CREATE TABLE IF NOT EXISTS useralertchannels (
         id TEXT PRIMARY KEY NOT NULL,
         userName TEXT NOT NULL,
-        url TEXT NOT NULL
+        url TEXT NOT NULL,
+        errorAlerts BOOLEAN NOT NULL,
+        uptimeAlerts BOOLEAN NOT NULL,
+        versionAlerts BOOLEAN NOT NULL
       )
     `)
 		if err != nil {
@@ -39,6 +42,18 @@ func UserAlertChannelQuery(query *schema.UserAlertChannelQuery) (clause string, 
 		conditions = append(conditions, "useralertchannels.userName = ?")
 		placeholders = append(placeholders, *query.UserName)
 	}
+	if query.ErrorAlerts != nil {
+		conditions = append(conditions, "useralertchannels.errorAlerts = ?")
+		placeholders = append(placeholders, *query.ErrorAlerts)
+	}
+	if query.UptimeAlerts != nil {
+		conditions = append(conditions, "useralertchannels.uptimeAlerts = ?")
+		placeholders = append(placeholders, *query.UptimeAlerts)
+	}
+	if query.VersionAlerts != nil {
+		conditions = append(conditions, "useralertchannels.versionAlerts = ?")
+		placeholders = append(placeholders, *query.VersionAlerts)
+	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}
@@ -50,7 +65,7 @@ func (i *impl) ListUserAlertChannels(query *schema.UserAlertChannelQuery) ([]sch
 	where, wherePlaceholders := UserAlertChannelQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url
+      SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url, useralertchannels.errorAlerts, useralertchannels.uptimeAlerts, useralertchannels.versionAlerts
       FROM useralertchannels
       INNER JOIN users
       ON useralertchannels.userName = users.name
@@ -65,7 +80,7 @@ func (i *impl) ListUserAlertChannels(query *schema.UserAlertChannelQuery) ([]sch
 	var records []schema.UserAlertChannel
 	for rows.Next() {
 		var record schema.UserAlertChannel
-		if err := rows.Scan(&record.ID, &record.UserName, &record.URL); err != nil {
+		if err := rows.Scan(&record.ID, &record.UserName, &record.URL, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts); err != nil {
 			return nil, err
 		}
 		records = append(records, record)
@@ -81,14 +96,14 @@ func (i *impl) GetUserAlertChannel(query schema.UserAlertChannelQuery) (schema.U
 	var record schema.UserAlertChannel
 	err := i.QueryRow(
 		`
-      SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url
+      SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url, useralertchannels.errorAlerts, useralertchannels.uptimeAlerts, useralertchannels.versionAlerts
       FROM useralertchannels
       INNER JOIN users
       ON useralertchannels.userName = users.name
       WHERE `+where+`
     `,
 		wherePlaceholders...,
-	).Scan(&record.ID, &record.UserName, &record.URL)
+	).Scan(&record.ID, &record.UserName, &record.URL, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts)
 	if errors.Is(err, sql.ErrNoRows) {
 		return schema.UserAlertChannel{}, schema.ErrNotFound
 	}
@@ -101,10 +116,10 @@ func (i *impl) CreateUserAlertChannel(record schema.UserAlertChannel) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO useralertchannels (id, userName, url)
-      VALUES (?, ?, ?)
+      INSERT INTO useralertchannels (id, userName, url, errorAlerts, uptimeAlerts, versionAlerts)
+      VALUES (?, ?, ?, ?, ?, ?)
     `,
-		&record.ID, &record.UserName, &record.URL,
+		&record.ID, &record.UserName, &record.URL, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts,
 	)
 	return requireNoConflict(err)
 }
@@ -120,11 +135,14 @@ func (i *impl) UpdateUserAlertChannels(query schema.UserAlertChannelQuery, recor
       SET
         id = ?,
         userName = ?,
-        url = ?
+        url = ?,
+        errorAlerts = ?,
+        uptimeAlerts = ?,
+        versionAlerts = ?
       WHERE `+where+`
     `,
 		slices.Concat(
-			[]any{&record.ID, &record.UserName, &record.URL},
+			[]any{&record.ID, &record.UserName, &record.URL, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts},
 			wherePlaceholders,
 		)...,
 	)

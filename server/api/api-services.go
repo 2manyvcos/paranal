@@ -36,10 +36,10 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		Logo        string `json:"logo"`
 		URL         string `json:"url"`
 		Config      struct {
-			Favorite     bool `json:"favorite"`
-			Hidden       bool `json:"hidden"`
-			UptimeAlert  bool `json:"uptimeAlert"`
-			VersionAlert bool `json:"versionAlert"`
+			Favorite      bool `json:"favorite"`
+			Hidden        bool `json:"hidden"`
+			UptimeAlerts  bool `json:"uptimeAlerts"`
+			VersionAlerts bool `json:"versionAlerts"`
 		} `json:"config"`
 	}, len(records))
 	for i, record := range records {
@@ -50,8 +50,8 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].URL = record.URL
 		responsePayload[i].Config.Favorite = record.Favorite
 		responsePayload[i].Config.Hidden = record.Hidden
-		responsePayload[i].Config.UptimeAlert = record.UptimeAlert
-		responsePayload[i].Config.VersionAlert = record.VersionAlert
+		responsePayload[i].Config.UptimeAlerts = record.UptimeAlerts
+		responsePayload[i].Config.VersionAlerts = record.VersionAlerts
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(responsePayload)
@@ -140,10 +140,10 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		Logo        string `json:"logo"`
 		URL         string `json:"url"`
 		Config      struct {
-			Favorite     bool `json:"favorite"`
-			Hidden       bool `json:"hidden"`
-			UptimeAlert  bool `json:"uptimeAlert"`
-			VersionAlert bool `json:"versionAlert"`
+			Favorite      bool `json:"favorite"`
+			Hidden        bool `json:"hidden"`
+			UptimeAlerts  bool `json:"uptimeAlerts"`
+			VersionAlerts bool `json:"versionAlerts"`
 		} `json:"config"`
 	}{
 		ID:          record.ID,
@@ -152,15 +152,15 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		Logo:        record.Logo,
 		URL:         record.URL,
 		Config: struct {
-			Favorite     bool `json:"favorite"`
-			Hidden       bool `json:"hidden"`
-			UptimeAlert  bool `json:"uptimeAlert"`
-			VersionAlert bool `json:"versionAlert"`
+			Favorite      bool `json:"favorite"`
+			Hidden        bool `json:"hidden"`
+			UptimeAlerts  bool `json:"uptimeAlerts"`
+			VersionAlerts bool `json:"versionAlerts"`
 		}{
-			Favorite:     record.Favorite,
-			Hidden:       record.Hidden,
-			UptimeAlert:  record.UptimeAlert,
-			VersionAlert: record.VersionAlert,
+			Favorite:      record.Favorite,
+			Hidden:        record.Hidden,
+			UptimeAlerts:  record.UptimeAlerts,
+			VersionAlerts: record.VersionAlerts,
 		},
 	})
 	if err != nil {
@@ -276,10 +276,10 @@ func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var requestPayload struct {
-		Favorite     utils.Optional[bool] `json:"favorite"`
-		Hidden       utils.Optional[bool] `json:"hidden"`
-		UptimeAlert  utils.Optional[bool] `json:"uptimeAlert"`
-		VersionAlert utils.Optional[bool] `json:"versionAlert"`
+		Favorite      utils.Optional[bool] `json:"favorite"`
+		Hidden        utils.Optional[bool] `json:"hidden"`
+		UptimeAlerts  utils.Optional[bool] `json:"uptimeAlerts"`
+		VersionAlerts utils.Optional[bool] `json:"versionAlerts"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
@@ -290,17 +290,17 @@ func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 	}
 
 	updatedRecord := schema.ServiceUserConfig{
-		UserName:     authorizedUser.Name,
-		ServiceID:    serviceID,
-		Favorite:     record.Favorite,
-		Hidden:       record.Hidden,
-		UptimeAlert:  record.UptimeAlert,
-		VersionAlert: record.VersionAlert,
+		UserName:      authorizedUser.Name,
+		ServiceID:     serviceID,
+		Favorite:      record.Favorite,
+		Hidden:        record.Hidden,
+		UptimeAlerts:  record.UptimeAlerts,
+		VersionAlerts: record.VersionAlerts,
 	}
 	requestPayload.Favorite.ApplyIfDefined(&updatedRecord.Favorite)
 	requestPayload.Hidden.ApplyIfDefined(&updatedRecord.Hidden)
-	requestPayload.UptimeAlert.ApplyIfDefined(&updatedRecord.UptimeAlert)
-	requestPayload.VersionAlert.ApplyIfDefined(&updatedRecord.VersionAlert)
+	requestPayload.UptimeAlerts.ApplyIfDefined(&updatedRecord.UptimeAlerts)
+	requestPayload.VersionAlerts.ApplyIfDefined(&updatedRecord.VersionAlerts)
 	if err := updatedRecord.Valid(); err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return

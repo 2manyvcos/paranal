@@ -3,21 +3,21 @@ package schema
 import "fmt"
 
 type ServiceUserConfigQuery struct {
-	UserName     *string
-	ServiceID    *string
-	Favorite     *bool
-	Hidden       *bool
-	UptimeAlert  *bool
-	VersionAlert *bool
+	UserName      *string
+	ServiceID     *string
+	Favorite      *bool
+	Hidden        *bool
+	UptimeAlerts  *bool
+	VersionAlerts *bool
 }
 
 type ServiceUserConfig struct {
-	UserName     string
-	ServiceID    string
-	Favorite     bool
-	Hidden       bool
-	UptimeAlert  bool
-	VersionAlert bool
+	UserName      string
+	ServiceID     string
+	Favorite      bool
+	Hidden        bool
+	UptimeAlerts  bool
+	VersionAlerts bool
 }
 
 func (r ServiceUserConfig) Valid() error {
