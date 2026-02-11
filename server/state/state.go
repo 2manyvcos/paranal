@@ -9,12 +9,14 @@ import (
 	"github.com/jplorg/jpl/go/v2/jpl"
 )
 
-func Setup(app *application.App) error {
+func Setup(app *application.App) (*State, error) {
 	s := State{app: app}
 
-	s.setupServiceScripts()
+	if err := s.setupServiceScripts(); err != nil {
+		return nil, err
+	}
 
-	return nil
+	return &s, nil
 }
 
 type State struct {

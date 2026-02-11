@@ -23,20 +23,6 @@ func (s *State) setupServiceScripts() error {
 		s.updateServiceScript(script)
 	}
 
-	s.app.State = s
-	s.app.Scheduler.Start()
-
-	for serviceID, service := range s.services {
-		for scriptID, script := range service.scripts {
-			if script.job != nil {
-				err := script.job.RunNow()
-				if err != nil {
-					log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
-				}
-			}
-		}
-	}
-
 	return nil
 }
 
@@ -160,6 +146,23 @@ func (s *State) GetServiceAction(serviceID string, actionName string) *applicati
 		RestrictToAdmins: action.RestrictToAdmins,
 	}
 	return &result
+}
+
+func (s *State) RunAllServiceScripts() {
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
+	for serviceID, service := range s.services {
+		service.lock.RLock()
+		for scriptID, script := range service.scripts {
+			if script.job != nil {
+				err := script.job.RunNow()
+				if err != nil {
+					log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
+				}
+			}
+		}
+		service.lock.RUnlock()
+	}
 }
 
 func (s *State) RunServiceScript(serviceID string, scriptID string) (alreadyRunning bool, found bool) {

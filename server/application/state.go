@@ -12,6 +12,7 @@ type State interface {
 	GetServiceActionGroups(serviceID string) []ServiceActionGroup
 	GetServiceActions(serviceID string) []ServiceAction
 	GetServiceAction(serviceID string, actionName string) *ServiceAction
+	RunAllServiceScripts()
 	RunServiceScript(serviceID string, scriptID string) (alreadyRunning bool, found bool)
 	OnServiceScriptChanged(script schema.ServiceScript)
 	OnServiceScriptDeleted(serviceId string, scriptID string)

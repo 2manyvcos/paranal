@@ -26,11 +26,14 @@ func Run() {
 	}
 	defer app.Close()
 
-	err = state.Setup(app)
+	app.State, err = state.Setup(app)
 	if err != nil {
 		app.Close()
 		log.Fatalf("Setup failure - %s\n", err)
 	}
+
+  app.Scheduler.Start()
+  app.State.RunAllServiceScripts()
 
 	apiHandler := api.New()
 	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, helper.OmitTrailingSlash(helper.WithApp(app, apiHandler))))
