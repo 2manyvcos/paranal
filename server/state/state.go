@@ -6,6 +6,7 @@ import (
 
 	"github.com/2manyvcos/paranal/server/application"
 	"github.com/go-co-op/gocron/v2"
+	"github.com/jplorg/jpl/go/v2/jpl"
 )
 
 func Setup(app *application.App) error {
@@ -36,6 +37,7 @@ type serviceState struct {
 }
 
 type serviceScriptState struct {
+	program        jpl.JPLProgram
 	job            gocron.Job
 	error          error
 	uptimeStatuses map[string]ServiceUptimeStatusState

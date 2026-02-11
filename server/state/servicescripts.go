@@ -146,6 +146,11 @@ func (s *State) updateServiceScript(script schema.ServiceScript) *serviceScriptS
 	}
 	var scriptState serviceScriptState
 	var err error
+	scriptState.program, err = scripts.ParseServiceScript(s.app, script.ServiceID, script.Source)
+	if err != nil {
+		log.Printf("Error scheduling script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
+		return nil
+	}
 	scriptState.job, err = s.app.Scheduler.NewJob(
 		gocron.CronJob(script.Schedule, true),
 		gocron.NewTask(newServiceScriptRunner(s, service, &scriptState, script)),
@@ -176,11 +181,11 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 	return func() {
 		service, err := s.app.GetService(schema.ServiceQuery{ID: &script.ServiceID})
 		if err != nil {
-			handleErr(service, err)
+			log.Printf("Error loading record - %s\n", err)
 			return
 		}
 
-		results, err := scripts.RunServiceScript(s.app, script.ServiceID, script.Source)
+		results, err := scriptState.program.Run([]any{nil}, nil)
 		if err != nil {
 			handleErr(service, err)
 			return
