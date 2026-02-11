@@ -12,6 +12,12 @@ import (
 
 func GetServicesByIDActions(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
+	authorizedUser := helper.GetAuthorizedUser(req)
+
+	if authorizedUser == nil || authorizedUser.Name == "" {
+		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
 
 	serviceID := req.PathValue("serviceID")
 	if serviceID == "" {
@@ -51,14 +57,26 @@ func GetServicesByIDActions(res http.ResponseWriter, req *http.Request) {
 		CanRun           bool   `json:"canRun"`
 		Group            string `json:"group"`
 		RestrictToAdmins bool   `json:"restrictToAdmins"`
-	}, len(actions))
-	for i, action := range actions {
-		responsePayload.Actions[i].Name = action.Name
-		responsePayload.Actions[i].Icon = action.Icon
-		responsePayload.Actions[i].URL = action.URL
-		responsePayload.Actions[i].CanRun = action.Script != ""
-		responsePayload.Actions[i].Group = action.Group
-		responsePayload.Actions[i].RestrictToAdmins = action.RestrictToAdmins
+	}, 0, len(actions))
+	for _, action := range actions {
+		if action.RestrictToAdmins && authorizedUser.Role != schema.UserRoleAdmin {
+			continue
+		}
+		responsePayload.Actions = append(responsePayload.Actions, struct {
+			Name             string `json:"name"`
+			Icon             string `json:"icon"`
+			URL              string `json:"url"`
+			CanRun           bool   `json:"canRun"`
+			Group            string `json:"group"`
+			RestrictToAdmins bool   `json:"restrictToAdmins"`
+		}{
+			Name:             action.Name,
+			Icon:             action.Icon,
+			URL:              action.URL,
+			CanRun:           action.Script != "",
+			Group:            action.Group,
+			RestrictToAdmins: action.RestrictToAdmins,
+		})
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(res).Encode(responsePayload)
@@ -70,6 +88,11 @@ func GetServicesByIDActions(res http.ResponseWriter, req *http.Request) {
 func PostServicesByIDActionsRunByName(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
+
+	if authorizedUser == nil || authorizedUser.Name == "" {
+		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
 
 	serviceID := req.PathValue("serviceID")
 	actionName := req.PathValue("actionName")
@@ -85,7 +108,7 @@ func PostServicesByIDActionsRunByName(res http.ResponseWriter, req *http.Request
 	}
 
 	if action.RestrictToAdmins {
-		if authorizedUser == nil || authorizedUser.Role != schema.UserRoleAdmin {
+		if authorizedUser.Role != schema.UserRoleAdmin {
 			http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 			return
 		}
