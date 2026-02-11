@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/2manyvcos/paranal/server/application"
 	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/utils"
@@ -162,6 +163,9 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 	}
 
 	state := app.State.GetServiceScriptState(serviceID, scriptID)
+	if state == nil {
+		state = new(application.ServiceScriptState)
+	}
 
 	var error *string
 	if state.Error != nil {

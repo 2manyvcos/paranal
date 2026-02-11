@@ -70,8 +70,8 @@ func New() http.Handler {
 	api.Handle("DELETE /services/{serviceID}/scripts/{scriptID}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteServicesByIDScriptsByID))))
 	api.Handle("POST /services/{serviceID}/scripts/{scriptID}/run", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostServicesByIDScriptsByIDRun))))
 
-	// api.Handle("GET /services/{serviceID}/actions", helper.WithAuth(http.HandlerFunc(GetServicesByIDActions)))
-	// api.Handle("POST /services/{serviceID}/actions/run/{actionName}", helper.WithAuth(http.HandlerFunc(PostServicesByIDActionsRunByName)))
+	api.Handle("GET /services/{serviceID}/actions", helper.WithAuth(http.HandlerFunc(GetServicesByIDActions)))
+	api.Handle("POST /services/{serviceID}/actions/run/{actionName}", helper.WithAuth(http.HandlerFunc(PostServicesByIDActionsRunByName)))
 
 	// api.Handle("GET /uptimestatuses", helper.WithAuth(http.HandlerFunc(GetUptimeStatuses)))
 	// api.Handle("GET /uptimestatuses/{statusName}", helper.WithAuth(http.HandlerFunc(GetUptimeStatusesByName)))

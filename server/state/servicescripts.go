@@ -67,18 +67,18 @@ func (s *State) GetServiceScriptStates(serviceID string) map[string]application.
 	return result
 }
 
-func (s *State) GetServiceScriptState(serviceID string, scriptID string) application.ServiceScriptState {
+func (s *State) GetServiceScriptState(serviceID string, scriptID string) *application.ServiceScriptState {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
 	if !ok {
-		return application.ServiceScriptState{}
+		return nil
 	}
 	service.lock.RLock()
 	defer service.lock.RUnlock()
 	script, ok := service.scripts[scriptID]
 	if !ok {
-		return application.ServiceScriptState{}
+		return nil
 	}
 	state := application.ServiceScriptState{
 		Error: script.error,
@@ -91,7 +91,95 @@ func (s *State) GetServiceScriptState(serviceID string, scriptID string) applica
 			state.NextRun = &nextRun
 		}
 	}
-	return state
+	return &state
+}
+
+func (s *State) GetServiceActionGroups(serviceID string) []application.ServiceActionGroup {
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return nil
+	}
+	service.lock.RLock()
+	defer service.lock.RUnlock()
+	result := make([]application.ServiceActionGroup, len(service.actionGroupsSorted))
+	for i, actionGroup := range service.actionGroupsSorted {
+		result[i] = application.ServiceActionGroup{
+			Name: actionGroup.Name,
+			Icon: actionGroup.Icon,
+		}
+	}
+	return result
+}
+
+func (s *State) GetServiceActions(serviceID string) []application.ServiceAction {
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return nil
+	}
+	service.lock.RLock()
+	defer service.lock.RUnlock()
+	result := make([]application.ServiceAction, len(service.actionsSorted))
+	for i, action := range service.actionsSorted {
+		result[i] = application.ServiceAction{
+			Name:             action.Name,
+			Icon:             action.Icon,
+			URL:              action.URL,
+			Script:           action.Script,
+			Group:            action.Group,
+			RestrictToAdmins: action.RestrictToAdmins,
+		}
+	}
+	return result
+}
+
+func (s *State) GetServiceAction(serviceID string, actionName string) *application.ServiceAction {
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return nil
+	}
+	service.lock.RLock()
+	defer service.lock.RUnlock()
+	action, ok := service.actions[actionName]
+	if !ok {
+		return nil
+	}
+	result := application.ServiceAction{
+		Name:             action.Name,
+		Icon:             action.Icon,
+		URL:              action.URL,
+		Script:           action.Script,
+		Group:            action.Group,
+		RestrictToAdmins: action.RestrictToAdmins,
+	}
+	return &result
+}
+
+func (s *State) RunServiceScript(serviceID string, scriptID string) bool {
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return false
+	}
+	service.lock.RLock()
+	defer service.lock.RUnlock()
+	script, ok := service.scripts[scriptID]
+	if !ok {
+		return false
+	}
+	if script.job != nil {
+		err := script.job.RunNow()
+		if err != nil {
+			log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
+		}
+	}
+	return true
 }
 
 func (s *State) OnServiceScriptChanged(script schema.ServiceScript) {
@@ -139,28 +227,6 @@ func (s *State) OnServiceDeleted(serviceID string) {
 		service.lock.Unlock()
 		delete(s.services, serviceID)
 	}
-}
-
-func (s *State) RunServiceScript(serviceID string, scriptID string) bool {
-	s.servicesLock.RLock()
-	defer s.servicesLock.RUnlock()
-	service, ok := s.services[serviceID]
-	if !ok {
-		return false
-	}
-	service.lock.RLock()
-	defer service.lock.RUnlock()
-	script, ok := service.scripts[scriptID]
-	if !ok {
-		return false
-	}
-	if script.job != nil {
-		err := script.job.RunNow()
-		if err != nil {
-			log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
-		}
-	}
-	return true
 }
 
 func (s *State) updateServiceScript(script schema.ServiceScript) *serviceScriptState {
@@ -497,6 +563,13 @@ func updateServiceState(serviceState *serviceState) {
 		for name, action := range scriptState.actions {
 			if existing, ok := serviceState.actions[name]; !ok || existing.Time.Before(action.Time) {
 				serviceState.actions[name] = action
+			}
+		}
+	}
+	for _, action := range serviceState.actions {
+		if action.Group != "" {
+			if _, ok := serviceState.actionGroups[action.Group]; !ok {
+				serviceState.actionGroups[action.Group] = ServiceActionGroupState{Name: action.Group, Order: action.Group}
 			}
 		}
 	}
