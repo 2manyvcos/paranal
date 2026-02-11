@@ -3,8 +3,10 @@ package schema
 import "fmt"
 
 type SSHCredentialQuery struct {
-	Name *string
-	User *string
+	Name          *string
+	User          *string
+	HasPassword   *bool
+	HasPrivateKey *bool
 }
 
 type SSHCredential struct {

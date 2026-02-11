@@ -8,6 +8,7 @@ type UserQuery struct {
 	Name          *string
 	DisplayName   *string
 	Role          *int
+	HasPassword   *bool
 	ErrorAlerts   *bool
 	UptimeAlerts  *bool
 	VersionAlerts *bool

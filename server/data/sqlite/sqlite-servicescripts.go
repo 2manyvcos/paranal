@@ -49,6 +49,10 @@ func ServiceScriptQuery(query *schema.ServiceScriptQuery) (clause string, placeh
 		conditions = append(conditions, "servicescripts.schedule = ?")
 		placeholders = append(placeholders, *query.Schedule)
 	}
+	if query.Source != nil {
+		conditions = append(conditions, "servicescripts.source = ?")
+		placeholders = append(placeholders, *query.Source)
+	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}

@@ -15,7 +15,19 @@ import (
 func GetUserCredentials(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	records, err := app.ListUserCredentials(nil)
+	var query schema.UserCredentialQuery
+	q := req.URL.Query()
+	if v, ok := utils.LoadQueryValue(q, "name"); ok {
+		query.Name = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "description"); ok {
+		query.Description = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "hasValue"); ok {
+		query.HasValue = &v
+	}
+
+	records, err := app.ListUserCredentials(&query)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

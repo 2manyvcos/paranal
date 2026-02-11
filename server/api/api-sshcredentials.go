@@ -15,7 +15,22 @@ import (
 func GetSSHCredentials(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	records, err := app.ListSSHCredentials(nil)
+	var query schema.SSHCredentialQuery
+	q := req.URL.Query()
+	if v, ok := utils.LoadQueryValue(q, "name"); ok {
+		query.Name = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "user"); ok {
+		query.User = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "hasPassword"); ok {
+		query.HasPassword = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "hasPrivateKey"); ok {
+		query.HasPrivateKey = &v
+	}
+
+	records, err := app.ListSSHCredentials(&query)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

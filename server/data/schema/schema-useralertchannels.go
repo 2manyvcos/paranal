@@ -3,11 +3,12 @@ package schema
 import "fmt"
 
 type UserAlertChannelQuery struct {
-	ID                *string
-	UserName          *string
-	ErrorAlerts       *bool
-	UptimeAlerts      *bool
-	VersionAlerts     *bool
+	ID            *string
+	UserName      *string
+	HasURL        *bool
+	ErrorAlerts   *bool
+	UptimeAlerts  *bool
+	VersionAlerts *bool
 }
 
 type UserAlertChannel struct {

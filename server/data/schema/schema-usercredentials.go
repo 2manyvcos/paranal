@@ -7,6 +7,7 @@ import (
 type UserCredentialQuery struct {
 	Name        *string
 	Description *string
+	HasValue    *bool
 }
 
 type UserCredential struct {

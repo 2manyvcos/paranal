@@ -40,6 +40,20 @@ func SSHCredentialQuery(query *schema.SSHCredentialQuery) (clause string, placeh
 		conditions = append(conditions, "sshcredentials.user = ?")
 		placeholders = append(placeholders, *query.User)
 	}
+	if query.HasPassword != nil {
+		if *query.HasPassword {
+			conditions = append(conditions, "IFNULL(sshcredentials.password, '') <> ''")
+		} else {
+			conditions = append(conditions, "IFNULL(sshcredentials.password, '') = ''")
+		}
+	}
+	if query.HasPrivateKey != nil {
+		if *query.HasPrivateKey {
+			conditions = append(conditions, "IFNULL(sshcredentials.privateKey, '') <> ''")
+		} else {
+			conditions = append(conditions, "IFNULL(sshcredentials.privateKey, '') = ''")
+		}
+	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}

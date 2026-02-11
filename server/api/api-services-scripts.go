@@ -22,7 +22,22 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	records, err := app.ListServiceScripts(&schema.ServiceScriptQuery{ServiceID: &serviceID})
+	query := schema.ServiceScriptQuery{ServiceID: &serviceID}
+	q := req.URL.Query()
+	if v, ok := utils.LoadQueryValue(q, "id"); ok {
+		query.ID = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "name"); ok {
+		query.Name = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "schedule"); ok {
+		query.Schedule = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "source"); ok {
+		query.Source = &v
+	}
+
+	records, err := app.ListServiceScripts(&query)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

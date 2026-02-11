@@ -39,6 +39,13 @@ func UserCredentialQuery(query *schema.UserCredentialQuery) (clause string, plac
 		conditions = append(conditions, "usercredentials.description = ?")
 		placeholders = append(placeholders, *query.Description)
 	}
+	if query.HasValue != nil {
+		if *query.HasValue {
+			conditions = append(conditions, "IFNULL(usercredentials.value, '') <> ''")
+		} else {
+			conditions = append(conditions, "IFNULL(usercredentials.value, '') = ''")
+		}
+	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}

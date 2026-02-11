@@ -47,6 +47,13 @@ func UserQuery(query *schema.UserQuery) (clause string, placeholders []any) {
 		conditions = append(conditions, "users.role = ?")
 		placeholders = append(placeholders, *query.Role)
 	}
+	if query.HasPassword != nil {
+		if *query.HasPassword {
+			conditions = append(conditions, "IFNULL(users.passwordHash, '') <> ''")
+		} else {
+			conditions = append(conditions, "IFNULL(users.passwordHash, '') = ''")
+		}
+	}
 	if query.ErrorAlerts != nil {
 		conditions = append(conditions, "IFNULL(users.errorAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.ErrorAlerts)

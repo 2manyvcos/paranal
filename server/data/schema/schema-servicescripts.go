@@ -12,6 +12,7 @@ type ServiceScriptQuery struct {
 	ServiceID *string
 	Name      *string
 	Schedule  *string
+	Source    *string
 }
 
 type ServiceScript struct {

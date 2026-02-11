@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
@@ -22,22 +21,37 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	query := new(schema.UserServiceQuery)
+	var query schema.UserServiceQuery
 	q := req.URL.Query()
-	if q.Has("hidden") {
-		v := q.Get("hidden")
-		if v == "" {
-			v = "true"
-		}
-		if p, err := strconv.ParseBool(v); err == nil {
-			query.Hidden = &p
-		} else {
-			log.Printf("Error parsing query parameter - %s\n", err)
-			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
+	if v, ok := utils.LoadQueryValue(q, "id"); ok {
+		query.ID = &v
 	}
-	records, err := app.ListUserServices(authorizedUser.Name, query)
+	if v, ok := utils.LoadQueryValue(q, "name"); ok {
+		query.Name = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "description"); ok {
+		query.Description = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "logo"); ok {
+		query.Logo = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "url"); ok {
+		query.URL = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "config.favorite"); ok {
+		query.Favorite = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "config.hidden"); ok {
+		query.Hidden = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "config.uptimeAlerts"); ok {
+		query.UptimeAlerts = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "config.versionAlerts"); ok {
+		query.VersionAlerts = &v
+	}
+
+	records, err := app.ListUserServices(authorizedUser.Name, &query)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

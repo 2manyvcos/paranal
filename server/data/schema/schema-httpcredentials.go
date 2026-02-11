@@ -6,6 +6,7 @@ type HTTPCredentialQuery struct {
 	Name *string
 	Type *int
 	Key  *string
+  HasValue *bool
 }
 
 type HTTPCredential struct {

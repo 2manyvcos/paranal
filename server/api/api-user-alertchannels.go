@@ -22,7 +22,28 @@ func GetUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	records, err := app.ListUserAlertChannels(&schema.UserAlertChannelQuery{UserName: &authorizedUser.Name})
+	query := schema.UserAlertChannelQuery{UserName: &authorizedUser.Name}
+	q := req.URL.Query()
+	if v, ok := utils.LoadQueryValue(q, "id"); ok {
+		query.ID = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "userName"); ok {
+		query.UserName = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "hasURL"); ok {
+		query.HasURL = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "errorAlerts"); ok {
+		query.ErrorAlerts = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "uptimeAlerts"); ok {
+		query.UptimeAlerts = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "versionAlerts"); ok {
+		query.VersionAlerts = &v
+	}
+
+	records, err := app.ListUserAlertChannels(&query)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

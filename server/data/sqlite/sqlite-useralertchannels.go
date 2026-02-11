@@ -42,6 +42,13 @@ func UserAlertChannelQuery(query *schema.UserAlertChannelQuery) (clause string, 
 		conditions = append(conditions, "useralertchannels.userName = ?")
 		placeholders = append(placeholders, *query.UserName)
 	}
+	if query.HasURL != nil {
+		if *query.HasURL {
+			conditions = append(conditions, "IFNULL(useralertchannels.url, '') <> ''")
+		} else {
+			conditions = append(conditions, "IFNULL(useralertchannels.url, '') = ''")
+		}
+	}
 	if query.ErrorAlerts != nil {
 		conditions = append(conditions, "IFNULL(useralertchannels.errorAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.ErrorAlerts)

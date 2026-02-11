@@ -15,7 +15,27 @@ import (
 func GetHTTPCredentials(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	records, err := app.ListHTTPCredentials(nil)
+	var query schema.HTTPCredentialQuery
+	q := req.URL.Query()
+	if v, ok := utils.LoadQueryValue(q, "name"); ok {
+		query.Name = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "type"); ok {
+		t, ok := schema.HTTPCredentialTypeCodes[v]
+		if !ok {
+			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		query.Type = &t
+	}
+	if v, ok := utils.LoadQueryValue(q, "key"); ok {
+		query.Key = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "hasValue"); ok {
+		query.HasValue = &v
+	}
+
+	records, err := app.ListHTTPCredentials(&query)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

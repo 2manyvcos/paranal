@@ -15,7 +15,24 @@ import (
 func GetUsers(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
-	records, err := app.ListUsers(nil)
+	var query schema.UserQuery
+	q := req.URL.Query()
+	if v, ok := utils.LoadQueryValue(q, "name"); ok {
+		query.Name = &v
+	}
+	if v, ok := utils.LoadQueryValue(q, "role"); ok {
+		t, ok := schema.UserRoleCodes[v]
+		if !ok {
+			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+			return
+		}
+		query.Role = &t
+	}
+	if v, ok := utils.LoadQueryBool(q, "hasPassword"); ok {
+		query.HasPassword = &v
+	}
+
+	records, err := app.ListUsers(&query)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
