@@ -20,9 +20,9 @@ func alertScriptError(app *application.App, script schema.ServiceScript, _ error
 	if err != nil {
 		log.Printf("Error loading record - %s\n", err)
 	}
-	channels, err := app.ListServiceUserAlertChannels(
+	channels, err := app.ListServiceAlertChannels(
 		script.ServiceID,
-		&schema.ServiceUserAlertChannelQuery{
+		&schema.ServiceAlertChannelQuery{
 			UserQuery:          schema.UserQuery{Role: &adminRole},
 			ServiceConfigQuery: schema.ServiceConfigQuery{Hidden: &f},
 			ErrorAlerts:        &t,
@@ -68,9 +68,9 @@ func alertUptimeStatuses(app *application.App, script schema.ServiceScript, _ []
 	if err != nil {
 		log.Printf("Error loading record - %s\n", err)
 	}
-	channels, err := app.ListServiceUserAlertChannels(
+	channels, err := app.ListServiceAlertChannels(
 		script.ServiceID,
-		&schema.ServiceUserAlertChannelQuery{
+		&schema.ServiceAlertChannelQuery{
 			ServiceConfigQuery: schema.ServiceConfigQuery{Hidden: &f},
 			UptimeAlerts:       &t,
 		},
@@ -115,9 +115,9 @@ func alertVersions(app *application.App, script schema.ServiceScript, _ []Servic
 	if err != nil {
 		log.Printf("Error loading record - %s\n", err)
 	}
-	channels, err := app.ListServiceUserAlertChannels(
+	channels, err := app.ListServiceAlertChannels(
 		script.ServiceID,
-		&schema.ServiceUserAlertChannelQuery{
+		&schema.ServiceAlertChannelQuery{
 			ServiceConfigQuery: schema.ServiceConfigQuery{Hidden: &f},
 			VersionAlerts:      &t,
 		},

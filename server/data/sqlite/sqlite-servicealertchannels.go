@@ -7,9 +7,9 @@ import (
 	"github.com/2manyvcos/paranal/server/data/schema"
 )
 
-func ServiceUserAlertChannelQuery(query *schema.ServiceUserAlertChannelQuery) (clause string, placeholders []any) {
+func ServiceAlertChannelQuery(query *schema.ServiceAlertChannelQuery) (clause string, placeholders []any) {
 	if query == nil {
-		query = new(schema.ServiceUserAlertChannelQuery)
+		query = new(schema.ServiceAlertChannelQuery)
 	}
 	var conditions []string
 	userAlertChannelConditions, userAlertChannelPlaceholders := UserAlertChannelQuery(&query.UserAlertChannelQuery)
@@ -49,8 +49,8 @@ func ServiceUserAlertChannelQuery(query *schema.ServiceUserAlertChannelQuery) (c
 	return
 }
 
-func (i *impl) ListServiceUserAlertChannels(serviceID string, query *schema.ServiceUserAlertChannelQuery) ([]schema.ServiceUserAlertChannel, error) {
-	where, wherePlaceholders := ServiceUserAlertChannelQuery(query)
+func (i *impl) ListServiceAlertChannels(serviceID string, query *schema.ServiceAlertChannelQuery) ([]schema.ServiceAlertChannel, error) {
+	where, wherePlaceholders := ServiceAlertChannelQuery(query)
 	rows, err := i.Query(
 		`
       SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url, useralertchannels.errorAlerts, useralertchannels.uptimeAlerts, useralertchannels.versionAlerts
@@ -70,9 +70,9 @@ func (i *impl) ListServiceUserAlertChannels(serviceID string, query *schema.Serv
 		return nil, err
 	}
 	defer rows.Close()
-	var records []schema.ServiceUserAlertChannel
+	var records []schema.ServiceAlertChannel
 	for rows.Next() {
-		var record schema.ServiceUserAlertChannel
+		var record schema.ServiceAlertChannel
 		if err := rows.Scan(&record.ID, &record.UserName, &record.URL, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts); err != nil {
 			return nil, err
 		}

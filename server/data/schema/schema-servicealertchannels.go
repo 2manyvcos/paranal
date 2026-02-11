@@ -2,7 +2,7 @@ package schema
 
 // index for useralertchannels joined to users and serviceconfigs
 
-type ServiceUserAlertChannelQuery struct {
+type ServiceAlertChannelQuery struct {
 	UserAlertChannelQuery
 	UserQuery
 	ServiceConfigQuery
@@ -11,6 +11,6 @@ type ServiceUserAlertChannelQuery struct {
 	VersionAlerts *bool
 }
 
-type ServiceUserAlertChannel struct {
+type ServiceAlertChannel struct {
 	UserAlertChannel
 }

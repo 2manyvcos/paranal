@@ -57,7 +57,7 @@ type DataProvider interface {
 	ListUserServices(userName string, query *UserServiceQuery) ([]UserService, error)
 	GetUserService(userName string, query UserServiceQuery) (UserService, error)
 
-	ListServiceUserAlertChannels(serviceID string, query *ServiceUserAlertChannelQuery) ([]ServiceUserAlertChannel, error)
+	ListServiceAlertChannels(serviceID string, query *ServiceAlertChannelQuery) ([]ServiceAlertChannel, error)
 
 	ListServiceScripts(query *ServiceScriptQuery) ([]ServiceScript, error)
 	GetServiceScript(query ServiceScriptQuery) (ServiceScript, error)
