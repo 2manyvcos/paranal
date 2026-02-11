@@ -4,12 +4,160 @@ import (
 	"fmt"
 	"log"
 	"sort"
-	"time"
 
+	"github.com/2manyvcos/paranal/server/application"
 	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/scripts"
+	"github.com/go-co-op/gocron/v2"
 	"github.com/go-viper/mapstructure/v2"
 )
+
+func (s *State) setupServiceScripts() error {
+	scripts, err := s.app.ListServiceScripts(nil)
+	if err != nil {
+		return err
+	}
+
+	s.services = make(map[string]*serviceState)
+	for _, script := range scripts {
+		s.updateServiceScript(script)
+	}
+
+	s.app.State = s
+	s.app.Scheduler.Start()
+
+	for serviceID, service := range s.services {
+		for scriptID, script := range service.scripts {
+			err := script.job.RunNow()
+			if err != nil {
+				log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *State) GetServiceScriptStates(serviceID string) map[string]application.ServiceScriptState {
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return nil
+	}
+	service.lock.RLock()
+	defer service.lock.RUnlock()
+	result := make(map[string]application.ServiceScriptState, len(service.scripts))
+	for scriptID, script := range service.scripts {
+		var state application.ServiceScriptState
+		if lastRun, err := script.job.LastRun(); err == nil && !lastRun.IsZero() {
+			state.LastRun = &lastRun
+		}
+		state.Error = script.error
+		if nextRun, err := script.job.NextRun(); err == nil && !nextRun.IsZero() {
+			state.NextRun = &nextRun
+		}
+		result[scriptID] = state
+	}
+	return result
+}
+
+func (s *State) GetServiceScriptState(serviceID string, scriptID string) application.ServiceScriptState {
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return application.ServiceScriptState{}
+	}
+	service.lock.RLock()
+	defer service.lock.RUnlock()
+	script, ok := service.scripts[scriptID]
+	if !ok {
+		return application.ServiceScriptState{}
+	}
+	var state application.ServiceScriptState
+	if lastRun, err := script.job.LastRun(); err != nil && !lastRun.IsZero() {
+		state.LastRun = &lastRun
+	}
+	state.Error = script.error
+	if nextRun, err := script.job.NextRun(); err != nil && !nextRun.IsZero() {
+		state.NextRun = &nextRun
+	}
+	return state
+}
+
+func (s *State) OnServiceScriptChanged(script schema.ServiceScript) {
+	scriptState := s.updateServiceScript(script)
+	if scriptState != nil {
+		err := scriptState.job.RunNow()
+		if err != nil {
+			log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
+		}
+	}
+}
+
+func (s *State) OnServiceScriptDeleted(serviceID string, scriptID string) {
+	s.servicesLock.Lock()
+	defer s.servicesLock.Unlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return
+	}
+	service.lock.Lock()
+	defer service.lock.Unlock()
+	if script, ok := service.scripts[scriptID]; ok {
+		s.app.Scheduler.RemoveJob(script.job.ID())
+		delete(service.scripts, scriptID)
+	}
+	if len(service.scripts) == 0 {
+		delete(s.services, serviceID)
+	} else {
+		updateServiceState(service)
+	}
+}
+
+func (s *State) OnServiceDeleted(serviceID string) {
+	s.servicesLock.Lock()
+	defer s.servicesLock.Unlock()
+	if service, ok := s.services[serviceID]; ok {
+		service.lock.Lock()
+		for _, script := range service.scripts {
+			s.app.Scheduler.RemoveJob(script.job.ID())
+		}
+		service.lock.Unlock()
+		delete(s.services, serviceID)
+	}
+}
+
+func (s *State) updateServiceScript(script schema.ServiceScript) *serviceScriptState {
+	s.servicesLock.Lock()
+	defer s.servicesLock.Unlock()
+	service, ok := s.services[script.ServiceID]
+	if !ok {
+		service = &serviceState{
+			scripts: make(map[string]*serviceScriptState),
+		}
+		s.services[script.ServiceID] = service
+	}
+	service.lock.Lock()
+	defer service.lock.Unlock()
+	if script, ok := service.scripts[script.ID]; ok {
+		s.app.Scheduler.RemoveJob(script.job.ID())
+	}
+	var scriptState serviceScriptState
+	var err error
+	scriptState.job, err = s.app.Scheduler.NewJob(
+		gocron.CronJob(script.Schedule, true),
+		gocron.NewTask(newServiceScriptRunner(s, service, &scriptState, script)),
+		gocron.WithSingletonMode(gocron.LimitModeReschedule),
+	)
+	if err != nil {
+		log.Printf("Error scheduling script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
+		return nil
+	}
+	service.scripts[script.ID] = &scriptState
+	return &scriptState
+}
 
 func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *serviceScriptState, script schema.ServiceScript) func() {
 	handleErr := func(err error) {
@@ -210,103 +358,6 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		if len(versionsToBeAlerted) > 0 {
 			alertVersions(s.app, script, versionsToBeAlerted)
 		}
-	}
-}
-
-type GenericInstruction struct {
-	Type string `mapstructure:"type"`
-}
-
-type UptimeStatusInstruction struct {
-	Type string `mapstructure:"type"`
-	ServiceUptimeStatusState
-	Time   any    `mapstructure:"time"`
-	Status string `mapstructure:"status"`
-}
-
-type ByUptimeStatusOrder []ServiceUptimeStatusState
-
-func (a ByUptimeStatusOrder) Len() int           { return len(a) }
-func (a ByUptimeStatusOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByUptimeStatusOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
-
-type VersionInstruction struct {
-	Type string `mapstructure:"type"`
-	ServiceVersionState
-	Time any `mapstructure:"time"`
-}
-
-type ByVersionOrder []ServiceVersionState
-
-func (a ByVersionOrder) Len() int           { return len(a) }
-func (a ByVersionOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByVersionOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
-
-type ContextSectionInstruction struct {
-	Type string `mapstructure:"type"`
-	ServiceContextSectionState
-	Time any `mapstructure:"time"`
-}
-
-type ByContextSectionOrder []ServiceContextSectionState
-
-func (a ByContextSectionOrder) Len() int           { return len(a) }
-func (a ByContextSectionOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByContextSectionOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
-
-type ContextOptionInstruction struct {
-	Type string `mapstructure:"type"`
-	ServiceContextOptionState
-	Time any `mapstructure:"time"`
-}
-
-type ByContextOptionOrder []ServiceContextOptionState
-
-func (a ByContextOptionOrder) Len() int           { return len(a) }
-func (a ByContextOptionOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByContextOptionOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
-
-func decodeServiceInstruction(input, output any) error {
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: output, Squash: true, IgnoreUntaggedFields: true})
-	if err != nil {
-		return err
-	}
-	return decoder.Decode(input)
-}
-
-func decodeTime(input any) (time.Time, error) {
-	if input == nil {
-		return time.Now(), nil
-	}
-	switch v := input.(type) {
-	case string:
-		if t, err := time.Parse(time.RFC3339Nano, v); err == nil {
-			return t, nil
-		} else if t, err = time.Parse(time.RFC3339, v); err == nil {
-			return t, nil
-		} else if t, err = time.Parse(time.RFC1123Z, v); err == nil {
-			return t, nil
-		} else if t, err = time.Parse(time.RFC1123, v); err == nil {
-			return t, nil
-		} else if t, err = time.Parse(time.RFC850, v); err == nil {
-			return t, nil
-		} else if t, err = time.Parse(time.RFC822Z, v); err == nil {
-			return t, nil
-		} else if t, err = time.Parse(time.RFC822, v); err == nil {
-			return t, nil
-		} else if t, err = time.Parse(time.DateTime, v); err == nil {
-			return t, nil
-		} else if t, err = time.Parse(time.DateOnly, v); err == nil {
-			return t, nil
-		} else {
-			return time.Time{}, fmt.Errorf("invalid time")
-		}
-
-	case float64:
-		return time.Unix(int64(v), 0), nil
-
-	default:
-		return time.Time{}, fmt.Errorf("invalid time")
 	}
 }
 
