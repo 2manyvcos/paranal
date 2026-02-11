@@ -39,14 +39,14 @@ func Setup(app *application.App) error {
 }
 
 func (s *State) GetServiceScriptStates(serviceID string) map[string]application.ServiceScriptState {
-	s.servicesLock.Lock()
-	defer s.servicesLock.Unlock()
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
 	if !ok {
 		return nil
 	}
-	service.lock.Lock()
-	defer service.lock.Unlock()
+	service.lock.RLock()
+	defer service.lock.RUnlock()
 	result := make(map[string]application.ServiceScriptState, len(service.scripts))
 	for scriptID, script := range service.scripts {
 		var state application.ServiceScriptState
@@ -63,14 +63,14 @@ func (s *State) GetServiceScriptStates(serviceID string) map[string]application.
 }
 
 func (s *State) GetServiceScriptState(serviceID string, scriptID string) application.ServiceScriptState {
-	s.servicesLock.Lock()
-	defer s.servicesLock.Unlock()
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
 	if !ok {
 		return application.ServiceScriptState{}
 	}
-	service.lock.Lock()
-	defer service.lock.Unlock()
+	service.lock.RLock()
+	defer service.lock.RUnlock()
 	script, ok := service.scripts[scriptID]
 	if !ok {
 		return application.ServiceScriptState{}
@@ -162,11 +162,11 @@ func (s *State) OnServiceDeleted(serviceID string) {
 type State struct {
 	app          *application.App
 	services     map[string]*serviceState
-	servicesLock sync.Mutex
+	servicesLock sync.RWMutex
 }
 
 type serviceState struct {
-	lock                  sync.Mutex
+	lock                  sync.RWMutex
 	scripts               map[string]*serviceScriptState
 	uptimeStatuses        map[string]ServiceUptimeStatusState
 	uptimeStatusesSorted  []ServiceUptimeStatusState
