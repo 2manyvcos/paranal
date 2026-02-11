@@ -53,6 +53,7 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		Schedule string     `json:"schedule"`
 		Source   string     `json:"source"`
 		LastRun  *time.Time `json:"lastRun"`
+		Running  bool       `json:"running"`
 		Error    *string    `json:"error"`
 		NextRun  *time.Time `json:"nextRun"`
 	}, len(records))
@@ -63,6 +64,7 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].Schedule = record.Schedule
 		responsePayload[i].Source = record.Source
 		responsePayload[i].LastRun = state.LastRun
+		responsePayload[i].Running = state.Running
 		if state.Error != nil {
 			errorMessage := state.Error.Error()
 			responsePayload[i].Error = &errorMessage
@@ -179,6 +181,7 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		Schedule string     `json:"schedule"`
 		Source   string     `json:"source"`
 		LastRun  *time.Time `json:"lastRun"`
+		Running  bool       `json:"running"`
 		Error    *string    `json:"error"`
 		NextRun  *time.Time `json:"nextRun"`
 	}{
@@ -187,6 +190,7 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		Schedule: record.Schedule,
 		Source:   record.Source,
 		LastRun:  state.LastRun,
+		Running:  state.Running,
 		Error:    error,
 		NextRun:  state.NextRun,
 	})
@@ -286,9 +290,13 @@ func PostServicesByIDScriptsByIDRun(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	ok := app.State.RunServiceScript(serviceID, scriptID)
-	if !ok {
+	alreadyRunning, found := app.State.RunServiceScript(serviceID, scriptID)
+	if !found {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+	if alreadyRunning {
+		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
 		return
 	}
 

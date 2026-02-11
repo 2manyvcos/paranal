@@ -52,7 +52,8 @@ func (s *State) GetServiceScriptStates(serviceID string) map[string]application.
 	result := make(map[string]application.ServiceScriptState, len(service.scripts))
 	for scriptID, script := range service.scripts {
 		state := application.ServiceScriptState{
-			Error: script.error,
+			Running: script.running,
+			Error:   script.error,
 		}
 		if script.job != nil {
 			if lastRun, err := script.job.LastRun(); err == nil && !lastRun.IsZero() {
@@ -81,7 +82,8 @@ func (s *State) GetServiceScriptState(serviceID string, scriptID string) *applic
 		return nil
 	}
 	state := application.ServiceScriptState{
-		Error: script.error,
+		Running: script.running,
+		Error:   script.error,
 	}
 	if script.job != nil {
 		if lastRun, err := script.job.LastRun(); err != nil && !lastRun.IsZero() {
@@ -160,18 +162,21 @@ func (s *State) GetServiceAction(serviceID string, actionName string) *applicati
 	return &result
 }
 
-func (s *State) RunServiceScript(serviceID string, scriptID string) bool {
+func (s *State) RunServiceScript(serviceID string, scriptID string) (alreadyRunning bool, found bool) {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
 	if !ok {
-		return false
+		return false, false
 	}
 	service.lock.RLock()
 	defer service.lock.RUnlock()
 	script, ok := service.scripts[scriptID]
 	if !ok {
-		return false
+		return false, false
+	}
+	if script.running {
+		return true, true
 	}
 	if script.job != nil {
 		err := script.job.RunNow()
@@ -179,7 +184,7 @@ func (s *State) RunServiceScript(serviceID string, scriptID string) bool {
 			log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
 		}
 	}
-	return true
+	return false, true
 }
 
 func (s *State) OnServiceScriptChanged(script schema.ServiceScript) {
@@ -273,6 +278,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 	handleErr := func(service *schema.Service, err error) {
 		log.Printf("Error running script \"%s\" for service \"%s\" - %s", script.ServiceID, script.ID, err)
 		serviceState.lock.Lock()
+		scriptState.running = false
 		scriptState.error = err
 		scriptState.uptimeStatuses = nil
 		scriptState.versions = nil
@@ -284,6 +290,10 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 	}
 
 	return func() {
+		serviceState.lock.Lock()
+		scriptState.running = true
+		serviceState.lock.Unlock()
+
 		service, err := s.app.GetService(schema.ServiceQuery{ID: &script.ServiceID})
 		if err != nil {
 			handleErr(nil, err)
@@ -452,6 +462,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		}
 
 		serviceState.lock.Lock()
+		scriptState.running = false
 		scriptState.error = nil
 		// current uptime statuses
 		scriptState.uptimeStatuses = make(map[string]ServiceUptimeStatusState, len(scriptState.uptimeStatuses))

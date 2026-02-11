@@ -39,6 +39,7 @@ type serviceState struct {
 type serviceScriptState struct {
 	program        jpl.JPLProgram
 	job            gocron.Job
+	running        bool
 	error          error
 	uptimeStatuses map[string]ServiceUptimeStatusState
 	versions       map[string]ServiceVersionState
