@@ -12,14 +12,10 @@ import (
 	"github.com/containrrr/shoutrrr"
 )
 
-func alertScriptError(app *application.App, script schema.ServiceScript, _ error) {
+func alertScriptError(app *application.App, service schema.Service, script schema.ServiceScript, _ error) {
 	adminRole := schema.UserRoleAdmin
 	t := true
 	f := false
-	service, err := app.GetService(schema.ServiceQuery{ID: &script.ServiceID})
-	if err != nil {
-		log.Printf("Error loading record - %s\n", err)
-	}
 	channels, err := app.ListServiceAlertChannels(
 		script.ServiceID,
 		&schema.ServiceAlertChannelQuery{
@@ -48,26 +44,16 @@ func alertScriptError(app *application.App, script schema.ServiceScript, _ error
 		log.Printf("Error sending alerts - %s", err)
 		return
 	}
-	var message string
-	if service.Name != "" {
-		message = fmt.Sprintf("Script \"%s\" for service \"%s\" failed to run", script.Name, service.Name)
-	} else {
-		message = fmt.Sprintf("Script \"%s\" failed to run", script.Name)
-	}
-	for _, err := range sender.Send(message, nil) {
+	for _, err := range sender.Send(fmt.Sprintf("Script \"%s\" for service \"%s\" failed to run", script.Name, service.Name), nil) {
 		if err != nil {
 			log.Printf("Error sending alerts - %s\n", err)
 		}
 	}
 }
 
-func alertDownUptimeStatuses(app *application.App, script schema.ServiceScript, _ []ServiceUptimeStatusState) {
+func alertUnhealthyUptimeStatuses(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceUptimeStatusState) {
 	t := true
 	f := false
-	service, err := app.GetService(schema.ServiceQuery{ID: &script.ServiceID})
-	if err != nil {
-		log.Printf("Error loading record - %s\n", err)
-	}
 	channels, err := app.ListServiceAlertChannels(
 		script.ServiceID,
 		&schema.ServiceAlertChannelQuery{
@@ -95,26 +81,16 @@ func alertDownUptimeStatuses(app *application.App, script schema.ServiceScript, 
 		log.Printf("Error sending alerts - %s", err)
 		return
 	}
-	var message string
-	if service.Name != "" {
-		message = fmt.Sprintf("Service \"%s\" is down", service.Name)
-	} else {
-		message = "A service is down"
-	}
-	for _, err := range sender.Send(message, nil) {
+	for _, err := range sender.Send(fmt.Sprintf("Service \"%s\" is unhealthy", service.Name), nil) {
 		if err != nil {
 			log.Printf("Error sending alerts - %s\n", err)
 		}
 	}
 }
 
-func alertOutdatedVersions(app *application.App, script schema.ServiceScript, _ []ServiceVersionState) {
+func alertOutdatedVersions(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceVersionState) {
 	t := true
 	f := false
-	service, err := app.GetService(schema.ServiceQuery{ID: &script.ServiceID})
-	if err != nil {
-		log.Printf("Error loading record - %s\n", err)
-	}
 	channels, err := app.ListServiceAlertChannels(
 		script.ServiceID,
 		&schema.ServiceAlertChannelQuery{
@@ -142,26 +118,16 @@ func alertOutdatedVersions(app *application.App, script schema.ServiceScript, _ 
 		log.Printf("Error sending alerts - %s", err)
 		return
 	}
-	var message string
-	if service.Name != "" {
-		message = fmt.Sprintf("Service \"%s\" is outdated", service.Name)
-	} else {
-		message = "A service is outdated"
-	}
-	for _, err := range sender.Send(message, nil) {
+	for _, err := range sender.Send(fmt.Sprintf("Service \"%s\" is outdated", service.Name), nil) {
 		if err != nil {
 			log.Printf("Error sending alerts - %s\n", err)
 		}
 	}
 }
 
-func alertVulnerableVersions(app *application.App, script schema.ServiceScript, _ []ServiceVersionState) {
+func alertVulnerableVersions(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceVersionState) {
 	t := true
 	f := false
-	service, err := app.GetService(schema.ServiceQuery{ID: &script.ServiceID})
-	if err != nil {
-		log.Printf("Error loading record - %s\n", err)
-	}
 	channels, err := app.ListServiceAlertChannels(
 		script.ServiceID,
 		&schema.ServiceAlertChannelQuery{
@@ -189,13 +155,7 @@ func alertVulnerableVersions(app *application.App, script schema.ServiceScript, 
 		log.Printf("Error sending alerts - %s", err)
 		return
 	}
-	var message string
-	if service.Name != "" {
-		message = fmt.Sprintf("Service \"%s\" has open CVEs", service.Name)
-	} else {
-		message = "A service has open CVEs"
-	}
-	for _, err := range sender.Send(message, nil) {
+	for _, err := range sender.Send(fmt.Sprintf("Service \"%s\" has open CVEs", service.Name), nil) {
 		if err != nil {
 			log.Printf("Error sending alerts - %s\n", err)
 		}

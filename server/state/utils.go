@@ -19,17 +19,17 @@ func (a ByVersionOrder) Len() int           { return len(a) }
 func (a ByVersionOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByVersionOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
 
-type ByContextSectionOrder []ServiceContextSectionState
+type ByActionGroupOrder []ServiceActionGroupState
 
-func (a ByContextSectionOrder) Len() int           { return len(a) }
-func (a ByContextSectionOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByContextSectionOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
+func (a ByActionGroupOrder) Len() int           { return len(a) }
+func (a ByActionGroupOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByActionGroupOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
 
-type ByContextOptionOrder []ServiceContextOptionState
+type ByActionOrder []ServiceActionState
 
-func (a ByContextOptionOrder) Len() int           { return len(a) }
-func (a ByContextOptionOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByContextOptionOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
+func (a ByActionOrder) Len() int           { return len(a) }
+func (a ByActionOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByActionOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
 
 func decodeServiceInstruction(input, output any) error {
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: output, Squash: true, IgnoreUntaggedFields: true})

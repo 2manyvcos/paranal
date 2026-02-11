@@ -160,36 +160,42 @@ func (s *State) updateServiceScript(script schema.ServiceScript) *serviceScriptS
 }
 
 func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *serviceScriptState, script schema.ServiceScript) func() {
-	handleErr := func(err error) {
+	handleErr := func(service schema.Service, err error) {
 		log.Printf("Error running script \"%s\" for service \"%s\" - %s", script.ServiceID, script.ID, err)
 		serviceState.lock.Lock()
 		scriptState.error = err
 		scriptState.uptimeStatuses = nil
 		scriptState.versions = nil
-		scriptState.contextSections = nil
-		scriptState.contextOptions = nil
+		scriptState.actionGroups = nil
+		scriptState.actions = nil
 		updateServiceState(serviceState)
 		serviceState.lock.Unlock()
-		alertScriptError(s.app, script, err)
+		alertScriptError(s.app, service, script, err)
 	}
 
 	return func() {
+		service, err := s.app.GetService(schema.ServiceQuery{ID: &script.ServiceID})
+		if err != nil {
+			handleErr(service, err)
+			return
+		}
+
 		results, err := scripts.RunServiceScript(s.app, script.ServiceID, script.Source)
 		if err != nil {
-			handleErr(err)
+			handleErr(service, err)
 			return
 		}
 
 		var uptimeStatuses []ServiceUptimeStatusState
 		var versions []ServiceVersionState
-		var contextSections []ServiceContextSectionState
-		var contextOptions []ServiceContextOptionState
+		var actionGroups []ServiceActionGroupState
+		var actions []ServiceActionState
 
 		for _, result := range results {
 			var i GenericInstruction
 			err := mapstructure.Decode(result, &i)
 			if err != nil {
-				handleErr(err)
+				handleErr(service, err)
 				return
 			}
 
@@ -197,12 +203,15 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 			case "uptimeStatus":
 				var i UptimeStatusInstruction
 				if err = decodeServiceInstruction(result, &i); err != nil {
-					handleErr(fmt.Errorf("invalid instruction - %s", err))
+					handleErr(service, fmt.Errorf("invalid instruction - %s", err))
 					return
 				}
 				uptimeStatus := i.ServiceUptimeStatusState
+				if uptimeStatus.Name == "" {
+					uptimeStatus.Name = service.Name
+				}
 				if uptimeStatus.Time, err = decodeTime(i.Time); err != nil {
-					handleErr(err)
+					handleErr(service, err)
 					return
 				}
 				if uptimeStatus.Order == "" {
@@ -211,7 +220,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				if status, ok := ServiceUptimeStatusCodes[i.Status]; ok {
 					uptimeStatus.Status = status
 				} else {
-					handleErr(fmt.Errorf("invalid status"))
+					handleErr(service, fmt.Errorf("invalid status"))
 					return
 				}
 				uptimeStatuses = append(uptimeStatuses, uptimeStatus)
@@ -219,24 +228,27 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 			case "version":
 				var i VersionInstruction
 				if err = decodeServiceInstruction(result, &i); err != nil {
-					handleErr(fmt.Errorf("invalid instruction - %s", err))
+					handleErr(service, fmt.Errorf("invalid instruction - %s", err))
 					return
 				}
 				version := i.ServiceVersionState
+				if version.Name == "" {
+					version.Name = service.Name
+				}
 				if version.Time, err = decodeTime(i.Time); err != nil {
-					handleErr(err)
+					handleErr(service, err)
 					return
 				}
 				if version.Order == "" {
 					version.Order = version.Name
 				}
 				if version.CurrentVersion == "" {
-					handleErr(fmt.Errorf("invalid version"))
+					handleErr(service, fmt.Errorf("invalid version"))
 					return
 				}
 				if i.Status == "" {
 					if version.LatestVersion == "" {
-						handleErr(fmt.Errorf("invalid version"))
+						handleErr(service, fmt.Errorf("invalid version"))
 						return
 					}
 					if version.CurrentVersion == version.LatestVersion {
@@ -247,64 +259,84 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				} else if status, ok := ServiceVersionStatusCodes[i.Status]; ok {
 					version.Status = status
 				} else {
-					handleErr(fmt.Errorf("invalid status"))
+					handleErr(service, fmt.Errorf("invalid status"))
 					return
 				}
-				for _, cve := range version.CurrentVersionCVEs {
+				for _, cve := range version.CurrentCVEDescriptions {
 					if cve.Name == "" && cve.Description == "" {
-						handleErr(fmt.Errorf("invalid CVE"))
+						handleErr(service, fmt.Errorf("invalid CVE description"))
 						return
 					}
 				}
-				for _, cve := range version.LatestVersionCVEs {
+				if version.CurrentCVEs == 0 {
+					version.CurrentCVEs = len(version.CurrentCVEDescriptions)
+				} else if version.CurrentCVEs < 0 {
+					handleErr(service, fmt.Errorf("invalid version"))
+					return
+				}
+				for _, cve := range version.LatestCVEDescriptions {
 					if cve.Name == "" && cve.Description == "" {
-						handleErr(fmt.Errorf("invalid CVE"))
+						handleErr(service, fmt.Errorf("invalid CVE description"))
 						return
 					}
+				}
+				if version.LatestCVEs == 0 {
+					version.LatestCVEs = len(version.LatestCVEDescriptions)
+				} else if version.LatestCVEs < 0 {
+					handleErr(service, fmt.Errorf("invalid version"))
+					return
 				}
 				versions = append(versions, version)
 
-			case "contextSection":
-				var i ContextSectionInstruction
+			case "actionGroup":
+				var i ActionGroupInstruction
 				if err = decodeServiceInstruction(result, &i); err != nil {
-					handleErr(fmt.Errorf("invalid instruction - %s", err))
+					handleErr(service, fmt.Errorf("invalid instruction - %s", err))
 					return
 				}
-				contextSection := i.ServiceContextSectionState
-				if contextSection.Time, err = decodeTime(i.Time); err != nil {
-					handleErr(err)
+				actionGroup := i.ServiceActionGroupState
+				if actionGroup.Name == "" {
+					handleErr(service, fmt.Errorf("invalid action group"))
 					return
 				}
-				if contextSection.Order == "" {
-					contextSection.Order = contextSection.Name
+				if actionGroup.Time, err = decodeTime(i.Time); err != nil {
+					handleErr(service, err)
+					return
 				}
-				contextSections = append(contextSections, contextSection)
+				if actionGroup.Order == "" {
+					actionGroup.Order = actionGroup.Name
+				}
+				actionGroups = append(actionGroups, actionGroup)
 
-			case "contextOption":
-				var i ContextOptionInstruction
+			case "action":
+				var i ActionInstruction
 				if err = decodeServiceInstruction(result, &i); err != nil {
-					handleErr(fmt.Errorf("invalid instruction - %s", err))
+					handleErr(service, fmt.Errorf("invalid instruction - %s", err))
 					return
 				}
-				contextOption := i.ServiceContextOptionState
-				if contextOption.Time, err = decodeTime(i.Time); err != nil {
-					handleErr(err)
+				action := i.ServiceActionState
+				if action.Name == "" {
+					handleErr(service, fmt.Errorf("invalid action"))
 					return
 				}
-				if contextOption.Order == "" {
-					contextOption.Order = contextOption.Name
-				}
-				if (contextOption.URL == "" && contextOption.Script == "") || (contextOption.URL != "" && contextOption.Script != "") {
-					handleErr(fmt.Errorf("invalid context option"))
+				if action.Time, err = decodeTime(i.Time); err != nil {
+					handleErr(service, err)
 					return
 				}
-				contextOptions = append(contextOptions, contextOption)
+				if action.Order == "" {
+					action.Order = action.Name
+				}
+				if (action.URL == "" && action.Script == "") || (action.URL != "" && action.Script != "") {
+					handleErr(service, fmt.Errorf("invalid action"))
+					return
+				}
+				actions = append(actions, action)
 
 			case "debug":
 				// ignore
 
 			default:
-				handleErr(fmt.Errorf("invalid instruction type \"%s\"", i.Type))
+				handleErr(service, fmt.Errorf("invalid instruction type \"%s\"", i.Type))
 				return
 			}
 		}
@@ -325,18 +357,18 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				scriptState.versions[version.Name] = version
 			}
 		}
-		// current context sections
-		scriptState.contextSections = make(map[string]ServiceContextSectionState, len(scriptState.contextSections))
-		for _, contextSection := range contextSections {
-			if existing, ok := scriptState.contextSections[contextSection.Name]; !ok || existing.Time.Before(contextSection.Time) {
-				scriptState.contextSections[contextSection.Name] = contextSection
+		// current action groups
+		scriptState.actionGroups = make(map[string]ServiceActionGroupState, len(scriptState.actionGroups))
+		for _, actionGroup := range actionGroups {
+			if existing, ok := scriptState.actionGroups[actionGroup.Name]; !ok || existing.Time.Before(actionGroup.Time) {
+				scriptState.actionGroups[actionGroup.Name] = actionGroup
 			}
 		}
-		// current context options
-		scriptState.contextOptions = make(map[string]ServiceContextOptionState, len(scriptState.contextOptions))
-		for _, contextOption := range contextOptions {
-			if existing, ok := scriptState.contextOptions[contextOption.Name]; !ok || existing.Time.Before(contextOption.Time) {
-				scriptState.contextOptions[contextOption.Name] = contextOption
+		// current actions
+		scriptState.actions = make(map[string]ServiceActionState, len(scriptState.actions))
+		for _, action := range actions {
+			if existing, ok := scriptState.actions[action.Name]; !ok || existing.Time.Before(action.Time) {
+				scriptState.actions[action.Name] = action
 			}
 		}
 		// uptime statuses to be alerted
@@ -352,10 +384,10 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				previousUptimeStatuses[uptimeStatus.Name] = uptimeStatus
 			}
 		}
-		newlyDownUptimeStatuses := make([]ServiceUptimeStatusState, 0, len(scriptState.uptimeStatuses))
+		newlyUnhealthyUptimeStatuses := make([]ServiceUptimeStatusState, 0, len(scriptState.uptimeStatuses))
 		for name, uptimeStatus := range scriptState.uptimeStatuses {
-			if existing, ok := previousUptimeStatuses[name]; !uptimeStatus.Up() && (!ok || (existing.Time.Before(uptimeStatus.Time) && existing.Up())) {
-				newlyDownUptimeStatuses = append(newlyDownUptimeStatuses, uptimeStatus)
+			if existing, ok := previousUptimeStatuses[name]; uptimeStatus.Unhealthy() && (!ok || (existing.Time.Before(uptimeStatus.Time) && !existing.Unhealthy())) {
+				newlyUnhealthyUptimeStatuses = append(newlyUnhealthyUptimeStatuses, uptimeStatus)
 			}
 		}
 		// versions to be alerted
@@ -375,7 +407,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		newlyVulnerableVersions := make([]ServiceVersionState, 0, len(scriptState.versions))
 		for name, version := range scriptState.versions {
 			existing, ok := previousVersions[name]
-			if !version.UpToDate() && (!ok || (existing.Time.Before(version.Time) && existing.UpToDate())) {
+			if version.Outdated() && (!ok || (existing.Time.Before(version.Time) && !existing.Outdated())) {
 				newlyOutdatedVersions = append(newlyOutdatedVersions, version)
 			}
 			if version.Vulnerable() && (!ok || (existing.Time.Before(version.Time) && !existing.Vulnerable())) {
@@ -385,14 +417,14 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		updateServiceState(serviceState)
 		serviceState.lock.Unlock()
 
-		if len(newlyDownUptimeStatuses) > 0 {
-			alertDownUptimeStatuses(s.app, script, newlyDownUptimeStatuses)
+		if len(newlyUnhealthyUptimeStatuses) > 0 {
+			alertUnhealthyUptimeStatuses(s.app, service, script, newlyUnhealthyUptimeStatuses)
 		}
 		if len(newlyOutdatedVersions) > 0 {
-			alertOutdatedVersions(s.app, script, newlyOutdatedVersions)
+			alertOutdatedVersions(s.app, service, script, newlyOutdatedVersions)
 		}
 		if len(newlyVulnerableVersions) > 0 {
-			alertVulnerableVersions(s.app, script, newlyVulnerableVersions)
+			alertVulnerableVersions(s.app, service, script, newlyVulnerableVersions)
 		}
 	}
 }
@@ -400,8 +432,8 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 func updateServiceState(serviceState *serviceState) {
 	serviceState.uptimeStatuses = make(map[string]ServiceUptimeStatusState, len(serviceState.uptimeStatuses))
 	serviceState.versions = make(map[string]ServiceVersionState, len(serviceState.versions))
-	serviceState.contextSections = make(map[string]ServiceContextSectionState, len(serviceState.contextSections))
-	serviceState.contextOptions = make(map[string]ServiceContextOptionState, len(serviceState.contextOptions))
+	serviceState.actionGroups = make(map[string]ServiceActionGroupState, len(serviceState.actionGroups))
+	serviceState.actions = make(map[string]ServiceActionState, len(serviceState.actions))
 	for _, scriptState := range serviceState.scripts {
 		for name, uptimeStatus := range scriptState.uptimeStatuses {
 			if existing, ok := serviceState.uptimeStatuses[name]; !ok || existing.Time.Before(uptimeStatus.Time) {
@@ -413,14 +445,14 @@ func updateServiceState(serviceState *serviceState) {
 				serviceState.versions[name] = version
 			}
 		}
-		for name, contextSection := range scriptState.contextSections {
-			if existing, ok := serviceState.contextSections[name]; !ok || existing.Time.Before(contextSection.Time) {
-				serviceState.contextSections[name] = contextSection
+		for name, actionGroup := range scriptState.actionGroups {
+			if existing, ok := serviceState.actionGroups[name]; !ok || existing.Time.Before(actionGroup.Time) {
+				serviceState.actionGroups[name] = actionGroup
 			}
 		}
-		for name, contextOption := range scriptState.contextOptions {
-			if existing, ok := serviceState.contextOptions[name]; !ok || existing.Time.Before(contextOption.Time) {
-				serviceState.contextOptions[name] = contextOption
+		for name, action := range scriptState.actions {
+			if existing, ok := serviceState.actions[name]; !ok || existing.Time.Before(action.Time) {
+				serviceState.actions[name] = action
 			}
 		}
 	}
@@ -434,14 +466,14 @@ func updateServiceState(serviceState *serviceState) {
 		serviceState.versionsSorted = append(serviceState.versionsSorted, version)
 	}
 	sort.Sort(ByVersionOrder(serviceState.versionsSorted))
-	serviceState.contextSectionsSorted = make([]ServiceContextSectionState, 0, len(serviceState.contextSections))
-	for _, contextSection := range serviceState.contextSections {
-		serviceState.contextSectionsSorted = append(serviceState.contextSectionsSorted, contextSection)
+	serviceState.actionGroupsSorted = make([]ServiceActionGroupState, 0, len(serviceState.actionGroups))
+	for _, actionGroup := range serviceState.actionGroups {
+		serviceState.actionGroupsSorted = append(serviceState.actionGroupsSorted, actionGroup)
 	}
-	sort.Sort(ByContextSectionOrder(serviceState.contextSectionsSorted))
-	serviceState.contextOptionsSorted = make([]ServiceContextOptionState, 0, len(serviceState.contextOptions))
-	for _, contextOption := range serviceState.contextOptions {
-		serviceState.contextOptionsSorted = append(serviceState.contextOptionsSorted, contextOption)
+	sort.Sort(ByActionGroupOrder(serviceState.actionGroupsSorted))
+	serviceState.actionsSorted = make([]ServiceActionState, 0, len(serviceState.actions))
+	for _, action := range serviceState.actions {
+		serviceState.actionsSorted = append(serviceState.actionsSorted, action)
 	}
-	sort.Sort(ByContextOptionOrder(serviceState.contextOptionsSorted))
+	sort.Sort(ByActionOrder(serviceState.actionsSorted))
 }

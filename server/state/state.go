@@ -23,25 +23,25 @@ type State struct {
 }
 
 type serviceState struct {
-	lock                  sync.RWMutex
-	scripts               map[string]*serviceScriptState
-	uptimeStatuses        map[string]ServiceUptimeStatusState
-	uptimeStatusesSorted  []ServiceUptimeStatusState
-	versions              map[string]ServiceVersionState
-	versionsSorted        []ServiceVersionState
-	contextSections       map[string]ServiceContextSectionState
-	contextSectionsSorted []ServiceContextSectionState
-	contextOptions        map[string]ServiceContextOptionState
-	contextOptionsSorted  []ServiceContextOptionState
+	lock                 sync.RWMutex
+	scripts              map[string]*serviceScriptState
+	uptimeStatuses       map[string]ServiceUptimeStatusState
+	uptimeStatusesSorted []ServiceUptimeStatusState
+	versions             map[string]ServiceVersionState
+	versionsSorted       []ServiceVersionState
+	actionGroups         map[string]ServiceActionGroupState
+	actionGroupsSorted   []ServiceActionGroupState
+	actions              map[string]ServiceActionState
+	actionsSorted        []ServiceActionState
 }
 
 type serviceScriptState struct {
-	job             gocron.Job
-	error           error
-	uptimeStatuses  map[string]ServiceUptimeStatusState
-	versions        map[string]ServiceVersionState
-	contextSections map[string]ServiceContextSectionState
-	contextOptions  map[string]ServiceContextOptionState
+	job            gocron.Job
+	error          error
+	uptimeStatuses map[string]ServiceUptimeStatusState
+	versions       map[string]ServiceVersionState
+	actionGroups   map[string]ServiceActionGroupState
+	actions        map[string]ServiceActionState
 }
 
 const (
@@ -71,8 +71,8 @@ type ServiceUptimeStatusState struct {
 	Status int
 }
 
-func (s ServiceUptimeStatusState) Up() bool {
-	return s.Status == ServiceUptimeStatusUp
+func (s ServiceUptimeStatusState) Unhealthy() bool {
+	return s.Status != ServiceUptimeStatusUp
 }
 
 const (
@@ -96,47 +96,49 @@ func init() {
 }
 
 type ServiceVersionState struct {
-	Name                string `mapstructure:"name"`
-	Time                time.Time
-	Order               string              `mapstructure:"order"`
-	CurrentVersion      string              `mapstructure:"currentVersion"`
-	CurrentVersionNotes string              `mapstructure:"currentVersionNotes"`
-	CurrentVersionCVEs  []ServiceVersionCVE `mapstructure:"currentVersionCVEs"`
-	LatestVersion       string              `mapstructure:"latestVersion"`
-	LatestVersionNotes  string              `mapstructure:"latestVersionNotes"`
-	LatestVersionCVEs   []ServiceVersionCVE `mapstructure:"latestVersionCVEs"`
-	Status              int
+	Name                   string `mapstructure:"name"`
+	Time                   time.Time
+	Order                  string       `mapstructure:"order"`
+	CurrentVersion         string       `mapstructure:"currentVersion"`
+	CurrentVersionNotes    string       `mapstructure:"currentVersionNotes"`
+	CurrentCVEs            int          `mapstructure:"currentCVEs"`
+	CurrentCVEDescriptions []ServiceCVE `mapstructure:"currentCVEDescriptions"`
+	LatestVersion          string       `mapstructure:"latestVersion"`
+	LatestVersionNotes     string       `mapstructure:"latestVersionNotes"`
+	LatestCVEs             int          `mapstructure:"latestCVEs"`
+	LatestCVEDescriptions  []ServiceCVE `mapstructure:"latestCVEDescriptions"`
+	Status                 int
 }
 
-func (s ServiceVersionState) UpToDate() bool {
-	return s.Status == ServiceVersionStatusUpToDate
+func (s ServiceVersionState) Outdated() bool {
+	return s.Status != ServiceVersionStatusUpToDate
 }
 
 func (s ServiceVersionState) Vulnerable() bool {
-	return len(s.CurrentVersionCVEs) > 0
+	return s.CurrentCVEs > 0
 }
 
-type ServiceVersionCVE struct {
+type ServiceCVE struct {
 	Name        string `mapstructure:"name"`
 	Description string `mapstructure:"description"`
 	URL         string `mapstructure:"url"`
 }
 
-type ServiceContextSectionState struct {
+type ServiceActionGroupState struct {
 	Name  string `mapstructure:"name"`
 	Time  time.Time
 	Order string `mapstructure:"order"`
 	Icon  string `mapstructure:"icon"`
 }
 
-type ServiceContextOptionState struct {
+type ServiceActionState struct {
 	Name             string `mapstructure:"name"`
 	Time             time.Time
 	Order            string `mapstructure:"order"`
 	Icon             string `mapstructure:"icon"`
 	URL              string `mapstructure:"url"`
 	Script           string `mapstructure:"script"`
-	Section          string `mapstructure:"section"`
+	Group            string `mapstructure:"group"`
 	RestrictToAdmins bool   `mapstructure:"restrictToAdmins"`
 }
 
@@ -158,14 +160,14 @@ type VersionInstruction struct {
 	Status string `mapstructure:"status"`
 }
 
-type ContextSectionInstruction struct {
+type ActionGroupInstruction struct {
 	Type string `mapstructure:"type"`
-	ServiceContextSectionState
+	ServiceActionGroupState
 	Time any `mapstructure:"time"`
 }
 
-type ContextOptionInstruction struct {
+type ActionInstruction struct {
 	Type string `mapstructure:"type"`
-	ServiceContextOptionState
+	ServiceActionState
 	Time any `mapstructure:"time"`
 }
