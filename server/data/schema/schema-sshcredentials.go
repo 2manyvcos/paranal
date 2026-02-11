@@ -4,6 +4,7 @@ import "fmt"
 
 type SSHCredentialQuery struct {
 	Name *string
+	User *string
 }
 
 type SSHCredential struct {

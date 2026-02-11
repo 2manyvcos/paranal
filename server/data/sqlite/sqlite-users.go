@@ -36,19 +36,27 @@ func UserQuery(query *schema.UserQuery) (clause string, placeholders []any) {
 	}
 	var conditions []string
 	if query.Name != nil {
-		conditions = append(conditions, "name = ?")
+		conditions = append(conditions, "users.name = ?")
 		placeholders = append(placeholders, *query.Name)
 	}
+	if query.DisplayName != nil {
+		conditions = append(conditions, "users.displayName = ?")
+		placeholders = append(placeholders, *query.DisplayName)
+	}
+	if query.Role != nil {
+		conditions = append(conditions, "users.role = ?")
+		placeholders = append(placeholders, *query.Role)
+	}
 	if query.ErrorAlerts != nil {
-		conditions = append(conditions, "errorAlerts = ?")
+		conditions = append(conditions, "IFNULL(users.errorAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.ErrorAlerts)
 	}
 	if query.UptimeAlerts != nil {
-		conditions = append(conditions, "uptimeAlerts = ?")
+		conditions = append(conditions, "IFNULL(users.uptimeAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.UptimeAlerts)
 	}
 	if query.VersionAlerts != nil {
-		conditions = append(conditions, "versionAlerts = ?")
+		conditions = append(conditions, "IFNULL(users.versionAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.VersionAlerts)
 	}
 	if len(conditions) == 0 {

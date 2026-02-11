@@ -34,8 +34,24 @@ func ServiceQuery(query *schema.ServiceQuery) (clause string, placeholders []any
 	}
 	var conditions []string
 	if query.ID != nil {
-		conditions = append(conditions, "id = ?")
+		conditions = append(conditions, "services.id = ?")
 		placeholders = append(placeholders, *query.ID)
+	}
+	if query.Name != nil {
+		conditions = append(conditions, "services.name = ?")
+		placeholders = append(placeholders, *query.Name)
+	}
+	if query.Description != nil {
+		conditions = append(conditions, "services.description = ?")
+		placeholders = append(placeholders, *query.Description)
+	}
+	if query.Logo != nil {
+		conditions = append(conditions, "services.logo = ?")
+		placeholders = append(placeholders, *query.Logo)
+	}
+	if query.URL != nil {
+		conditions = append(conditions, "services.url = ?")
+		placeholders = append(placeholders, *query.URL)
 	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")

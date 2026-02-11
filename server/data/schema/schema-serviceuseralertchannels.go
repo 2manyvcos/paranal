@@ -1,18 +1,14 @@
 package schema
 
-// index for useralertchannels joined to users, services and serviceuserconfigs
+// index for useralertchannels joined to users and serviceuserconfigs
 
 type ServiceUserAlertChannelQuery struct {
-	ErrorAlerts          *bool
-	UptimeAlerts         *bool
-	VersionAlerts        *bool
-	UserRole             *int
-	UserErrorAlerts      *bool
-	UserUptimeAlerts     *bool
-	UserVersionAlerts    *bool
-	ServiceHidden        *bool
-	ServiceUptimeAlerts  *bool
-	ServiceVersionAlerts *bool
+	UserAlertChannelQuery
+	UserQuery
+	ServiceUserConfigQuery
+	ErrorAlerts   *bool
+	UptimeAlerts  *bool
+	VersionAlerts *bool
 }
 
 type ServiceUserAlertChannel struct {

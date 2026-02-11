@@ -33,8 +33,12 @@ func SSHCredentialQuery(query *schema.SSHCredentialQuery) (clause string, placeh
 	}
 	var conditions []string
 	if query.Name != nil {
-		conditions = append(conditions, "name = ?")
+		conditions = append(conditions, "sshcredentials.name = ?")
 		placeholders = append(placeholders, *query.Name)
+	}
+	if query.User != nil {
+		conditions = append(conditions, "sshcredentials.user = ?")
+		placeholders = append(placeholders, *query.User)
 	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")

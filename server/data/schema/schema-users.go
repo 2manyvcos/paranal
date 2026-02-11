@@ -6,6 +6,8 @@ import (
 
 type UserQuery struct {
 	Name          *string
+	DisplayName   *string
+	Role          *int
 	ErrorAlerts   *bool
 	UptimeAlerts  *bool
 	VersionAlerts *bool

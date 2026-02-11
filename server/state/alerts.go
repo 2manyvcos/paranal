@@ -20,7 +20,14 @@ func alertScriptError(app *application.App, script schema.ServiceScript, _ error
 	if err != nil {
 		log.Printf("Error loading record - %s\n", err)
 	}
-	channels, err := app.ListServiceUserAlertChannels(script.ServiceID, &schema.ServiceUserAlertChannelQuery{ErrorAlerts: &t, UserRole: &adminRole, UserErrorAlerts: &t, ServiceHidden: &f})
+	channels, err := app.ListServiceUserAlertChannels(
+		script.ServiceID,
+		&schema.ServiceUserAlertChannelQuery{
+			UserQuery:              schema.UserQuery{Role: &adminRole},
+			ServiceUserConfigQuery: schema.ServiceUserConfigQuery{Hidden: &f},
+			ErrorAlerts:            &t,
+		},
+	)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		return
@@ -61,7 +68,13 @@ func alertUptimeStatuses(app *application.App, script schema.ServiceScript, _ []
 	if err != nil {
 		log.Printf("Error loading record - %s\n", err)
 	}
-	channels, err := app.ListServiceUserAlertChannels(script.ServiceID, &schema.ServiceUserAlertChannelQuery{UptimeAlerts: &t, UserUptimeAlerts: &t, ServiceHidden: &f, ServiceUptimeAlerts: &t})
+	channels, err := app.ListServiceUserAlertChannels(
+		script.ServiceID,
+		&schema.ServiceUserAlertChannelQuery{
+			ServiceUserConfigQuery: schema.ServiceUserConfigQuery{Hidden: &f},
+			UptimeAlerts:           &t,
+		},
+	)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		return
@@ -102,7 +115,13 @@ func alertVersions(app *application.App, script schema.ServiceScript, _ []Servic
 	if err != nil {
 		log.Printf("Error loading record - %s\n", err)
 	}
-	channels, err := app.ListServiceUserAlertChannels(script.ServiceID, &schema.ServiceUserAlertChannelQuery{VersionAlerts: &t, UserVersionAlerts: &t, ServiceHidden: &f, ServiceVersionAlerts: &t})
+	channels, err := app.ListServiceUserAlertChannels(
+		script.ServiceID,
+		&schema.ServiceUserAlertChannelQuery{
+			ServiceUserConfigQuery: schema.ServiceUserConfigQuery{Hidden: &f},
+			VersionAlerts:          &t,
+		},
+	)
 	if err != nil {
 		log.Printf("Error loading records - %s\n", err)
 		return

@@ -41,19 +41,19 @@ func ServiceUserConfigQuery(query *schema.ServiceUserConfigQuery) (clause string
 		placeholders = append(placeholders, *query.ServiceID)
 	}
 	if query.Favorite != nil {
-		conditions = append(conditions, "serviceuserconfigs.favorite = ?")
+		conditions = append(conditions, "IFNULL(serviceuserconfigs.favorite, FALSE) = ?")
 		placeholders = append(placeholders, *query.Favorite)
 	}
 	if query.Hidden != nil {
-		conditions = append(conditions, "serviceuserconfigs.hidden = ?")
+		conditions = append(conditions, "IFNULL(serviceuserconfigs.hidden, FALSE) = ?")
 		placeholders = append(placeholders, *query.Hidden)
 	}
 	if query.UptimeAlerts != nil {
-		conditions = append(conditions, "serviceuserconfigs.uptimeAlerts = ?")
+		conditions = append(conditions, "IFNULL(serviceuserconfigs.uptimeAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.UptimeAlerts)
 	}
 	if query.VersionAlerts != nil {
-		conditions = append(conditions, "serviceuserconfigs.versionAlerts = ?")
+		conditions = append(conditions, "IFNULL(serviceuserconfigs.versionAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.VersionAlerts)
 	}
 	if len(conditions) == 0 {

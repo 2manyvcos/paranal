@@ -14,14 +14,12 @@ func UserServiceQuery(query *schema.UserServiceQuery) (clause string, placeholde
 		query = new(schema.UserServiceQuery)
 	}
 	var conditions []string
-	if query.ID != nil {
-		conditions = append(conditions, "services.id = ?")
-		placeholders = append(placeholders, *query.ID)
-	}
-	if query.Hidden != nil {
-		conditions = append(conditions, "IFNULL(serviceuserconfigs.hidden, FALSE) = ?")
-		placeholders = append(placeholders, *query.Hidden)
-	}
+	serviceConditions, servicePlaceholders := ServiceQuery(&query.ServiceQuery)
+	conditions = append(conditions, serviceConditions)
+	placeholders = append(placeholders, servicePlaceholders...)
+	serviceUserConfigConditions, serviceUserConfigPlaceholders := ServiceUserConfigQuery(&query.ServiceUserConfigQuery)
+	conditions = append(conditions, serviceUserConfigConditions)
+	placeholders = append(placeholders, serviceUserConfigPlaceholders...)
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}

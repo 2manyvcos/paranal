@@ -32,8 +32,12 @@ func UserCredentialQuery(query *schema.UserCredentialQuery) (clause string, plac
 	}
 	var conditions []string
 	if query.Name != nil {
-		conditions = append(conditions, "name = ?")
+		conditions = append(conditions, "usercredentials.name = ?")
 		placeholders = append(placeholders, *query.Name)
+	}
+	if query.Description != nil {
+		conditions = append(conditions, "usercredentials.description = ?")
+		placeholders = append(placeholders, *query.Description)
 	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")

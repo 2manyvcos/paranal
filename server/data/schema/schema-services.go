@@ -3,7 +3,11 @@ package schema
 import "fmt"
 
 type ServiceQuery struct {
-	ID *string
+	ID          *string
+	Name        *string
+	Description *string
+	Logo        *string
+	URL         *string
 }
 
 type Service struct {

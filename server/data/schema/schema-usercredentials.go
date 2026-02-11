@@ -5,7 +5,8 @@ import (
 )
 
 type UserCredentialQuery struct {
-	Name *string
+	Name        *string
+	Description *string
 }
 
 type UserCredential struct {

@@ -12,60 +12,36 @@ func ServiceUserAlertChannelQuery(query *schema.ServiceUserAlertChannelQuery) (c
 		query = new(schema.ServiceUserAlertChannelQuery)
 	}
 	var conditions []string
+	userAlertChannelConditions, userAlertChannelPlaceholders := UserAlertChannelQuery(&query.UserAlertChannelQuery)
+	conditions = append(conditions, userAlertChannelConditions)
+	placeholders = append(placeholders, userAlertChannelPlaceholders...)
+	userConditions, userPlaceholders := UserQuery(&query.UserQuery)
+	conditions = append(conditions, userConditions)
+	placeholders = append(placeholders, userPlaceholders...)
+	serviceConditions, servicePlaceholders := ServiceUserConfigQuery(&query.ServiceUserConfigQuery)
+	conditions = append(conditions, serviceConditions)
+	placeholders = append(placeholders, servicePlaceholders...)
 	if query.ErrorAlerts != nil {
-		conditions = append(conditions, "useralertchannels.errorAlerts = ?")
-		placeholders = append(placeholders, *query.ErrorAlerts)
+		if *query.ErrorAlerts {
+			conditions = append(conditions, "IFNULL(useralertchannels.errorAlerts, FALSE) = TRUE AND IFNULL(users.errorAlerts, FALSE) = TRUE")
+		} else {
+			conditions = append(conditions, "(IFNULL(useralertchannels.errorAlerts, FALSE) = FALSE OR IFNULL(users.errorAlerts, FALSE) = FALSE)")
+		}
 	}
 	if query.UptimeAlerts != nil {
-		conditions = append(conditions, "useralertchannels.uptimeAlerts = ?")
-		placeholders = append(placeholders, *query.UptimeAlerts)
+		if *query.UptimeAlerts {
+			conditions = append(conditions, "IFNULL(useralertchannels.uptimeAlerts, FALSE) = TRUE AND (IFNULL(users.uptimeAlerts, FALSE) = TRUE OR IFNULL(serviceuserconfigs.uptimeAlerts, FALSE) = TRUE)")
+		} else {
+			conditions = append(conditions, "(IFNULL(useralertchannels.uptimeAlerts, FALSE) = FALSE OR (IFNULL(users.uptimeAlerts, FALSE) = FALSE AND IFNULL(serviceuserconfigs.uptimeAlerts, FALSE) = FALSE))")
+		}
 	}
 	if query.VersionAlerts != nil {
-		conditions = append(conditions, "useralertchannels.versionAlerts = ?")
-		placeholders = append(placeholders, *query.VersionAlerts)
+		if *query.VersionAlerts {
+			conditions = append(conditions, "IFNULL(useralertchannels.versionAlerts, FALSE) = TRUE AND (IFNULL(users.versionAlerts, FALSE) = TRUE OR IFNULL(serviceuserconfigs.versionAlerts, FALSE) = TRUE)")
+		} else {
+			conditions = append(conditions, "(IFNULL(useralertchannels.versionAlerts, FALSE) = FALSE OR (IFNULL(users.versionAlerts, FALSE) = FALSE AND IFNULL(serviceuserconfigs.versionAlerts, FALSE) = FALSE))")
+		}
 	}
-	if query.UserRole != nil {
-		conditions = append(conditions, "users.role = ?")
-		placeholders = append(placeholders, *query.UserRole)
-	}
-	if query.UserErrorAlerts != nil {
-		conditions = append(conditions, "users.errorAlerts = ?")
-		placeholders = append(placeholders, *query.UserErrorAlerts)
-	}
-	if query.ServiceHidden != nil {
-		conditions = append(conditions, "IFNULL(serviceuserconfigs.hidden, FALSE) = ?")
-		placeholders = append(placeholders, *query.ServiceHidden)
-	}
-	uptimeAlertConditions := make([]string, 0, 2)
-	uptimeAlertPlaceholders := make([]any, 0, 2)
-	if query.UserUptimeAlerts != nil {
-		uptimeAlertConditions = append(uptimeAlertConditions, "users.uptimeAlerts = ?")
-		uptimeAlertPlaceholders = append(uptimeAlertPlaceholders, *query.UserUptimeAlerts)
-	}
-	if query.ServiceUptimeAlerts != nil {
-		uptimeAlertConditions = append(uptimeAlertConditions, "IFNULL(serviceuserconfigs.uptimeAlerts, FALSE) = ?")
-		uptimeAlertPlaceholders = append(uptimeAlertPlaceholders, *query.ServiceUptimeAlerts)
-	}
-	if len(uptimeAlertConditions) == 0 {
-		uptimeAlertConditions = append(uptimeAlertConditions, "1 = 1")
-	}
-	conditions = append(conditions, "("+strings.Join(uptimeAlertConditions, " OR ")+")")
-	placeholders = append(placeholders, uptimeAlertPlaceholders...)
-	versionConditions := make([]string, 0, 2)
-	versionPlaceholders := make([]any, 0, 2)
-	if query.UserVersionAlerts != nil {
-		versionConditions = append(versionConditions, "users.versionAlerts = ?")
-		versionPlaceholders = append(versionPlaceholders, *query.UserVersionAlerts)
-	}
-	if query.ServiceVersionAlerts != nil {
-		versionConditions = append(versionConditions, "IFNULL(serviceuserconfigs.versionAlerts, FALSE) = ?")
-		versionPlaceholders = append(versionPlaceholders, *query.ServiceVersionAlerts)
-	}
-	if len(versionConditions) == 0 {
-		versionConditions = append(versionConditions, "1 = 1")
-	}
-	conditions = append(conditions, "("+strings.Join(versionConditions, " OR ")+")")
-	placeholders = append(placeholders, versionPlaceholders...)
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}

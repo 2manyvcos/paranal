@@ -33,8 +33,16 @@ func HTTPCredentialQuery(query *schema.HTTPCredentialQuery) (clause string, plac
 	}
 	var conditions []string
 	if query.Name != nil {
-		conditions = append(conditions, "name = ?")
+		conditions = append(conditions, "httpcredentials.name = ?")
 		placeholders = append(placeholders, *query.Name)
+	}
+	if query.Type != nil {
+		conditions = append(conditions, "httpcredentials.type = ?")
+		placeholders = append(placeholders, *query.Type)
+	}
+	if query.Key != nil {
+		conditions = append(conditions, "httpcredentials.key = ?")
+		placeholders = append(placeholders, *query.Key)
 	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")

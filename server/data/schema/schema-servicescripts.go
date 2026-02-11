@@ -10,14 +10,16 @@ import (
 type ServiceScriptQuery struct {
 	ID        *string
 	ServiceID *string
+	Name      *string
+	Schedule  *string
 }
 
 type ServiceScript struct {
 	ID        string
+	ServiceID string
 	Name      string
 	Schedule  string
 	Source    string
-	ServiceID string
 }
 
 var serviceScriptCron = gocron.NewDefaultCron(true)
@@ -25,6 +27,9 @@ var serviceScriptCron = gocron.NewDefaultCron(true)
 func (r ServiceScript) Valid() error {
 	if r.ID == "" {
 		return fmt.Errorf("invalid ID")
+	}
+	if r.ServiceID == "" {
+		return fmt.Errorf("invalid service ID")
 	}
 	if r.Name == "" {
 		return fmt.Errorf("invalid name")
@@ -34,9 +39,6 @@ func (r ServiceScript) Valid() error {
 	}
 	if r.Source == "" {
 		return fmt.Errorf("invalid source")
-	}
-	if r.ServiceID == "" {
-		return fmt.Errorf("invalid service ID")
 	}
 	return nil
 }

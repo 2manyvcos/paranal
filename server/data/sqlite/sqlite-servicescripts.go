@@ -15,10 +15,10 @@ func init() {
 		_, err := i.Exec(`
       CREATE TABLE IF NOT EXISTS servicescripts (
         id TEXT PRIMARY KEY NOT NULL,
+        serviceID TEXT NOT NULL,
         name TEXT NOT NULL,
         schedule TEXT NOT NULL,
-        source TEXT NOT NULL,
-        serviceID TEXT NOT NULL
+        source TEXT NOT NULL
       )
     `)
 		if err != nil {
@@ -41,6 +41,14 @@ func ServiceScriptQuery(query *schema.ServiceScriptQuery) (clause string, placeh
 		conditions = append(conditions, "servicescripts.serviceID = ?")
 		placeholders = append(placeholders, *query.ServiceID)
 	}
+	if query.Name != nil {
+		conditions = append(conditions, "servicescripts.name = ?")
+		placeholders = append(placeholders, *query.Name)
+	}
+	if query.Schedule != nil {
+		conditions = append(conditions, "servicescripts.schedule = ?")
+		placeholders = append(placeholders, *query.Schedule)
+	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}
@@ -52,7 +60,7 @@ func (i *impl) ListServiceScripts(query *schema.ServiceScriptQuery) ([]schema.Se
 	where, wherePlaceholders := ServiceScriptQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT servicescripts.id, servicescripts.name, servicescripts.schedule, servicescripts.source, servicescripts.serviceID
+      SELECT servicescripts.id, servicescripts.serviceID, servicescripts.name, servicescripts.schedule, servicescripts.source
       FROM servicescripts
       INNER JOIN services
       ON servicescripts.serviceID = services.id
@@ -67,7 +75,7 @@ func (i *impl) ListServiceScripts(query *schema.ServiceScriptQuery) ([]schema.Se
 	var records []schema.ServiceScript
 	for rows.Next() {
 		var record schema.ServiceScript
-		if err := rows.Scan(&record.ID, &record.Name, &record.Schedule, &record.Source, &record.ServiceID); err != nil {
+		if err := rows.Scan(&record.ID, &record.ServiceID, &record.Name, &record.Schedule, &record.Source); err != nil {
 			return nil, err
 		}
 		records = append(records, record)
@@ -83,14 +91,14 @@ func (i *impl) GetServiceScript(query schema.ServiceScriptQuery) (schema.Service
 	var record schema.ServiceScript
 	err := i.QueryRow(
 		`
-      SELECT servicescripts.id, servicescripts.name, servicescripts.schedule, servicescripts.source, servicescripts.serviceID
+      SELECT servicescripts.id, servicescripts.serviceID, servicescripts.name, servicescripts.schedule, servicescripts.source
       FROM servicescripts
       INNER JOIN services
       ON servicescripts.serviceID = services.id
       WHERE `+where+`
     `,
 		wherePlaceholders...,
-	).Scan(&record.ID, &record.Name, &record.Schedule, &record.Source, &record.ServiceID)
+	).Scan(&record.ID, &record.ServiceID, &record.Name, &record.Schedule, &record.Source)
 	if errors.Is(err, sql.ErrNoRows) {
 		return schema.ServiceScript{}, schema.ErrNotFound
 	}
@@ -103,10 +111,10 @@ func (i *impl) CreateServiceScript(record schema.ServiceScript) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO servicescripts (id, name, schedule, source, serviceID)
+      INSERT INTO servicescripts (id, serviceID, name, schedule, source)
       VALUES (?, ?, ?, ?, ?)
     `,
-		&record.ID, &record.Name, &record.Schedule, &record.Source, &record.ServiceID,
+		&record.ID, &record.ServiceID, &record.Name, &record.Schedule, &record.Source,
 	)
 	return requireNoConflict(err)
 }
@@ -121,14 +129,14 @@ func (i *impl) UpdateServiceScripts(query schema.ServiceScriptQuery, record sche
       UPDATE servicescripts
       SET
         id = ?,
+        serviceID = ?,
         name = ?,
         schedule = ?,
-        source = ?,
-        serviceID = ?
+        source = ?
       WHERE `+where+`
     `,
 		slices.Concat(
-			[]any{&record.ID, &record.Name, &record.Schedule, &record.Source, &record.ServiceID},
+			[]any{&record.ID, &record.ServiceID, &record.Name, &record.Schedule, &record.Source},
 			wherePlaceholders,
 		)...,
 	)

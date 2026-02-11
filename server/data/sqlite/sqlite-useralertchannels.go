@@ -43,15 +43,15 @@ func UserAlertChannelQuery(query *schema.UserAlertChannelQuery) (clause string, 
 		placeholders = append(placeholders, *query.UserName)
 	}
 	if query.ErrorAlerts != nil {
-		conditions = append(conditions, "useralertchannels.errorAlerts = ?")
+		conditions = append(conditions, "IFNULL(useralertchannels.errorAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.ErrorAlerts)
 	}
 	if query.UptimeAlerts != nil {
-		conditions = append(conditions, "useralertchannels.uptimeAlerts = ?")
+		conditions = append(conditions, "IFNULL(useralertchannels.uptimeAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.UptimeAlerts)
 	}
 	if query.VersionAlerts != nil {
-		conditions = append(conditions, "useralertchannels.versionAlerts = ?")
+		conditions = append(conditions, "IFNULL(useralertchannels.versionAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.VersionAlerts)
 	}
 	if len(conditions) == 0 {

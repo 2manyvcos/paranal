@@ -4,6 +4,8 @@ import "fmt"
 
 type HTTPCredentialQuery struct {
 	Name *string
+	Type *int
+	Key  *string
 }
 
 type HTTPCredential struct {
