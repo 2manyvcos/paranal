@@ -28,9 +28,11 @@ func (s *State) setupServiceScripts() error {
 
 	for serviceID, service := range s.services {
 		for scriptID, script := range service.scripts {
-			err := script.job.RunNow()
-			if err != nil {
-				log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
+			if script.job != nil {
+				err := script.job.RunNow()
+				if err != nil {
+					log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
+				}
 			}
 		}
 	}
@@ -49,13 +51,16 @@ func (s *State) GetServiceScriptStates(serviceID string) map[string]application.
 	defer service.lock.RUnlock()
 	result := make(map[string]application.ServiceScriptState, len(service.scripts))
 	for scriptID, script := range service.scripts {
-		var state application.ServiceScriptState
-		if lastRun, err := script.job.LastRun(); err == nil && !lastRun.IsZero() {
-			state.LastRun = &lastRun
+		state := application.ServiceScriptState{
+			Error: script.error,
 		}
-		state.Error = script.error
-		if nextRun, err := script.job.NextRun(); err == nil && !nextRun.IsZero() {
-			state.NextRun = &nextRun
+		if script.job != nil {
+			if lastRun, err := script.job.LastRun(); err == nil && !lastRun.IsZero() {
+				state.LastRun = &lastRun
+			}
+			if nextRun, err := script.job.NextRun(); err == nil && !nextRun.IsZero() {
+				state.NextRun = &nextRun
+			}
 		}
 		result[scriptID] = state
 	}
@@ -75,20 +80,23 @@ func (s *State) GetServiceScriptState(serviceID string, scriptID string) applica
 	if !ok {
 		return application.ServiceScriptState{}
 	}
-	var state application.ServiceScriptState
-	if lastRun, err := script.job.LastRun(); err != nil && !lastRun.IsZero() {
-		state.LastRun = &lastRun
+	state := application.ServiceScriptState{
+		Error: script.error,
 	}
-	state.Error = script.error
-	if nextRun, err := script.job.NextRun(); err != nil && !nextRun.IsZero() {
-		state.NextRun = &nextRun
+	if script.job != nil {
+		if lastRun, err := script.job.LastRun(); err != nil && !lastRun.IsZero() {
+			state.LastRun = &lastRun
+		}
+		if nextRun, err := script.job.NextRun(); err != nil && !nextRun.IsZero() {
+			state.NextRun = &nextRun
+		}
 	}
 	return state
 }
 
 func (s *State) OnServiceScriptChanged(script schema.ServiceScript) {
 	scriptState := s.updateServiceScript(script)
-	if scriptState != nil {
+	if scriptState.job != nil {
 		err := scriptState.job.RunNow()
 		if err != nil {
 			log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
@@ -106,7 +114,9 @@ func (s *State) OnServiceScriptDeleted(serviceID string, scriptID string) {
 	service.lock.Lock()
 	defer service.lock.Unlock()
 	if script, ok := service.scripts[scriptID]; ok {
-		s.app.Scheduler.RemoveJob(script.job.ID())
+		if script.job != nil {
+			s.app.Scheduler.RemoveJob(script.job.ID())
+		}
 		delete(service.scripts, scriptID)
 	}
 	if len(service.scripts) == 0 {
@@ -122,7 +132,9 @@ func (s *State) OnServiceDeleted(serviceID string) {
 	if service, ok := s.services[serviceID]; ok {
 		service.lock.Lock()
 		for _, script := range service.scripts {
-			s.app.Scheduler.RemoveJob(script.job.ID())
+			if script.job != nil {
+				s.app.Scheduler.RemoveJob(script.job.ID())
+			}
 		}
 		service.lock.Unlock()
 		delete(s.services, serviceID)
@@ -141,31 +153,36 @@ func (s *State) updateServiceScript(script schema.ServiceScript) *serviceScriptS
 	}
 	service.lock.Lock()
 	defer service.lock.Unlock()
-	if script, ok := service.scripts[script.ID]; ok {
+	if script, ok := service.scripts[script.ID]; ok && script.job != nil {
 		s.app.Scheduler.RemoveJob(script.job.ID())
 	}
 	var scriptState serviceScriptState
-	var err error
-	scriptState.program, err = scripts.ParseServiceScript(s.app, script.ServiceID, script.Source)
-	if err != nil {
-		log.Printf("Error scheduling script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
-		return nil
+	if program, err := scripts.ParseServiceScript(s.app, script.ServiceID, script.Source); err == nil {
+		scriptState.program = program
+	} else {
+		log.Printf("Error parsing script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
+		scriptState.error = err
+		alertScriptError(s.app, nil, script, err)
 	}
-	scriptState.job, err = s.app.Scheduler.NewJob(
-		gocron.CronJob(script.Schedule, true),
-		gocron.NewTask(newServiceScriptRunner(s, service, &scriptState, script)),
-		gocron.WithSingletonMode(gocron.LimitModeReschedule),
-	)
-	if err != nil {
-		log.Printf("Error scheduling script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
-		return nil
+	if scriptState.program != nil {
+		if job, err := s.app.Scheduler.NewJob(
+			gocron.CronJob(script.Schedule, true),
+			gocron.NewTask(newServiceScriptRunner(s, service, &scriptState, script)),
+			gocron.WithSingletonMode(gocron.LimitModeReschedule),
+		); err == nil {
+			scriptState.job = job
+		} else {
+			log.Printf("Error scheduling script \"%s\" for service \"%s\" - %s\n", script.ID, script.ServiceID, err)
+			scriptState.error = err
+			alertScriptError(s.app, nil, script, err)
+		}
 	}
 	service.scripts[script.ID] = &scriptState
 	return &scriptState
 }
 
 func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *serviceScriptState, script schema.ServiceScript) func() {
-	handleErr := func(service schema.Service, err error) {
+	handleErr := func(service *schema.Service, err error) {
 		log.Printf("Error running script \"%s\" for service \"%s\" - %s", script.ServiceID, script.ID, err)
 		serviceState.lock.Lock()
 		scriptState.error = err
@@ -181,13 +198,13 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 	return func() {
 		service, err := s.app.GetService(schema.ServiceQuery{ID: &script.ServiceID})
 		if err != nil {
-			log.Printf("Error loading record - %s\n", err)
+			handleErr(nil, err)
 			return
 		}
 
 		results, err := scriptState.program.Run([]any{nil}, nil)
 		if err != nil {
-			handleErr(service, err)
+			handleErr(&service, err)
 			return
 		}
 
@@ -200,7 +217,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 			var i GenericInstruction
 			err := mapstructure.Decode(result, &i)
 			if err != nil {
-				handleErr(service, err)
+				handleErr(&service, err)
 				return
 			}
 
@@ -208,7 +225,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 			case "uptimeStatus":
 				var i UptimeStatusInstruction
 				if err = decodeServiceInstruction(result, &i); err != nil {
-					handleErr(service, fmt.Errorf("invalid instruction - %s", err))
+					handleErr(&service, fmt.Errorf("invalid instruction - %s", err))
 					return
 				}
 				uptimeStatus := i.ServiceUptimeStatusState
@@ -216,7 +233,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 					uptimeStatus.Name = service.Name
 				}
 				if uptimeStatus.Time, err = decodeTime(i.Time); err != nil {
-					handleErr(service, err)
+					handleErr(&service, err)
 					return
 				}
 				if uptimeStatus.Order == "" {
@@ -225,7 +242,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				if status, ok := ServiceUptimeStatusCodes[i.Status]; ok {
 					uptimeStatus.Status = status
 				} else {
-					handleErr(service, fmt.Errorf("invalid status"))
+					handleErr(&service, fmt.Errorf("invalid status"))
 					return
 				}
 				uptimeStatuses = append(uptimeStatuses, uptimeStatus)
@@ -233,7 +250,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 			case "version":
 				var i VersionInstruction
 				if err = decodeServiceInstruction(result, &i); err != nil {
-					handleErr(service, fmt.Errorf("invalid instruction - %s", err))
+					handleErr(&service, fmt.Errorf("invalid instruction - %s", err))
 					return
 				}
 				version := i.ServiceVersionState
@@ -241,19 +258,19 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 					version.Name = service.Name
 				}
 				if version.Time, err = decodeTime(i.Time); err != nil {
-					handleErr(service, err)
+					handleErr(&service, err)
 					return
 				}
 				if version.Order == "" {
 					version.Order = version.Name
 				}
 				if version.CurrentVersion == "" {
-					handleErr(service, fmt.Errorf("invalid version"))
+					handleErr(&service, fmt.Errorf("invalid version"))
 					return
 				}
 				if i.Status == "" {
 					if version.LatestVersion == "" {
-						handleErr(service, fmt.Errorf("invalid version"))
+						handleErr(&service, fmt.Errorf("invalid version"))
 						return
 					}
 					if version.CurrentVersion == version.LatestVersion {
@@ -264,31 +281,31 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				} else if status, ok := ServiceVersionStatusCodes[i.Status]; ok {
 					version.Status = status
 				} else {
-					handleErr(service, fmt.Errorf("invalid status"))
+					handleErr(&service, fmt.Errorf("invalid status"))
 					return
 				}
 				for _, cve := range version.CurrentCVEDescriptions {
 					if cve.Name == "" && cve.Description == "" {
-						handleErr(service, fmt.Errorf("invalid CVE description"))
+						handleErr(&service, fmt.Errorf("invalid CVE description"))
 						return
 					}
 				}
 				if version.CurrentCVEs == 0 {
 					version.CurrentCVEs = len(version.CurrentCVEDescriptions)
 				} else if version.CurrentCVEs < 0 {
-					handleErr(service, fmt.Errorf("invalid version"))
+					handleErr(&service, fmt.Errorf("invalid version"))
 					return
 				}
 				for _, cve := range version.LatestCVEDescriptions {
 					if cve.Name == "" && cve.Description == "" {
-						handleErr(service, fmt.Errorf("invalid CVE description"))
+						handleErr(&service, fmt.Errorf("invalid CVE description"))
 						return
 					}
 				}
 				if version.LatestCVEs == 0 {
 					version.LatestCVEs = len(version.LatestCVEDescriptions)
 				} else if version.LatestCVEs < 0 {
-					handleErr(service, fmt.Errorf("invalid version"))
+					handleErr(&service, fmt.Errorf("invalid version"))
 					return
 				}
 				versions = append(versions, version)
@@ -296,16 +313,16 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 			case "actionGroup":
 				var i ActionGroupInstruction
 				if err = decodeServiceInstruction(result, &i); err != nil {
-					handleErr(service, fmt.Errorf("invalid instruction - %s", err))
+					handleErr(&service, fmt.Errorf("invalid instruction - %s", err))
 					return
 				}
 				actionGroup := i.ServiceActionGroupState
 				if actionGroup.Name == "" {
-					handleErr(service, fmt.Errorf("invalid action group"))
+					handleErr(&service, fmt.Errorf("invalid action group"))
 					return
 				}
 				if actionGroup.Time, err = decodeTime(i.Time); err != nil {
-					handleErr(service, err)
+					handleErr(&service, err)
 					return
 				}
 				if actionGroup.Order == "" {
@@ -316,23 +333,23 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 			case "action":
 				var i ActionInstruction
 				if err = decodeServiceInstruction(result, &i); err != nil {
-					handleErr(service, fmt.Errorf("invalid instruction - %s", err))
+					handleErr(&service, fmt.Errorf("invalid instruction - %s", err))
 					return
 				}
 				action := i.ServiceActionState
 				if action.Name == "" {
-					handleErr(service, fmt.Errorf("invalid action"))
+					handleErr(&service, fmt.Errorf("invalid action"))
 					return
 				}
 				if action.Time, err = decodeTime(i.Time); err != nil {
-					handleErr(service, err)
+					handleErr(&service, err)
 					return
 				}
 				if action.Order == "" {
 					action.Order = action.Name
 				}
 				if (action.URL == "" && action.Script == "") || (action.URL != "" && action.Script != "") {
-					handleErr(service, fmt.Errorf("invalid action"))
+					handleErr(&service, fmt.Errorf("invalid action"))
 					return
 				}
 				actions = append(actions, action)
@@ -341,7 +358,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				// ignore
 
 			default:
-				handleErr(service, fmt.Errorf("invalid instruction type \"%s\"", i.Type))
+				handleErr(&service, fmt.Errorf("invalid instruction type \"%s\"", i.Type))
 				return
 			}
 		}

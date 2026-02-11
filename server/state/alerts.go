@@ -12,7 +12,7 @@ import (
 	"github.com/containrrr/shoutrrr"
 )
 
-func alertScriptError(app *application.App, service schema.Service, script schema.ServiceScript, _ error) {
+func alertScriptError(app *application.App, service *schema.Service, script schema.ServiceScript, _ error) {
 	adminRole := schema.UserRoleAdmin
 	t := true
 	f := false
@@ -44,7 +44,13 @@ func alertScriptError(app *application.App, service schema.Service, script schem
 		log.Printf("Error sending alerts - %s", err)
 		return
 	}
-	for _, err := range sender.Send(fmt.Sprintf("Script \"%s\" for service \"%s\" failed to run", script.Name, service.Name), nil) {
+	var message string
+	if service != nil {
+		message = fmt.Sprintf("Script \"%s\" for service \"%s\" failed to run", script.Name, service.Name)
+	} else {
+		message = fmt.Sprintf("Script \"%s\" failed to run", script.Name)
+	}
+	for _, err := range sender.Send(message, nil) {
 		if err != nil {
 			log.Printf("Error sending alerts - %s\n", err)
 		}
