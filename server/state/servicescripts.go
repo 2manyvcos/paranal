@@ -230,9 +230,37 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				if version.Order == "" {
 					version.Order = version.Name
 				}
-				if version.CurrentVersion == "" || version.LatestVersion == "" {
+				if version.CurrentVersion == "" {
 					handleErr(fmt.Errorf("invalid version"))
 					return
+				}
+				if i.Status == "" {
+					if version.LatestVersion == "" {
+						handleErr(fmt.Errorf("invalid version"))
+						return
+					}
+					if version.CurrentVersion == version.LatestVersion {
+						version.Status = ServiceVersionStatusUpToDate
+					} else {
+						version.Status = ServiceVersionStatusOutdated
+					}
+				} else if status, ok := ServiceVersionStatusCodes[i.Status]; ok {
+					version.Status = status
+				} else {
+					handleErr(fmt.Errorf("invalid status"))
+					return
+				}
+				for _, cve := range version.CurrentVersionCVEs {
+					if cve.Name == "" && cve.Description == "" {
+						handleErr(fmt.Errorf("invalid CVE"))
+						return
+					}
+				}
+				for _, cve := range version.LatestVersionCVEs {
+					if cve.Name == "" && cve.Description == "" {
+						handleErr(fmt.Errorf("invalid CVE"))
+						return
+					}
 				}
 				versions = append(versions, version)
 
@@ -324,10 +352,10 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				previousUptimeStatuses[uptimeStatus.Name] = uptimeStatus
 			}
 		}
-		uptimeStatusesToBeAlerted := make([]ServiceUptimeStatusState, 0, len(scriptState.uptimeStatuses))
+		newlyDownUptimeStatuses := make([]ServiceUptimeStatusState, 0, len(scriptState.uptimeStatuses))
 		for name, uptimeStatus := range scriptState.uptimeStatuses {
-			if existing, ok := previousUptimeStatuses[name]; uptimeStatus.Status != ServiceUptimeStatusUp && (!ok || (existing.Time.Before(uptimeStatus.Time) && existing.Status == ServiceUptimeStatusUp)) {
-				uptimeStatusesToBeAlerted = append(uptimeStatusesToBeAlerted, uptimeStatus)
+			if existing, ok := previousUptimeStatuses[name]; !uptimeStatus.Up() && (!ok || (existing.Time.Before(uptimeStatus.Time) && existing.Up())) {
+				newlyDownUptimeStatuses = append(newlyDownUptimeStatuses, uptimeStatus)
 			}
 		}
 		// versions to be alerted
@@ -343,20 +371,28 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				previousVersions[version.Name] = version
 			}
 		}
-		versionsToBeAlerted := make([]ServiceVersionState, 0, len(scriptState.versions))
+		newlyOutdatedVersions := make([]ServiceVersionState, 0, len(scriptState.versions))
+		newlyVulnerableVersions := make([]ServiceVersionState, 0, len(scriptState.versions))
 		for name, version := range scriptState.versions {
-			if existing, ok := previousVersions[name]; version.CurrentVersion != version.LatestVersion && (!ok || (existing.Time.Before(version.Time) && existing.CurrentVersion == existing.LatestVersion)) {
-				versionsToBeAlerted = append(versionsToBeAlerted, version)
+			existing, ok := previousVersions[name]
+			if !version.UpToDate() && (!ok || (existing.Time.Before(version.Time) && existing.UpToDate())) {
+				newlyOutdatedVersions = append(newlyOutdatedVersions, version)
+			}
+			if version.Vulnerable() && (!ok || (existing.Time.Before(version.Time) && !existing.Vulnerable())) {
+				newlyVulnerableVersions = append(newlyVulnerableVersions, version)
 			}
 		}
 		updateServiceState(serviceState)
 		serviceState.lock.Unlock()
 
-		if len(uptimeStatusesToBeAlerted) > 0 {
-			alertUptimeStatuses(s.app, script, uptimeStatusesToBeAlerted)
+		if len(newlyDownUptimeStatuses) > 0 {
+			alertDownUptimeStatuses(s.app, script, newlyDownUptimeStatuses)
 		}
-		if len(versionsToBeAlerted) > 0 {
-			alertVersions(s.app, script, versionsToBeAlerted)
+		if len(newlyOutdatedVersions) > 0 {
+			alertOutdatedVersions(s.app, script, newlyOutdatedVersions)
+		}
+		if len(newlyVulnerableVersions) > 0 {
+			alertVulnerableVersions(s.app, script, newlyVulnerableVersions)
 		}
 	}
 }

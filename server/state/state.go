@@ -71,6 +71,30 @@ type ServiceUptimeStatusState struct {
 	Status int
 }
 
+func (s ServiceUptimeStatusState) Up() bool {
+	return s.Status == ServiceUptimeStatusUp
+}
+
+const (
+	ServiceVersionStatusOutdated = iota + 1
+	ServiceVersionStatusUpToDate
+)
+
+var (
+	ServiceVersionStatusNames = map[int]string{
+		ServiceVersionStatusOutdated: "outdated",
+		ServiceVersionStatusUpToDate: "upToDate",
+	}
+	ServiceVersionStatusCodes map[string]int
+)
+
+func init() {
+	ServiceVersionStatusCodes = make(map[string]int, len(ServiceVersionStatusNames))
+	for code, name := range ServiceVersionStatusNames {
+		ServiceVersionStatusCodes[name] = code
+	}
+}
+
 type ServiceVersionState struct {
 	Name                string `mapstructure:"name"`
 	Time                time.Time
@@ -81,6 +105,15 @@ type ServiceVersionState struct {
 	LatestVersion       string              `mapstructure:"latestVersion"`
 	LatestVersionNotes  string              `mapstructure:"latestVersionNotes"`
 	LatestVersionCVEs   []ServiceVersionCVE `mapstructure:"latestVersionCVEs"`
+	Status              int
+}
+
+func (s ServiceVersionState) UpToDate() bool {
+	return s.Status == ServiceVersionStatusUpToDate
+}
+
+func (s ServiceVersionState) Vulnerable() bool {
+	return len(s.CurrentVersionCVEs) > 0
 }
 
 type ServiceVersionCVE struct {
@@ -121,7 +154,8 @@ type UptimeStatusInstruction struct {
 type VersionInstruction struct {
 	Type string `mapstructure:"type"`
 	ServiceVersionState
-	Time any `mapstructure:"time"`
+	Time   any    `mapstructure:"time"`
+	Status string `mapstructure:"status"`
 }
 
 type ContextSectionInstruction struct {
