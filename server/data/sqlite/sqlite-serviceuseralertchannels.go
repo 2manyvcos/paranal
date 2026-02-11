@@ -18,9 +18,9 @@ func ServiceUserAlertChannelQuery(query *schema.ServiceUserAlertChannelQuery) (c
 	userConditions, userPlaceholders := UserQuery(&query.UserQuery)
 	conditions = append(conditions, userConditions)
 	placeholders = append(placeholders, userPlaceholders...)
-	serviceConditions, servicePlaceholders := ServiceUserConfigQuery(&query.ServiceUserConfigQuery)
-	conditions = append(conditions, serviceConditions)
-	placeholders = append(placeholders, servicePlaceholders...)
+	serviceConfigConditions, serviceConfigPlaceholders := ServiceConfigQuery(&query.ServiceConfigQuery)
+	conditions = append(conditions, serviceConfigConditions)
+	placeholders = append(placeholders, serviceConfigPlaceholders...)
 	if query.ErrorAlerts != nil {
 		if *query.ErrorAlerts {
 			conditions = append(conditions, "IFNULL(useralertchannels.errorAlerts, FALSE) = TRUE AND IFNULL(users.errorAlerts, FALSE) = TRUE")
@@ -30,16 +30,16 @@ func ServiceUserAlertChannelQuery(query *schema.ServiceUserAlertChannelQuery) (c
 	}
 	if query.UptimeAlerts != nil {
 		if *query.UptimeAlerts {
-			conditions = append(conditions, "IFNULL(useralertchannels.uptimeAlerts, FALSE) = TRUE AND (IFNULL(users.uptimeAlerts, FALSE) = TRUE OR IFNULL(serviceuserconfigs.uptimeAlerts, FALSE) = TRUE)")
+			conditions = append(conditions, "IFNULL(useralertchannels.uptimeAlerts, FALSE) = TRUE AND (IFNULL(users.uptimeAlerts, FALSE) = TRUE OR IFNULL(serviceconfigs.uptimeAlerts, FALSE) = TRUE)")
 		} else {
-			conditions = append(conditions, "(IFNULL(useralertchannels.uptimeAlerts, FALSE) = FALSE OR (IFNULL(users.uptimeAlerts, FALSE) = FALSE AND IFNULL(serviceuserconfigs.uptimeAlerts, FALSE) = FALSE))")
+			conditions = append(conditions, "(IFNULL(useralertchannels.uptimeAlerts, FALSE) = FALSE OR (IFNULL(users.uptimeAlerts, FALSE) = FALSE AND IFNULL(serviceconfigs.uptimeAlerts, FALSE) = FALSE))")
 		}
 	}
 	if query.VersionAlerts != nil {
 		if *query.VersionAlerts {
-			conditions = append(conditions, "IFNULL(useralertchannels.versionAlerts, FALSE) = TRUE AND (IFNULL(users.versionAlerts, FALSE) = TRUE OR IFNULL(serviceuserconfigs.versionAlerts, FALSE) = TRUE)")
+			conditions = append(conditions, "IFNULL(useralertchannels.versionAlerts, FALSE) = TRUE AND (IFNULL(users.versionAlerts, FALSE) = TRUE OR IFNULL(serviceconfigs.versionAlerts, FALSE) = TRUE)")
 		} else {
-			conditions = append(conditions, "(IFNULL(useralertchannels.versionAlerts, FALSE) = FALSE OR (IFNULL(users.versionAlerts, FALSE) = FALSE AND IFNULL(serviceuserconfigs.versionAlerts, FALSE) = FALSE))")
+			conditions = append(conditions, "(IFNULL(useralertchannels.versionAlerts, FALSE) = FALSE OR (IFNULL(users.versionAlerts, FALSE) = FALSE AND IFNULL(serviceconfigs.versionAlerts, FALSE) = FALSE))")
 		}
 	}
 	if len(conditions) == 0 {
@@ -57,8 +57,8 @@ func (i *impl) ListServiceUserAlertChannels(serviceID string, query *schema.Serv
       FROM useralertchannels
       INNER JOIN users
       ON useralertchannels.userName = users.name
-      LEFT JOIN serviceuserconfigs
-      ON serviceuserconfigs.userName = users.name AND serviceuserconfigs.serviceID = ?
+      LEFT JOIN serviceconfigs
+      ON serviceconfigs.userName = users.name AND serviceconfigs.serviceID = ?
       WHERE `+where+`
     `,
 		slices.Concat(

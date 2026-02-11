@@ -10,7 +10,7 @@ import (
 func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
-      CREATE TABLE IF NOT EXISTS serviceuserconfigs (
+      CREATE TABLE IF NOT EXISTS serviceconfigs (
         userName TEXT NOT NULL,
         serviceID TEXT NOT NULL,
         favorite BOOLEAN NOT NULL,
@@ -21,39 +21,39 @@ func init() {
       )
     `)
 		if err != nil {
-			return fmt.Errorf("creating table \"serviceuserconfigs\" failed - %s", err)
+			return fmt.Errorf("creating table \"serviceconfigs\" failed - %s", err)
 		}
 		return nil
 	})
 }
 
-func ServiceUserConfigQuery(query *schema.ServiceUserConfigQuery) (clause string, placeholders []any) {
+func ServiceConfigQuery(query *schema.ServiceConfigQuery) (clause string, placeholders []any) {
 	if query == nil {
-		query = new(schema.ServiceUserConfigQuery)
+		query = new(schema.ServiceConfigQuery)
 	}
 	var conditions []string
 	if query.UserName != nil {
-		conditions = append(conditions, "serviceuserconfigs.userName = ?")
+		conditions = append(conditions, "serviceconfigs.userName = ?")
 		placeholders = append(placeholders, *query.UserName)
 	}
 	if query.ServiceID != nil {
-		conditions = append(conditions, "serviceuserconfigs.serviceID = ?")
+		conditions = append(conditions, "serviceconfigs.serviceID = ?")
 		placeholders = append(placeholders, *query.ServiceID)
 	}
 	if query.Favorite != nil {
-		conditions = append(conditions, "IFNULL(serviceuserconfigs.favorite, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(serviceconfigs.favorite, FALSE) = ?")
 		placeholders = append(placeholders, *query.Favorite)
 	}
 	if query.Hidden != nil {
-		conditions = append(conditions, "IFNULL(serviceuserconfigs.hidden, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(serviceconfigs.hidden, FALSE) = ?")
 		placeholders = append(placeholders, *query.Hidden)
 	}
 	if query.UptimeAlerts != nil {
-		conditions = append(conditions, "IFNULL(serviceuserconfigs.uptimeAlerts, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(serviceconfigs.uptimeAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.UptimeAlerts)
 	}
 	if query.VersionAlerts != nil {
-		conditions = append(conditions, "IFNULL(serviceuserconfigs.versionAlerts, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(serviceconfigs.versionAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.VersionAlerts)
 	}
 	if len(conditions) == 0 {
@@ -63,14 +63,14 @@ func ServiceUserConfigQuery(query *schema.ServiceUserConfigQuery) (clause string
 	return
 }
 
-func (i *impl) ListServiceUserConfigs(query *schema.ServiceUserConfigQuery) ([]schema.ServiceUserConfig, error) {
-	where, wherePlaceholders := ServiceUserConfigQuery(query)
+func (i *impl) ListServiceConfigs(query *schema.ServiceConfigQuery) ([]schema.ServiceConfig, error) {
+	where, wherePlaceholders := ServiceConfigQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT serviceuserconfigs.userName, serviceuserconfigs.serviceID, serviceuserconfigs.favorite, serviceuserconfigs.hidden, serviceuserconfigs.uptimeAlerts, serviceuserconfigs.versionAlerts
-      FROM serviceuserconfigs
+      SELECT serviceconfigs.userName, serviceconfigs.serviceID, serviceconfigs.favorite, serviceconfigs.hidden, serviceconfigs.uptimeAlerts, serviceconfigs.versionAlerts
+      FROM serviceconfigs
       INNER JOIN services
-      ON serviceuserconfigs.serviceID = services.id
+      ON serviceconfigs.serviceID = services.id
       WHERE `+where+`
     `,
 		wherePlaceholders...,
@@ -79,9 +79,9 @@ func (i *impl) ListServiceUserConfigs(query *schema.ServiceUserConfigQuery) ([]s
 		return nil, err
 	}
 	defer rows.Close()
-	var records []schema.ServiceUserConfig
+	var records []schema.ServiceConfig
 	for rows.Next() {
-		var record schema.ServiceUserConfig
+		var record schema.ServiceConfig
 		if err := rows.Scan(&record.UserName, &record.ServiceID, &record.Favorite, &record.Hidden, &record.UptimeAlerts, &record.VersionAlerts); err != nil {
 			return nil, err
 		}
@@ -93,13 +93,13 @@ func (i *impl) ListServiceUserConfigs(query *schema.ServiceUserConfigQuery) ([]s
 	return records, nil
 }
 
-func (i *impl) CreateOrUpdateServiceUserConfig(record schema.ServiceUserConfig) error {
+func (i *impl) CreateOrUpdateServiceConfig(record schema.ServiceConfig) error {
 	if err := record.Valid(); err != nil {
 		return err
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO serviceuserconfigs (userName, serviceID, favorite, hidden, uptimeAlerts, versionAlerts)
+      INSERT INTO serviceconfigs (userName, serviceID, favorite, hidden, uptimeAlerts, versionAlerts)
       VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT (userName, serviceID)
       DO UPDATE

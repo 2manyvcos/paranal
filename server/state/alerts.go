@@ -23,9 +23,9 @@ func alertScriptError(app *application.App, script schema.ServiceScript, _ error
 	channels, err := app.ListServiceUserAlertChannels(
 		script.ServiceID,
 		&schema.ServiceUserAlertChannelQuery{
-			UserQuery:              schema.UserQuery{Role: &adminRole},
-			ServiceUserConfigQuery: schema.ServiceUserConfigQuery{Hidden: &f},
-			ErrorAlerts:            &t,
+			UserQuery:          schema.UserQuery{Role: &adminRole},
+			ServiceConfigQuery: schema.ServiceConfigQuery{Hidden: &f},
+			ErrorAlerts:        &t,
 		},
 	)
 	if err != nil {
@@ -71,8 +71,8 @@ func alertUptimeStatuses(app *application.App, script schema.ServiceScript, _ []
 	channels, err := app.ListServiceUserAlertChannels(
 		script.ServiceID,
 		&schema.ServiceUserAlertChannelQuery{
-			ServiceUserConfigQuery: schema.ServiceUserConfigQuery{Hidden: &f},
-			UptimeAlerts:           &t,
+			ServiceConfigQuery: schema.ServiceConfigQuery{Hidden: &f},
+			UptimeAlerts:       &t,
 		},
 	)
 	if err != nil {
@@ -118,8 +118,8 @@ func alertVersions(app *application.App, script schema.ServiceScript, _ []Servic
 	channels, err := app.ListServiceUserAlertChannels(
 		script.ServiceID,
 		&schema.ServiceUserAlertChannelQuery{
-			ServiceUserConfigQuery: schema.ServiceUserConfigQuery{Hidden: &f},
-			VersionAlerts:          &t,
+			ServiceConfigQuery: schema.ServiceConfigQuery{Hidden: &f},
+			VersionAlerts:      &t,
 		},
 	)
 	if err != nil {

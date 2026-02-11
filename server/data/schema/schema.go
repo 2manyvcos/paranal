@@ -51,8 +51,8 @@ type DataProvider interface {
 	UpdateServices(query ServiceQuery, record Service) error
 	DeleteServices(query ServiceQuery) error
 
-	ListServiceUserConfigs(query *ServiceUserConfigQuery) ([]ServiceUserConfig, error)
-	CreateOrUpdateServiceUserConfig(record ServiceUserConfig) error
+	ListServiceConfigs(query *ServiceConfigQuery) ([]ServiceConfig, error)
+	CreateOrUpdateServiceConfig(record ServiceConfig) error
 
 	ListUserServices(userName string, query *UserServiceQuery) ([]UserService, error)
 	GetUserService(userName string, query UserServiceQuery) (UserService, error)

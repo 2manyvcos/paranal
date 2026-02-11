@@ -17,9 +17,9 @@ func UserServiceQuery(query *schema.UserServiceQuery) (clause string, placeholde
 	serviceConditions, servicePlaceholders := ServiceQuery(&query.ServiceQuery)
 	conditions = append(conditions, serviceConditions)
 	placeholders = append(placeholders, servicePlaceholders...)
-	serviceUserConfigConditions, serviceUserConfigPlaceholders := ServiceUserConfigQuery(&query.ServiceUserConfigQuery)
-	conditions = append(conditions, serviceUserConfigConditions)
-	placeholders = append(placeholders, serviceUserConfigPlaceholders...)
+	serviceConfigConditions, serviceConfigPlaceholders := ServiceConfigQuery(&query.ServiceConfigQuery)
+	conditions = append(conditions, serviceConfigConditions)
+	placeholders = append(placeholders, serviceConfigPlaceholders...)
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}
@@ -31,10 +31,10 @@ func (i *impl) ListUserServices(userName string, query *schema.UserServiceQuery)
 	where, wherePlaceholders := UserServiceQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, serviceuserconfigs.favorite, serviceuserconfigs.hidden, serviceuserconfigs.uptimeAlerts, serviceuserconfigs.versionAlerts
+      SELECT services.id, services.name, services.description, services.logo, services.url, serviceconfigs.favorite, serviceconfigs.hidden, serviceconfigs.uptimeAlerts, serviceconfigs.versionAlerts
       FROM services
-      LEFT JOIN serviceuserconfigs
-      ON serviceuserconfigs.serviceID = services.id AND serviceuserconfigs.userName = ?
+      LEFT JOIN serviceconfigs
+      ON serviceconfigs.serviceID = services.id AND serviceconfigs.userName = ?
       WHERE `+where+`
     `,
 		slices.Concat(
@@ -85,10 +85,10 @@ func (i *impl) GetUserService(userName string, query schema.UserServiceQuery) (s
 	var versionAlerts *bool
 	err := i.QueryRow(
 		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, serviceuserconfigs.favorite, serviceuserconfigs.hidden, serviceuserconfigs.uptimeAlerts, serviceuserconfigs.versionAlerts
+      SELECT services.id, services.name, services.description, services.logo, services.url, serviceconfigs.favorite, serviceconfigs.hidden, serviceconfigs.uptimeAlerts, serviceconfigs.versionAlerts
       FROM services
-      LEFT JOIN serviceuserconfigs
-      ON services.id = serviceuserconfigs.serviceID AND serviceuserconfigs.userName = ?
+      LEFT JOIN serviceconfigs
+      ON services.id = serviceconfigs.serviceID AND serviceconfigs.userName = ?
       WHERE `+where+`
     `,
 		slices.Concat(

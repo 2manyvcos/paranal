@@ -316,7 +316,7 @@ func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	updatedRecord := schema.ServiceUserConfig{
+	updatedRecord := schema.ServiceConfig{
 		UserName:      authorizedUser.Name,
 		ServiceID:     serviceID,
 		Favorite:      record.Favorite,
@@ -332,7 +332,7 @@ func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
-	err = app.CreateOrUpdateServiceUserConfig(updatedRecord)
+	err = app.CreateOrUpdateServiceConfig(updatedRecord)
 	if err != nil {
 		log.Printf("Error updating record - %s\n", err)
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)

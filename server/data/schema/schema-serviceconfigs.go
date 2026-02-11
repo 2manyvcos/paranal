@@ -2,7 +2,7 @@ package schema
 
 import "fmt"
 
-type ServiceUserConfigQuery struct {
+type ServiceConfigQuery struct {
 	UserName      *string
 	ServiceID     *string
 	Favorite      *bool
@@ -11,7 +11,7 @@ type ServiceUserConfigQuery struct {
 	VersionAlerts *bool
 }
 
-type ServiceUserConfig struct {
+type ServiceConfig struct {
 	UserName      string
 	ServiceID     string
 	Favorite      bool
@@ -20,7 +20,7 @@ type ServiceUserConfig struct {
 	VersionAlerts bool
 }
 
-func (r ServiceUserConfig) Valid() error {
+func (r ServiceConfig) Valid() error {
 	if r.UserName == "" {
 		return fmt.Errorf("invalid user name")
 	}
