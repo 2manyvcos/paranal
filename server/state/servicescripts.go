@@ -141,6 +141,28 @@ func (s *State) OnServiceDeleted(serviceID string) {
 	}
 }
 
+func (s *State) RunServiceScript(serviceID string, scriptID string) bool {
+	s.servicesLock.RLock()
+	defer s.servicesLock.RUnlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return false
+	}
+	service.lock.RLock()
+	defer service.lock.RUnlock()
+	script, ok := service.scripts[scriptID]
+	if !ok {
+		return false
+	}
+	if script.job != nil {
+		err := script.job.RunNow()
+		if err != nil {
+			log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
+		}
+	}
+	return true
+}
+
 func (s *State) updateServiceScript(script schema.ServiceScript) *serviceScriptState {
 	s.servicesLock.Lock()
 	defer s.servicesLock.Unlock()

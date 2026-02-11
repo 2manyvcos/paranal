@@ -12,6 +12,7 @@ type State interface {
 	OnServiceScriptChanged(script schema.ServiceScript)
 	OnServiceScriptDeleted(serviceId string, scriptID string)
 	OnServiceDeleted(serviceID string)
+	RunServiceScript(serviceID string, scriptID string) bool
 }
 
 type ServiceScriptState struct {

@@ -271,3 +271,22 @@ func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 
 	app.State.OnServiceScriptDeleted(serviceID, scriptID)
 }
+
+func PostServicesByIDScriptsByIDRun(res http.ResponseWriter, req *http.Request) {
+	app := helper.GetApp(req)
+
+	serviceID := req.PathValue("serviceID")
+	scriptID := req.PathValue("scriptID")
+	if serviceID == "" || scriptID == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	ok := app.State.RunServiceScript(serviceID, scriptID)
+	if !ok {
+		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	res.WriteHeader(http.StatusAccepted)
+}
