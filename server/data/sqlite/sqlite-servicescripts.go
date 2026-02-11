@@ -37,6 +37,10 @@ func ServiceScriptQuery(query *schema.ServiceScriptQuery) (clause string, placeh
 		conditions = append(conditions, "servicescripts.id = ?")
 		placeholders = append(placeholders, *query.ID)
 	}
+	if query.ServiceID != nil {
+		conditions = append(conditions, "servicescripts.serviceID = ?")
+		placeholders = append(placeholders, *query.ServiceID)
+	}
 	if len(conditions) == 0 {
 		conditions = append(conditions, "1 = 1")
 	}

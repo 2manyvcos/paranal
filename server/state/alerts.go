@@ -23,7 +23,6 @@ import (
 // - [admin] GET /maintenancetasks
 // - [admin] POST /maintenancetasks/{taskID}/run
 //
-// - add script information (last run, next run, error) to API
 // - remove unused data APIs and filters
 
 func alertScriptError(app *application.App, script schema.ServiceScript, _ error) {

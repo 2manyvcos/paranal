@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
@@ -411,17 +412,29 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	scriptStates := app.State.GetServiceScriptStates(serviceID)
+
 	responsePayload := make([]struct {
-		ID       string `json:"id"`
-		Name     string `json:"name"`
-		Schedule string `json:"schedule"`
-		Source   string `json:"source"`
+		ID       string     `json:"id"`
+		Name     string     `json:"name"`
+		Schedule string     `json:"schedule"`
+		Source   string     `json:"source"`
+		LastRun  *time.Time `json:"lastRun"`
+		Error    *string    `json:"error"`
+		NextRun  *time.Time `json:"nextRun"`
 	}, len(records))
 	for i, record := range records {
+		state := scriptStates[record.ID]
 		responsePayload[i].ID = record.ID
 		responsePayload[i].Name = record.Name
 		responsePayload[i].Schedule = record.Schedule
 		responsePayload[i].Source = record.Source
+		responsePayload[i].LastRun = state.LastRun
+		if state.Error != nil {
+			errorMessage := state.Error.Error()
+			responsePayload[i].Error = &errorMessage
+		}
+		responsePayload[i].NextRun = state.NextRun
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(responsePayload)
@@ -516,17 +529,30 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	state := app.State.GetServiceScriptState(serviceID, scriptID)
+
+	var error *string
+	if state.Error != nil {
+		errorMessage := state.Error.Error()
+		error = &errorMessage
+	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(struct {
-		ID       string `json:"id"`
-		Name     string `json:"name"`
-		Schedule string `json:"schedule"`
-		Source   string `json:"source"`
+		ID       string     `json:"id"`
+		Name     string     `json:"name"`
+		Schedule string     `json:"schedule"`
+		Source   string     `json:"source"`
+		LastRun  *time.Time `json:"lastRun"`
+		Error    *string    `json:"error"`
+		NextRun  *time.Time `json:"nextRun"`
 	}{
 		ID:       record.ID,
 		Name:     record.Name,
 		Schedule: record.Schedule,
 		Source:   record.Source,
+		LastRun:  state.LastRun,
+		Error:    error,
+		NextRun:  state.NextRun,
 	})
 	if err != nil {
 		log.Printf("Error encoding response payload - %s\n", err)

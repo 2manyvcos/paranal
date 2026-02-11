@@ -38,17 +38,52 @@ func Setup(app *application.App) error {
 	return nil
 }
 
-func (s *State) OnServiceDeleted(serviceID string) {
+func (s *State) GetServiceScriptStates(serviceID string) map[string]application.ServiceScriptState {
 	s.servicesLock.Lock()
 	defer s.servicesLock.Unlock()
-	if service, ok := s.services[serviceID]; ok {
-		service.lock.Lock()
-		for _, script := range service.scripts {
-			s.app.Scheduler.RemoveJob(script.job.ID())
-		}
-		service.lock.Unlock()
-		delete(s.services, serviceID)
+	service, ok := s.services[serviceID]
+	if !ok {
+		return nil
 	}
+	service.lock.Lock()
+	defer service.lock.Unlock()
+	result := make(map[string]application.ServiceScriptState, len(service.scripts))
+	for scriptID, script := range service.scripts {
+		var state application.ServiceScriptState
+		if lastRun, err := script.job.LastRun(); err == nil && !lastRun.IsZero() {
+			state.LastRun = &lastRun
+		}
+		state.Error = script.error
+		if nextRun, err := script.job.NextRun(); err == nil && !nextRun.IsZero() {
+			state.NextRun = &nextRun
+		}
+		result[scriptID] = state
+	}
+	return result
+}
+
+func (s *State) GetServiceScriptState(serviceID string, scriptID string) application.ServiceScriptState {
+	s.servicesLock.Lock()
+	defer s.servicesLock.Unlock()
+	service, ok := s.services[serviceID]
+	if !ok {
+		return application.ServiceScriptState{}
+	}
+	service.lock.Lock()
+	defer service.lock.Unlock()
+	script, ok := service.scripts[scriptID]
+	if !ok {
+		return application.ServiceScriptState{}
+	}
+	var state application.ServiceScriptState
+	if lastRun, err := script.job.LastRun(); err != nil && !lastRun.IsZero() {
+		state.LastRun = &lastRun
+	}
+	state.Error = script.error
+	if nextRun, err := script.job.NextRun(); err != nil && !nextRun.IsZero() {
+		state.NextRun = &nextRun
+	}
+	return state
 }
 
 func (s *State) OnServiceScriptChanged(script schema.ServiceScript) {
@@ -108,6 +143,19 @@ func (s *State) OnServiceScriptDeleted(serviceID string, scriptID string) {
 		delete(s.services, serviceID)
 	} else {
 		updateServiceState(service)
+	}
+}
+
+func (s *State) OnServiceDeleted(serviceID string) {
+	s.servicesLock.Lock()
+	defer s.servicesLock.Unlock()
+	if service, ok := s.services[serviceID]; ok {
+		service.lock.Lock()
+		for _, script := range service.scripts {
+			s.app.Scheduler.RemoveJob(script.job.ID())
+		}
+		service.lock.Unlock()
+		delete(s.services, serviceID)
 	}
 }
 
