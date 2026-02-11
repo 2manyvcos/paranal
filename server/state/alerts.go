@@ -12,19 +12,6 @@ import (
 	"github.com/containrrr/shoutrrr"
 )
 
-// TODO:
-//
-// - GET /serviceuptimestatuses
-// - GET /serviceversions
-// - GET /serviceversions/{versionName}/details # change notes etc.
-// - GET /services/{serviceID}/contextoptions (with sections, filtered by role)
-// - POST /services/{serviceID}/contextoptions/{actionID}/run
-// - POST /services/{serviceID}/scripts/{scriptID}/run
-// - [admin] GET /maintenancetasks
-// - [admin] POST /maintenancetasks/{taskID}/run
-//
-// - remove unused data APIs and filters
-
 func alertScriptError(app *application.App, script schema.ServiceScript, _ error) {
 	adminRole := schema.UserRoleAdmin
 	t := true
