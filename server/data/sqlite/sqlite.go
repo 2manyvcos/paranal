@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/2manyvcos/paranal/server/data/schema"
+	"github.com/2manyvcos/paranal/server/schema"
 	"modernc.org/sqlite"
 	sqlite3 "modernc.org/sqlite/lib"
 )

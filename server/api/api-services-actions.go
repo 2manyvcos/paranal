@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
+	"github.com/2manyvcos/paranal/server/schema"
 	"github.com/2manyvcos/paranal/server/scripts"
 )
 

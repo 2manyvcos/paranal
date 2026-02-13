@@ -1,9 +1,7 @@
-package application
+package schema
 
 import (
 	"time"
-
-	"github.com/2manyvcos/paranal/server/data/schema"
 )
 
 type State interface {
@@ -13,8 +11,8 @@ type State interface {
 	GetServiceActions(serviceID string) []ServiceAction
 	GetServiceAction(serviceID string, actionName string) *ServiceAction
 	RunAllServiceScripts()
-	RunServiceScript(serviceID string, scriptID string) (alreadyRunning bool, found bool)
-	OnServiceScriptChanged(script schema.ServiceScript)
+	RunServiceScript(serviceID string, scriptID string) error
+	OnServiceScriptChanged(script ServiceScript)
 	OnServiceScriptDeleted(serviceId string, scriptID string)
 	OnServiceDeleted(serviceID string)
 }
@@ -24,6 +22,7 @@ type ServiceScriptState struct {
 	Running bool
 	Error   error
 	NextRun *time.Time
+	RunNow  error
 }
 
 type ServiceActionGroup struct {

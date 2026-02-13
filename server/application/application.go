@@ -7,7 +7,7 @@ import (
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/data"
-	"github.com/2manyvcos/paranal/server/data/schema"
+	"github.com/2manyvcos/paranal/server/schema"
 	"github.com/2manyvcos/paranal/utils"
 	"github.com/go-co-op/gocron/v2"
 )
@@ -62,7 +62,7 @@ type App struct {
 
 	schema.DataProvider
 	Scheduler gocron.Scheduler
-	State     State
+	State     schema.State
 }
 
 func Setup() (app *App, err error) {

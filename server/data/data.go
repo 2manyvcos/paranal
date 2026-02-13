@@ -3,8 +3,8 @@ package data
 import (
 	"fmt"
 
-	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/data/sqlite"
+	"github.com/2manyvcos/paranal/server/schema"
 )
 
 type Config struct {

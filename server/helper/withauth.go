@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/2manyvcos/paranal/crypto"
-	"github.com/2manyvcos/paranal/server/data/schema"
+	"github.com/2manyvcos/paranal/server/schema"
 	"github.com/2manyvcos/paranal/utils"
 )
 

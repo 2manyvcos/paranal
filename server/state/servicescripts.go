@@ -5,8 +5,7 @@ import (
 	"log"
 	"sort"
 
-	"github.com/2manyvcos/paranal/server/application"
-	"github.com/2manyvcos/paranal/server/data/schema"
+	"github.com/2manyvcos/paranal/server/schema"
 	"github.com/2manyvcos/paranal/server/scripts"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/go-viper/mapstructure/v2"
@@ -26,7 +25,7 @@ func (s *State) setupServiceScripts() error {
 	return nil
 }
 
-func (s *State) GetServiceScriptStates(serviceID string) map[string]application.ServiceScriptState {
+func (s *State) GetServiceScriptStates(serviceID string) map[string]schema.ServiceScriptState {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
@@ -35,9 +34,9 @@ func (s *State) GetServiceScriptStates(serviceID string) map[string]application.
 	}
 	service.lock.RLock()
 	defer service.lock.RUnlock()
-	result := make(map[string]application.ServiceScriptState, len(service.scripts))
+	result := make(map[string]schema.ServiceScriptState, len(service.scripts))
 	for scriptID, script := range service.scripts {
-		state := application.ServiceScriptState{
+		state := schema.ServiceScriptState{
 			Running: script.running,
 			Error:   script.error,
 		}
@@ -54,7 +53,7 @@ func (s *State) GetServiceScriptStates(serviceID string) map[string]application.
 	return result
 }
 
-func (s *State) GetServiceScriptState(serviceID string, scriptID string) *application.ServiceScriptState {
+func (s *State) GetServiceScriptState(serviceID string, scriptID string) *schema.ServiceScriptState {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
@@ -67,7 +66,7 @@ func (s *State) GetServiceScriptState(serviceID string, scriptID string) *applic
 	if !ok {
 		return nil
 	}
-	state := application.ServiceScriptState{
+	state := schema.ServiceScriptState{
 		Running: script.running,
 		Error:   script.error,
 	}
@@ -82,7 +81,7 @@ func (s *State) GetServiceScriptState(serviceID string, scriptID string) *applic
 	return &state
 }
 
-func (s *State) GetServiceActionGroups(serviceID string) []application.ServiceActionGroup {
+func (s *State) GetServiceActionGroups(serviceID string) []schema.ServiceActionGroup {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
@@ -91,9 +90,9 @@ func (s *State) GetServiceActionGroups(serviceID string) []application.ServiceAc
 	}
 	service.lock.RLock()
 	defer service.lock.RUnlock()
-	result := make([]application.ServiceActionGroup, len(service.actionGroupsSorted))
+	result := make([]schema.ServiceActionGroup, len(service.actionGroupsSorted))
 	for i, actionGroup := range service.actionGroupsSorted {
-		result[i] = application.ServiceActionGroup{
+		result[i] = schema.ServiceActionGroup{
 			Name: actionGroup.Name,
 			Icon: actionGroup.Icon,
 		}
@@ -101,7 +100,7 @@ func (s *State) GetServiceActionGroups(serviceID string) []application.ServiceAc
 	return result
 }
 
-func (s *State) GetServiceActions(serviceID string) []application.ServiceAction {
+func (s *State) GetServiceActions(serviceID string) []schema.ServiceAction {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
@@ -110,9 +109,9 @@ func (s *State) GetServiceActions(serviceID string) []application.ServiceAction 
 	}
 	service.lock.RLock()
 	defer service.lock.RUnlock()
-	result := make([]application.ServiceAction, len(service.actionsSorted))
+	result := make([]schema.ServiceAction, len(service.actionsSorted))
 	for i, action := range service.actionsSorted {
-		result[i] = application.ServiceAction{
+		result[i] = schema.ServiceAction{
 			Name:             action.Name,
 			Icon:             action.Icon,
 			URL:              action.URL,
@@ -124,7 +123,7 @@ func (s *State) GetServiceActions(serviceID string) []application.ServiceAction 
 	return result
 }
 
-func (s *State) GetServiceAction(serviceID string, actionName string) *application.ServiceAction {
+func (s *State) GetServiceAction(serviceID string, actionName string) *schema.ServiceAction {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
@@ -137,7 +136,7 @@ func (s *State) GetServiceAction(serviceID string, actionName string) *applicati
 	if !ok {
 		return nil
 	}
-	result := application.ServiceAction{
+	result := schema.ServiceAction{
 		Name:             action.Name,
 		Icon:             action.Icon,
 		URL:              action.URL,
@@ -165,29 +164,30 @@ func (s *State) RunAllServiceScripts() {
 	}
 }
 
-func (s *State) RunServiceScript(serviceID string, scriptID string) (alreadyRunning bool, found bool) {
+func (s *State) RunServiceScript(serviceID string, scriptID string) error {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
 	if !ok {
-		return false, false
+		return schema.ErrNotFound
 	}
 	service.lock.RLock()
 	defer service.lock.RUnlock()
 	script, ok := service.scripts[scriptID]
 	if !ok {
-		return false, false
+		return schema.ErrNotFound
 	}
 	if script.running {
-		return true, true
+		return schema.ErrAlreadyRunning
 	}
 	if script.job != nil {
 		err := script.job.RunNow()
 		if err != nil {
 			log.Printf("Error running script \"%s\" for service \"%s\" - %s\n", scriptID, serviceID, err)
 		}
+		return err
 	}
-	return false, true
+	return nil
 }
 
 func (s *State) OnServiceScriptChanged(script schema.ServiceScript) {

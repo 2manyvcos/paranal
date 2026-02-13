@@ -4,7 +4,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/2manyvcos/paranal/server/data/schema"
+	"github.com/2manyvcos/paranal/server/schema"
 )
 
 func ServiceAlertChannelQuery(query *schema.ServiceAlertChannelQuery) (clause string, placeholders []any) {

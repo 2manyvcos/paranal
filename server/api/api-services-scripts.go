@@ -7,9 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/2manyvcos/paranal/server/application"
-	"github.com/2manyvcos/paranal/server/data/schema"
 	"github.com/2manyvcos/paranal/server/helper"
+	"github.com/2manyvcos/paranal/server/schema"
 	"github.com/2manyvcos/paranal/utils"
 	"github.com/google/uuid"
 )
@@ -166,7 +165,7 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 
 	state := app.State.GetServiceScriptState(serviceID, scriptID)
 	if state == nil {
-		state = new(application.ServiceScriptState)
+		state = new(schema.ServiceScriptState)
 	}
 
 	var error *string
@@ -290,13 +289,17 @@ func PostServicesByIDScriptsByIDRun(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	alreadyRunning, found := app.State.RunServiceScript(serviceID, scriptID)
-	if !found {
+	err := app.State.RunServiceScript(serviceID, scriptID)
+	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
-	if alreadyRunning {
+	if errors.Is(err, schema.ErrAlreadyRunning) {
 		http.Error(res, http.StatusText(http.StatusConflict), http.StatusConflict)
+		return
+	}
+	if err != nil {
+		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
 
