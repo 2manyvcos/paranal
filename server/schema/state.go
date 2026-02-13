@@ -10,7 +10,7 @@ type State interface {
 	GetServiceActionGroups(serviceID string) []ServiceActionGroup
 	GetServiceActions(serviceID string) []ServiceAction
 	GetServiceAction(serviceID string, actionName string) *ServiceAction
-	RunAllServiceScripts()
+	RunServiceScripts()
 	RunServiceScript(serviceID string, scriptID string) error
 	OnServiceScriptChanged(script ServiceScript)
 	OnServiceScriptDeleted(serviceId string, scriptID string)

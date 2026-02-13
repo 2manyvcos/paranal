@@ -147,7 +147,7 @@ func (s *State) GetServiceAction(serviceID string, actionName string) *schema.Se
 	return &result
 }
 
-func (s *State) RunAllServiceScripts() {
+func (s *State) RunServiceScripts() {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	for serviceID, service := range s.services {

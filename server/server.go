@@ -32,8 +32,8 @@ func Run() {
 		log.Fatalf("Setup failure - %s\n", err)
 	}
 
-  app.Scheduler.Start()
-  app.State.RunAllServiceScripts()
+	app.Scheduler.Start()
+	app.State.RunServiceScripts()
 
 	apiHandler := api.New()
 	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, helper.OmitTrailingSlash(helper.WithApp(app, apiHandler))))
