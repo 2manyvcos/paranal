@@ -77,9 +77,8 @@ func New() http.Handler {
 	api.Handle("GET /services/{serviceID}/uptimestatuses", helper.WithAuth(http.HandlerFunc(GetServicesByIDUptimeStatuses)))
 
 	api.Handle("GET /versions", helper.WithAuth(http.HandlerFunc(GetVersions)))
-	// api.Handle("GET /versions/{versionName}/details", helper.WithAuth(http.HandlerFunc(GetVersionsByNameDetails)))
 	api.Handle("GET /services/{serviceID}/versions", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersions)))
-	// api.Handle("GET /services/{serviceID}/versions/{versionName}/details", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersionsByNameDetails)))
+	api.Handle("GET /services/{serviceID}/versions/{versionName}/details", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersionsByNameDetails)))
 
 	// api.Handle("GET /maintenancetasks", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasks))))
 	// api.Handle("GET /maintenancetasks/{taskName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasksByName))))

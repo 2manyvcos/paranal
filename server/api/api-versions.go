@@ -277,3 +277,52 @@ func GetServicesByIDVersions(res http.ResponseWriter, req *http.Request) {
 		log.Printf("Error encoding response payload - %s\n", err)
 	}
 }
+
+func GetServicesByIDVersionsByNameDetails(res http.ResponseWriter, req *http.Request) {
+	app := helper.GetApp(req)
+	authorizedUser := helper.GetAuthorizedUser(req)
+
+	if authorizedUser == nil || authorizedUser.Name == "" {
+		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	serviceID := req.PathValue("serviceID")
+	versionName := req.PathValue("versionName")
+	if serviceID == "" || versionName == "" {
+		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
+		return
+	}
+
+	details := app.GetServiceVersionDetails(serviceID, versionName)
+	if details == nil {
+		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	responsePayload := VersionDetails{
+		CurrentVersionNotes: details.CurrentVersionNotes,
+		LatestVersionNotes:  details.LatestVersionNotes,
+	}
+	responsePayload.CurrentCVEDescriptions = make([]CVE, len(details.CurrentCVEDescriptions))
+	for i, cveDescription := range details.CurrentCVEDescriptions {
+		responsePayload.CurrentCVEDescriptions[i] = CVE{
+			Name:        cveDescription.Name,
+			Description: cveDescription.Description,
+			URL:         cveDescription.URL,
+		}
+	}
+	responsePayload.LatestCVEDescriptions = make([]CVE, len(details.LatestCVEDescriptions))
+	for i, cveDescription := range details.LatestCVEDescriptions {
+		responsePayload.LatestCVEDescriptions[i] = CVE{
+			Name:        cveDescription.Name,
+			Description: cveDescription.Description,
+			URL:         cveDescription.URL,
+		}
+	}
+	res.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(res).Encode(responsePayload)
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
+}
