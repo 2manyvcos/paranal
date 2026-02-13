@@ -67,6 +67,7 @@ func (i *impl) ListServices(query *schema.ServiceQuery) ([]schema.Service, error
       SELECT id, name, description, logo, url
       FROM services
       WHERE `+where+`
+      ORDER BY name
     `,
 		wherePlaceholders...,
 	)

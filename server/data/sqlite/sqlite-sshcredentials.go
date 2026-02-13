@@ -68,6 +68,7 @@ func (i *impl) ListSSHCredentials(query *schema.SSHCredentialQuery) ([]schema.SS
       SELECT name, user, password, privateKey
       FROM sshcredentials
       WHERE `+where+`
+      ORDER BY name
     `,
 		wherePlaceholders...,
 	)

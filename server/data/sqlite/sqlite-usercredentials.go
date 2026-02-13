@@ -60,6 +60,7 @@ func (i *impl) ListUserCredentials(query *schema.UserCredentialQuery) ([]schema.
       SELECT name, description, value
       FROM usercredentials
       WHERE `+where+`
+      ORDER BY name
     `,
 		wherePlaceholders...,
 	)

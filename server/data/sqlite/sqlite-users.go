@@ -80,6 +80,7 @@ func (i *impl) ListUsers(query *schema.UserQuery) ([]schema.User, error) {
       SELECT name, displayName, role, passwordHash, errorAlerts, uptimeAlerts, versionAlerts
       FROM users
       WHERE `+where+`
+      ORDER BY name
     `,
 		wherePlaceholders...,
 	)

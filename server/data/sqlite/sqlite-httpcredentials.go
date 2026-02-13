@@ -65,6 +65,7 @@ func (i *impl) ListHTTPCredentials(query *schema.HTTPCredentialQuery) ([]schema.
       SELECT name, type, key, value
       FROM httpcredentials
       WHERE `+where+`
+      ORDER BY name
     `,
 		wherePlaceholders...,
 	)

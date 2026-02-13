@@ -36,6 +36,7 @@ func (i *impl) ListUserServices(userName string, query *schema.UserServiceQuery)
       LEFT JOIN serviceconfigs
       ON serviceconfigs.serviceID = services.id AND serviceconfigs.userName = ?
       WHERE `+where+`
+      ORDER BY services.name
     `,
 		slices.Concat(
 			[]any{userName},
