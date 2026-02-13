@@ -71,14 +71,15 @@ func New() http.Handler {
 	api.Handle("POST /services/{serviceID}/scripts/{scriptID}/run", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostServicesByIDScriptsByIDRun))))
 
 	api.Handle("GET /services/{serviceID}/actions", helper.WithAuth(http.HandlerFunc(GetServicesByIDActions)))
-	api.Handle("POST /services/{serviceID}/actions/run/{actionName}", helper.WithAuth(http.HandlerFunc(PostServicesByIDActionsRunByName)))
+	api.Handle("POST /services/{serviceID}/actions/{actionName}/run", helper.WithAuth(http.HandlerFunc(PostServicesByIDActionsByNameRun)))
 
-	// api.Handle("GET /uptimestatuses", helper.WithAuth(http.HandlerFunc(GetUptimeStatuses)))
-	// api.Handle("GET /uptimestatuses/{statusName}", helper.WithAuth(http.HandlerFunc(GetUptimeStatusesByName)))
+	api.Handle("GET /uptimestatuses", helper.WithAuth(http.HandlerFunc(GetUptimeStatuses)))
+	api.Handle("GET /services/{serviceID}/uptimestatuses", helper.WithAuth(http.HandlerFunc(GetServicesByIDUptimeStatuses)))
 
 	// api.Handle("GET /versions", helper.WithAuth(http.HandlerFunc(GetVersions)))
-	// api.Handle("GET /versions/{versionName}", helper.WithAuth(http.HandlerFunc(GetVersionsByName)))
 	// api.Handle("GET /versions/{versionName}/details", helper.WithAuth(http.HandlerFunc(GetVersionsByNameDetails)))
+	// api.Handle("GET /services/{serviceID}/versions", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersions)))
+	// api.Handle("GET /services/{serviceID}/versions/{versionName}/details", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersionsByNameDetails)))
 
 	// api.Handle("GET /maintenancetasks", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasks))))
 	// api.Handle("GET /maintenancetasks/{taskName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasksByName))))

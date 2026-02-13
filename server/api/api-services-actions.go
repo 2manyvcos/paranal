@@ -44,8 +44,8 @@ func GetServicesByIDActions(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	actionGroups := app.State.GetServiceActionGroups(serviceID)
-	actions := app.State.GetServiceActions(serviceID)
+	actionGroups := app.ListServiceActionGroups(serviceID)
+	actions := app.ListServiceActions(serviceID)
 
 	var responsePayload Actions
 	responsePayload.Groups = make([]ActionGroup, len(actionGroups))
@@ -74,7 +74,7 @@ func GetServicesByIDActions(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func PostServicesByIDActionsRunByName(res http.ResponseWriter, req *http.Request) {
+func PostServicesByIDActionsByNameRun(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
@@ -90,7 +90,7 @@ func PostServicesByIDActionsRunByName(res http.ResponseWriter, req *http.Request
 		return
 	}
 
-	action := app.State.GetServiceAction(serviceID, actionName)
+	action := app.GetServiceAction(serviceID, actionName)
 	if action == nil {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return

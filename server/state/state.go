@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/2manyvcos/paranal/server/application"
+	"github.com/2manyvcos/paranal/server/schema"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/jplorg/jpl/go/v2/jpl"
 )
@@ -28,14 +29,14 @@ type State struct {
 type serviceState struct {
 	lock                 sync.RWMutex
 	scripts              map[string]*serviceScriptState
-	uptimeStatuses       map[string]ServiceUptimeStatusState
-	uptimeStatusesSorted []ServiceUptimeStatusState
-	versions             map[string]ServiceVersionState
-	versionsSorted       []ServiceVersionState
-	actionGroups         map[string]ServiceActionGroupState
-	actionGroupsSorted   []ServiceActionGroupState
-	actions              map[string]ServiceActionState
-	actionsSorted        []ServiceActionState
+	uptimeStatuses       map[string]ServiceUptimeStatus
+	uptimeStatusesSorted []ServiceUptimeStatus
+	versions             map[string]ServiceVersion
+	versionsSorted       []ServiceVersion
+	actionGroups         map[string]ServiceActionGroup
+	actionGroupsSorted   []ServiceActionGroup
+	actions              map[string]ServiceAction
+	actionsSorted        []ServiceAction
 }
 
 type serviceScriptState struct {
@@ -43,64 +44,24 @@ type serviceScriptState struct {
 	job            gocron.Job
 	running        bool
 	error          error
-	uptimeStatuses map[string]ServiceUptimeStatusState
-	versions       map[string]ServiceVersionState
-	actionGroups   map[string]ServiceActionGroupState
-	actions        map[string]ServiceActionState
+	uptimeStatuses map[string]ServiceUptimeStatus
+	versions       map[string]ServiceVersion
+	actionGroups   map[string]ServiceActionGroup
+	actions        map[string]ServiceAction
 }
 
-const (
-	ServiceUptimeStatusDown = iota + 1
-	ServiceUptimeStatusUp
-)
-
-var (
-	ServiceUptimeStatusNames = map[int]string{
-		ServiceUptimeStatusDown: "down",
-		ServiceUptimeStatusUp:   "up",
-	}
-	ServiceUptimeStatusCodes map[string]int
-)
-
-func init() {
-	ServiceUptimeStatusCodes = make(map[string]int, len(ServiceUptimeStatusNames))
-	for code, name := range ServiceUptimeStatusNames {
-		ServiceUptimeStatusCodes[name] = code
-	}
-}
-
-type ServiceUptimeStatusState struct {
+type ServiceUptimeStatus struct {
 	Name   string `mapstructure:"name"`
 	Time   time.Time
 	Order  string `mapstructure:"order"`
 	Status int
 }
 
-func (s ServiceUptimeStatusState) Unhealthy() bool {
-	return s.Status != ServiceUptimeStatusUp
+func (s ServiceUptimeStatus) Unhealthy() bool {
+	return s.Status != schema.ServiceUptimeStatusUp
 }
 
-const (
-	ServiceVersionStatusOutdated = iota + 1
-	ServiceVersionStatusUpToDate
-)
-
-var (
-	ServiceVersionStatusNames = map[int]string{
-		ServiceVersionStatusOutdated: "outdated",
-		ServiceVersionStatusUpToDate: "upToDate",
-	}
-	ServiceVersionStatusCodes map[string]int
-)
-
-func init() {
-	ServiceVersionStatusCodes = make(map[string]int, len(ServiceVersionStatusNames))
-	for code, name := range ServiceVersionStatusNames {
-		ServiceVersionStatusCodes[name] = code
-	}
-}
-
-type ServiceVersionState struct {
+type ServiceVersion struct {
 	Name                   string `mapstructure:"name"`
 	Time                   time.Time
 	Order                  string       `mapstructure:"order"`
@@ -115,11 +76,11 @@ type ServiceVersionState struct {
 	Status                 int
 }
 
-func (s ServiceVersionState) Outdated() bool {
-	return s.Status != ServiceVersionStatusUpToDate
+func (s ServiceVersion) Outdated() bool {
+	return s.Status != schema.ServiceVersionStatusUpToDate
 }
 
-func (s ServiceVersionState) Vulnerable() bool {
+func (s ServiceVersion) Vulnerable() bool {
 	return s.CurrentCVEs > 0
 }
 
@@ -129,14 +90,14 @@ type ServiceCVE struct {
 	URL         string `mapstructure:"url"`
 }
 
-type ServiceActionGroupState struct {
+type ServiceActionGroup struct {
 	Name  string `mapstructure:"name"`
 	Time  time.Time
 	Order string `mapstructure:"order"`
 	Icon  string `mapstructure:"icon"`
 }
 
-type ServiceActionState struct {
+type ServiceAction struct {
 	Name             string `mapstructure:"name"`
 	Time             time.Time
 	Order            string `mapstructure:"order"`
@@ -153,26 +114,26 @@ type GenericInstruction struct {
 
 type UptimeStatusInstruction struct {
 	Type string `mapstructure:"type"`
-	ServiceUptimeStatusState
+	ServiceUptimeStatus
 	Time   any    `mapstructure:"time"`
 	Status string `mapstructure:"status"`
 }
 
 type VersionInstruction struct {
 	Type string `mapstructure:"type"`
-	ServiceVersionState
+	ServiceVersion
 	Time   any    `mapstructure:"time"`
 	Status string `mapstructure:"status"`
 }
 
 type ActionGroupInstruction struct {
 	Type string `mapstructure:"type"`
-	ServiceActionGroupState
+	ServiceActionGroup
 	Time any `mapstructure:"time"`
 }
 
 type ActionInstruction struct {
 	Type string `mapstructure:"type"`
-	ServiceActionState
+	ServiceAction
 	Time any `mapstructure:"time"`
 }

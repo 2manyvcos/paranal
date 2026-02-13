@@ -7,25 +7,27 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 )
 
-type ByUptimeStatusOrder []ServiceUptimeStatusState
+type ByUptimeStatusOrder []ServiceUptimeStatus
 
-func (a ByUptimeStatusOrder) Len() int           { return len(a) }
-func (a ByUptimeStatusOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByUptimeStatusOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
+func (a ByUptimeStatusOrder) Len() int      { return len(a) }
+func (a ByUptimeStatusOrder) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByUptimeStatusOrder) Less(i, j int) bool {
+	return a[i].Order < a[j].Order
+}
 
-type ByVersionOrder []ServiceVersionState
+type ByVersionOrder []ServiceVersion
 
 func (a ByVersionOrder) Len() int           { return len(a) }
 func (a ByVersionOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByVersionOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
 
-type ByActionGroupOrder []ServiceActionGroupState
+type ByActionGroupOrder []ServiceActionGroup
 
 func (a ByActionGroupOrder) Len() int           { return len(a) }
 func (a ByActionGroupOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByActionGroupOrder) Less(i, j int) bool { return a[i].Order < a[j].Order }
 
-type ByActionOrder []ServiceActionState
+type ByActionOrder []ServiceAction
 
 func (a ByActionOrder) Len() int           { return len(a) }
 func (a ByActionOrder) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }

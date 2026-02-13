@@ -57,7 +57,7 @@ func alertScriptError(app *application.App, service *schema.Service, script sche
 	}
 }
 
-func alertUnhealthyUptimeStatuses(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceUptimeStatusState) {
+func alertUnhealthyUptimeStatuses(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceUptimeStatus) {
 	t := true
 	f := false
 	channels, err := app.ListServiceAlertChannels(
@@ -94,7 +94,7 @@ func alertUnhealthyUptimeStatuses(app *application.App, service schema.Service, 
 	}
 }
 
-func alertOutdatedVersions(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceVersionState) {
+func alertOutdatedVersions(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceVersion) {
 	t := true
 	f := false
 	channels, err := app.ListServiceAlertChannels(
@@ -131,7 +131,7 @@ func alertOutdatedVersions(app *application.App, service schema.Service, script 
 	}
 }
 
-func alertVulnerableVersions(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceVersionState) {
+func alertVulnerableVersions(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceVersion) {
 	t := true
 	f := false
 	channels, err := app.ListServiceAlertChannels(

@@ -278,7 +278,7 @@ func DeleteServicesByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	app.State.OnServiceDeleted(serviceID)
+	app.OnServiceDeleted(serviceID)
 }
 
 func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {

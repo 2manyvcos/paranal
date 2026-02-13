@@ -33,7 +33,7 @@ func Run() {
 	}
 
 	app.Scheduler.Start()
-	app.State.RunServiceScripts()
+	app.RunServiceScripts()
 
 	apiHandler := api.New()
 	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, helper.OmitTrailingSlash(helper.WithApp(app, apiHandler))))

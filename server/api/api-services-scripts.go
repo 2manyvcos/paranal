@@ -44,7 +44,7 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	scriptStates := app.State.GetServiceScriptStates(serviceID)
+	scriptStates := app.ListServiceScriptStates(serviceID)
 
 	responsePayload := make([]struct {
 		ID       string     `json:"id"`
@@ -137,7 +137,7 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	app.State.OnServiceScriptChanged(newRecord)
+	app.OnServiceScriptChanged(newRecord)
 
 	res.WriteHeader(http.StatusCreated)
 }
@@ -163,7 +163,7 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	state := app.State.GetServiceScriptState(serviceID, scriptID)
+	state := app.GetServiceScriptState(serviceID, scriptID)
 	if state == nil {
 		state = new(schema.ServiceScriptState)
 	}
@@ -252,7 +252,7 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	app.State.OnServiceScriptChanged(updatedRecord)
+	app.OnServiceScriptChanged(updatedRecord)
 }
 
 func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
@@ -276,7 +276,7 @@ func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	app.State.OnServiceScriptDeleted(serviceID, scriptID)
+	app.OnServiceScriptDeleted(serviceID, scriptID)
 }
 
 func PostServicesByIDScriptsByIDRun(res http.ResponseWriter, req *http.Request) {
@@ -289,7 +289,7 @@ func PostServicesByIDScriptsByIDRun(res http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	err := app.State.RunServiceScript(serviceID, scriptID)
+	err := app.RunServiceScript(serviceID, scriptID)
 	if errors.Is(err, schema.ErrNotFound) {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
