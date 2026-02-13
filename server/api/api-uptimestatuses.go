@@ -86,6 +86,9 @@ func GetUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 		}
 	}
 	responsePayload := slices.Concat(uptimeStatuses...)
+	if responsePayload == nil {
+		responsePayload = make([]ServiceUptimeStatus, 0)
+	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(responsePayload)
 	if err != nil {
