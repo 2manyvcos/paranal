@@ -13,13 +13,9 @@ import (
 
 type UptimeStatus struct {
 	Name      string `json:"name"`
+	ServiceID string `json:"serviceID"`
 	Status    string `json:"status"`
 	Unhealthy bool   `json:"unhealthy"`
-}
-
-type ServiceUptimeStatus struct {
-	UptimeStatus
-	ServiceID string `json:"serviceID"`
 }
 
 func GetUptimeStatuses(res http.ResponseWriter, req *http.Request) {
@@ -61,10 +57,10 @@ func GetUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	uptimeStatuses := make([][]ServiceUptimeStatus, len(services))
+	uptimeStatuses := make([][]UptimeStatus, len(services))
 	for i, service := range services {
 		records := app.ListServiceUptimeStatuses(service.ID)
-		uptimeStatuses[i] = make([]ServiceUptimeStatus, 0, len(records))
+		uptimeStatuses[i] = make([]UptimeStatus, 0, len(records))
 		for _, uptimeStatus := range records {
 			if nameQuery != nil && uptimeStatus.Name != *nameQuery {
 				continue
@@ -75,19 +71,17 @@ func GetUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 			if unhealthyQuery != nil && uptimeStatus.Unhealthy != *unhealthyQuery {
 				continue
 			}
-			uptimeStatuses[i] = append(uptimeStatuses[i], ServiceUptimeStatus{
-				UptimeStatus: UptimeStatus{
-					Name:      uptimeStatus.Name,
-					Status:    schema.ServiceUptimeStatusNames[uptimeStatus.Status],
-					Unhealthy: uptimeStatus.Unhealthy,
-				},
+			uptimeStatuses[i] = append(uptimeStatuses[i], UptimeStatus{
+				Name:      uptimeStatus.Name,
 				ServiceID: service.ID,
+				Status:    schema.ServiceUptimeStatusNames[uptimeStatus.Status],
+				Unhealthy: uptimeStatus.Unhealthy,
 			})
 		}
 	}
 	responsePayload := slices.Concat(uptimeStatuses...)
 	if responsePayload == nil {
-		responsePayload = make([]ServiceUptimeStatus, 0)
+		responsePayload = []UptimeStatus{}
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(responsePayload)
@@ -144,6 +138,7 @@ func GetServicesByIDUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 		}
 		responsePayload = append(responsePayload, UptimeStatus{
 			Name:      uptimeStatus.Name,
+			ServiceID: serviceID,
 			Status:    schema.ServiceUptimeStatusNames[uptimeStatus.Status],
 			Unhealthy: uptimeStatus.Unhealthy,
 		})

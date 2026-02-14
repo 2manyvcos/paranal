@@ -80,9 +80,9 @@ func New() http.Handler {
 	api.Handle("GET /services/{serviceID}/versions", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersions)))
 	api.Handle("GET /services/{serviceID}/versions/{versionName}/details", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersionsByNameDetails)))
 
-	// api.Handle("GET /maintenancetasks", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasks))))
-	// api.Handle("GET /maintenancetasks/{taskName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasksByName))))
-	// api.Handle("POST /maintenancetasks/{taskName}/run", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostMaintenanceTasksByNameRun))))
+	api.Handle("GET /maintenancetasks", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasks))))
+	api.Handle("GET /maintenancetasks/{taskName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasksByName))))
+	api.Handle("POST /maintenancetasks/{taskName}/run", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostMaintenanceTasksByNameRun))))
 
 	return api
 }

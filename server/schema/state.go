@@ -18,6 +18,10 @@ type State interface {
 	ListServiceVersions(serviceID string) []ServiceVersion
 	GetServiceVersionDetails(serviceID string, versionName string) *ServiceVersionDetails
 	OnServiceDeleted(serviceID string)
+
+	ListMaintenanceTaskStates() []MaintenanceTaskState
+	GetMaintenanceTaskState(taskName string) *MaintenanceTaskState
+	RunMaintenanceTask(taskName string) error
 }
 
 type ServiceScriptState struct {
@@ -25,7 +29,6 @@ type ServiceScriptState struct {
 	Running bool
 	Error   error
 	NextRun *time.Time
-	RunNow  error
 }
 
 type ServiceActionGroup struct {
@@ -110,4 +113,11 @@ type ServiceCVE struct {
 	Name        string
 	Description string
 	URL         string
+}
+
+type MaintenanceTaskState struct {
+	Name    string
+	LastRun *time.Time
+	Running bool
+	NextRun *time.Time
 }

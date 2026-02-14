@@ -13,6 +13,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type ServiceScript struct {
+	ID       string     `json:"id"`
+	Name     string     `json:"name"`
+	Schedule string     `json:"schedule"`
+	Source   string     `json:"source"`
+	LastRun  *time.Time `json:"lastRun"`
+	Running  bool       `json:"running"`
+	Error    *string    `json:"error"`
+	NextRun  *time.Time `json:"nextRun"`
+}
+
 func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 
@@ -23,6 +34,8 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 	}
 
 	query := schema.ServiceScriptQuery{ServiceID: &serviceID}
+	var runningQuery *bool
+	var hasErrorQuery *bool
 	q := req.URL.Query()
 	if v, ok := utils.LoadQueryValue(q, "id"); ok {
 		query.ID = &v
@@ -36,6 +49,12 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 	if v, ok := utils.LoadQueryValue(q, "source"); ok {
 		query.Source = &v
 	}
+	if v, ok := utils.LoadQueryBool(q, "running"); ok {
+		runningQuery = &v
+	}
+	if v, ok := utils.LoadQueryBool(q, "hasError"); ok {
+		hasErrorQuery = &v
+	}
 
 	records, err := app.ListServiceScripts(&query)
 	if err != nil {
@@ -46,29 +65,29 @@ func GetServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 
 	scriptStates := app.ListServiceScriptStates(serviceID)
 
-	responsePayload := make([]struct {
-		ID       string     `json:"id"`
-		Name     string     `json:"name"`
-		Schedule string     `json:"schedule"`
-		Source   string     `json:"source"`
-		LastRun  *time.Time `json:"lastRun"`
-		Running  bool       `json:"running"`
-		Error    *string    `json:"error"`
-		NextRun  *time.Time `json:"nextRun"`
-	}, len(records))
-	for i, record := range records {
+	responsePayload := make([]ServiceScript, 0, len(records))
+	for _, record := range records {
 		state := scriptStates[record.ID]
-		responsePayload[i].ID = record.ID
-		responsePayload[i].Name = record.Name
-		responsePayload[i].Schedule = record.Schedule
-		responsePayload[i].Source = record.Source
-		responsePayload[i].LastRun = state.LastRun
-		responsePayload[i].Running = state.Running
+		if runningQuery != nil && state.Running != *runningQuery {
+			continue
+		}
+		if hasErrorQuery != nil && (state.Error != nil) != *hasErrorQuery {
+			continue
+		}
+		script := ServiceScript{
+			ID:       record.ID,
+			Name:     record.Name,
+			Schedule: record.Schedule,
+			Source:   record.Source,
+			LastRun:  state.LastRun,
+			Running:  state.Running,
+			NextRun:  state.NextRun,
+		}
 		if state.Error != nil {
 			errorMessage := state.Error.Error()
-			responsePayload[i].Error = &errorMessage
+			script.Error = &errorMessage
 		}
-		responsePayload[i].NextRun = state.NextRun
+		responsePayload = append(responsePayload, script)
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(responsePayload)
@@ -174,16 +193,7 @@ func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		error = &errorMessage
 	}
 	res.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(res).Encode(struct {
-		ID       string     `json:"id"`
-		Name     string     `json:"name"`
-		Schedule string     `json:"schedule"`
-		Source   string     `json:"source"`
-		LastRun  *time.Time `json:"lastRun"`
-		Running  bool       `json:"running"`
-		Error    *string    `json:"error"`
-		NextRun  *time.Time `json:"nextRun"`
-	}{
+	err = json.NewEncoder(res).Encode(ServiceScript{
 		ID:       record.ID,
 		Name:     record.Name,
 		Schedule: record.Schedule,

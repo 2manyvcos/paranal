@@ -14,6 +14,7 @@ import (
 
 type Version struct {
 	Name           string `json:"name"`
+	ServiceID      string `json:"serviceID"`
 	CurrentVersion string `json:"currentVersion"`
 	CurrentCVEs    int    `json:"currentCVEs"`
 	LatestVersion  string `json:"latestVersion"`
@@ -21,11 +22,6 @@ type Version struct {
 	Status         string `json:"status"`
 	Outdated       bool   `json:"outdated"`
 	Vulnerable     bool   `json:"vulnerable"`
-}
-
-type ServiceVersion struct {
-	Version
-	ServiceID string `json:"serviceID"`
 }
 
 type VersionDetails struct {
@@ -112,10 +108,10 @@ func GetVersions(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	versions := make([][]ServiceVersion, len(services))
+	versions := make([][]Version, len(services))
 	for i, service := range services {
 		records := app.ListServiceVersions(service.ID)
-		versions[i] = make([]ServiceVersion, 0, len(records))
+		versions[i] = make([]Version, 0, len(records))
 		for _, version := range records {
 			if nameQuery != nil && version.Name != *nameQuery {
 				continue
@@ -141,24 +137,22 @@ func GetVersions(res http.ResponseWriter, req *http.Request) {
 			if vulnerableQuery != nil && version.Vulnerable != *vulnerableQuery {
 				continue
 			}
-			versions[i] = append(versions[i], ServiceVersion{
-				Version: Version{
-					Name:           version.Name,
-					CurrentVersion: version.CurrentVersion,
-					CurrentCVEs:    version.CurrentCVEs,
-					LatestVersion:  version.LatestVersion,
-					LatestCVEs:     version.LatestCVEs,
-					Status:         schema.ServiceVersionStatusNames[version.Status],
-					Outdated:       version.Outdated,
-					Vulnerable:     version.Vulnerable,
-				},
-				ServiceID: service.ID,
+			versions[i] = append(versions[i], Version{
+				Name:           version.Name,
+				ServiceID:      service.ID,
+				CurrentVersion: version.CurrentVersion,
+				CurrentCVEs:    version.CurrentCVEs,
+				LatestVersion:  version.LatestVersion,
+				LatestCVEs:     version.LatestCVEs,
+				Status:         schema.ServiceVersionStatusNames[version.Status],
+				Outdated:       version.Outdated,
+				Vulnerable:     version.Vulnerable,
 			})
 		}
 	}
 	responsePayload := slices.Concat(versions...)
 	if responsePayload == nil {
-		responsePayload = make([]ServiceVersion, 0)
+		responsePayload = []Version{}
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(responsePayload)
@@ -262,6 +256,7 @@ func GetServicesByIDVersions(res http.ResponseWriter, req *http.Request) {
 		}
 		responsePayload = append(responsePayload, Version{
 			Name:           version.Name,
+			ServiceID:      serviceID,
 			CurrentVersion: version.CurrentVersion,
 			CurrentCVEs:    version.CurrentCVEs,
 			LatestVersion:  version.LatestVersion,

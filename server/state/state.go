@@ -17,13 +17,18 @@ func Setup(app *application.App) (*State, error) {
 		return nil, err
 	}
 
+	if err := s.setupMaintenanceTasks(); err != nil {
+		return nil, err
+	}
+
 	return &s, nil
 }
 
 type State struct {
-	app          *application.App
-	services     map[string]*serviceState
-	servicesLock sync.RWMutex
+	app              *application.App
+	services         map[string]*serviceState
+	servicesLock     sync.RWMutex
+	maintenanceTasks map[string]maintenanceTask
 }
 
 type serviceState struct {
@@ -136,4 +141,9 @@ type ActionInstruction struct {
 	Type string `mapstructure:"type"`
 	ServiceAction
 	Time any `mapstructure:"time"`
+}
+
+type maintenanceTask interface {
+	State() (lastRun *time.Time, running bool, nextRun *time.Time)
+	Run() error
 }
