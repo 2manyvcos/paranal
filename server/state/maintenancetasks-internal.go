@@ -15,6 +15,10 @@ func (s *State) setupMaintenanceTasks() error {
 		return err
 	}
 
+	if err := s.setupScheduledMaintenanceTask("Cleanup database", gocron.CronJob("0 0 * * *", false), s.app.CleanupDatabase); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -22,7 +26,7 @@ func (s *State) setupScheduledMaintenanceTask(name string, schedule gocron.JobDe
 	var task scheduledMaintenanceTask
 	if job, err := s.app.Scheduler.NewJob(
 		schedule,
-		gocron.NewTask(newMaintenanceTaskRunner, &task, fn),
+		gocron.NewTask(newMaintenanceTaskRunner, name, &task, fn),
 		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	); err == nil {
 		task.job = job
@@ -35,7 +39,6 @@ func (s *State) setupScheduledMaintenanceTask(name string, schedule gocron.JobDe
 }
 
 type scheduledMaintenanceTask struct {
-	name    string
 	lock    sync.RWMutex
 	job     gocron.Job
 	running bool
@@ -58,10 +61,12 @@ func (t *scheduledMaintenanceTask) Run() error {
 	return t.job.RunNow()
 }
 
-func newMaintenanceTaskRunner(task *scheduledMaintenanceTask, fn func()) {
+func newMaintenanceTaskRunner(name string, task *scheduledMaintenanceTask, fn func()) {
 	task.lock.Lock()
 	task.running = true
 	task.lock.Unlock()
+
+	log.Printf("Running maintenance task \"%s\"\n", name)
 
 	fn()
 
@@ -79,6 +84,8 @@ func (s *State) setupManualMaintenanceTask(name string, fn func()) error {
 			task.running = true
 			task.lock.Unlock()
 
+			log.Printf("Running maintenance task \"%s\"\n", name)
+
 			fn()
 
 			task.lock.Lock()
@@ -92,7 +99,6 @@ func (s *State) setupManualMaintenanceTask(name string, fn func()) error {
 }
 
 type manualMaintenanceTask struct {
-	name    string
 	lock    sync.RWMutex
 	run     func() error
 	running bool

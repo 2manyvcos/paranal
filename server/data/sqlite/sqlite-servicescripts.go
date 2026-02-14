@@ -26,6 +26,20 @@ func init() {
 		}
 		return nil
 	})
+
+	cleanups = append(cleanups, func(i *impl) error {
+		_, err := i.Exec(`
+      DELETE FROM servicescripts
+      WHERE
+        ROWID NOT IN (
+          SELECT servicescripts.ROWID
+          FROM servicescripts
+          INNER JOIN services
+          ON servicescripts.serviceID = services.id
+        )
+    `)
+		return err
+	})
 }
 
 func ServiceScriptQuery(query *schema.ServiceScriptQuery) (clause string, placeholders []any) {

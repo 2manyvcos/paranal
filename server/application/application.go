@@ -141,6 +141,9 @@ func (app *App) prepare() (err error) {
 		}
 	}
 
+	log.Println("Cleaning up database")
+	app.CleanupDatabase()
+
 	return nil
 }
 

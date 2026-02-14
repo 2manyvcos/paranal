@@ -27,6 +27,20 @@ func init() {
 		}
 		return nil
 	})
+
+	cleanups = append(cleanups, func(i *impl) error {
+		_, err := i.Exec(`
+      DELETE FROM useralertchannels
+      WHERE
+        ROWID NOT IN (
+          SELECT useralertchannels.ROWID
+          FROM useralertchannels
+          INNER JOIN users
+          ON useralertchannels.userName = users.name
+        )
+    `)
+		return err
+	})
 }
 
 func UserAlertChannelQuery(query *schema.UserAlertChannelQuery) (clause string, placeholders []any) {

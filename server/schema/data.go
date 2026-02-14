@@ -7,6 +7,8 @@ import (
 type DataProvider interface {
 	io.Closer
 
+	CleanupDatabase()
+
 	GetSetting(name string) (string, error)
 	CreateOrUpdateSetting(name string, value string) error
 

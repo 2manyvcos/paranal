@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"database/sql"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -11,6 +12,7 @@ import (
 )
 
 var setups []func(i *impl) error
+var cleanups []func(i *impl) error
 
 type impl struct{ *sql.DB }
 
@@ -53,4 +55,12 @@ func requireFound(result sql.Result, err error) error {
 		return schema.ErrNotFound
 	}
 	return nil
+}
+
+func (i *impl) CleanupDatabase() {
+	for _, cleanup := range cleanups {
+		if err := cleanup(i); err != nil {
+			log.Printf("Error cleaning up database - %s\n", err)
+		}
+	}
 }
