@@ -43,13 +43,11 @@ type DataProvider interface {
 	UpdateUserCredentials(query UserCredentialQuery, record UserCredential) error
 	DeleteUserCredentials(query UserCredentialQuery) error
 
-	ListServices(query *ServiceQuery) ([]Service, error)
 	GetService(query ServiceQuery) (Service, error)
 	CreateService(record Service) error
 	UpdateServices(query ServiceQuery, record Service) error
 	DeleteServices(query ServiceQuery) error
 
-	ListServiceConfigs(query *ServiceConfigQuery) ([]ServiceConfig, error)
 	CreateOrUpdateServiceConfig(record ServiceConfig) error
 
 	ListUserServices(userName string, query *UserServiceQuery) ([]UserService, error)

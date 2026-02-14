@@ -60,35 +60,6 @@ func ServiceQuery(query *schema.ServiceQuery) (clause string, placeholders []any
 	return
 }
 
-func (i *impl) ListServices(query *schema.ServiceQuery) ([]schema.Service, error) {
-	where, wherePlaceholders := ServiceQuery(query)
-	rows, err := i.Query(
-		`
-      SELECT id, name, description, logo, url
-      FROM services
-      WHERE `+where+`
-      ORDER BY name
-    `,
-		wherePlaceholders...,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var records []schema.Service
-	for rows.Next() {
-		var record schema.Service
-		if err := rows.Scan(&record.ID, &record.Name, &record.Description, &record.Logo, &record.URL); err != nil {
-			return nil, err
-		}
-		records = append(records, record)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return records, nil
-}
-
 func (i *impl) GetService(query schema.ServiceQuery) (schema.Service, error) {
 	where, wherePlaceholders := ServiceQuery(&query)
 	var record schema.Service

@@ -79,36 +79,6 @@ func ServiceConfigQuery(query *schema.ServiceConfigQuery) (clause string, placeh
 	return
 }
 
-func (i *impl) ListServiceConfigs(query *schema.ServiceConfigQuery) ([]schema.ServiceConfig, error) {
-	where, wherePlaceholders := ServiceConfigQuery(query)
-	rows, err := i.Query(
-		`
-      SELECT serviceconfigs.userName, serviceconfigs.serviceID, serviceconfigs.favorite, serviceconfigs.hidden, serviceconfigs.uptimeAlerts, serviceconfigs.versionAlerts
-      FROM serviceconfigs
-      INNER JOIN services
-      ON serviceconfigs.serviceID = services.id
-      WHERE `+where+`
-    `,
-		wherePlaceholders...,
-	)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var records []schema.ServiceConfig
-	for rows.Next() {
-		var record schema.ServiceConfig
-		if err := rows.Scan(&record.UserName, &record.ServiceID, &record.Favorite, &record.Hidden, &record.UptimeAlerts, &record.VersionAlerts); err != nil {
-			return nil, err
-		}
-		records = append(records, record)
-	}
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return records, nil
-}
-
 func (i *impl) CreateOrUpdateServiceConfig(record schema.ServiceConfig) error {
 	if err := record.Valid(); err != nil {
 		return err
