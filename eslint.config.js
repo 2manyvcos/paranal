@@ -9,7 +9,11 @@ import unusedImports from 'eslint-plugin-unused-imports';
 import importPlugin from 'eslint-plugin-import';
 
 export default defineConfig([
-  globalIgnores(['client/dist']),
+  globalIgnores([
+    'client/dist',
+    'docs/.vitepress/cache',
+    'docs/.vitepress/dist',
+  ]),
   {
     files: ['client/**/*.{ts,tsx}'],
     extends: [
