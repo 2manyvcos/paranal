@@ -41,7 +41,7 @@ func GetVersions(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -165,7 +165,7 @@ func GetServicesByIDVersions(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -277,7 +277,7 @@ func GetServicesByIDVersionsByNameDetails(res http.ResponseWriter, req *http.Req
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}

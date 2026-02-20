@@ -14,8 +14,7 @@ import (
 	"github.com/2manyvcos/paranal/server/state"
 )
 
-const API_PREFIX = "/api"
-const API_PATH = API_PREFIX + "/" + api.API_VERSION
+const API_PATH = "/api"
 
 func Run() {
 	log.Printf("Welcome to %s v%s\n", meta.Meta.Name, meta.Meta.Version)
@@ -37,9 +36,6 @@ func Run() {
 
 	apiHandler := api.New()
 	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, helper.OmitTrailingSlash(helper.WithApp(app, apiHandler))))
-	http.HandleFunc(API_PREFIX+"/", func(w http.ResponseWriter, r *http.Request) {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-	})
 
 	resolvedClientFiles := helper.FileTemplates(client.ClientFiles, map[string]any{
 		"appName":           app.Config.AppName,

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/helper"
@@ -113,6 +114,7 @@ func PostSSHCredentials(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/sshcredentials/" + url.PathEscape(newRecord.Name)))
 	res.WriteHeader(http.StatusCreated)
 }
 
@@ -227,6 +229,7 @@ func PatchSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/sshcredentials/" + url.PathEscape(credentialName)))
 }
 
 func DeleteSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
@@ -248,4 +251,5 @@ func DeleteSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/sshcredentials/" + url.PathEscape(credentialName)))
 }

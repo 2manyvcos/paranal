@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/2manyvcos/paranal/server/helper"
@@ -155,9 +156,8 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
 	app.OnServiceScriptChanged(newRecord)
-
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(newRecord.ServiceID) + "/scripts/" + url.PathEscape(newRecord.ID)))
 	res.WriteHeader(http.StatusCreated)
 }
 
@@ -261,8 +261,8 @@ func PatchServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
 	app.OnServiceScriptChanged(updatedRecord)
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(serviceID) + "/scripts/" + url.PathEscape(scriptID)))
 }
 
 func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
@@ -285,8 +285,8 @@ func DeleteServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
 	app.OnServiceScriptDeleted(serviceID, scriptID)
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(serviceID) + "/scripts/" + url.PathEscape(scriptID)))
 }
 
 func PostServicesByIDScriptsByIDRun(res http.ResponseWriter, req *http.Request) {

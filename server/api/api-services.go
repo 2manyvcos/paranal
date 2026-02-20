@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/server/schema"
@@ -16,7 +17,7 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -132,6 +133,7 @@ func PostServices(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(newRecord.ID)))
 	res.WriteHeader(http.StatusCreated)
 }
 
@@ -139,7 +141,7 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -256,6 +258,7 @@ func PatchServicesByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(serviceID)))
 }
 
 func DeleteServicesByID(res http.ResponseWriter, req *http.Request) {
@@ -277,15 +280,15 @@ func DeleteServicesByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-
 	app.OnServiceDeleted(serviceID)
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(serviceID)))
 }
 
 func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -352,4 +355,5 @@ func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/services/"+url.PathEscape(updatedRecord.ServiceID)))
 }

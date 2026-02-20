@@ -3,6 +3,7 @@ package state
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"sort"
 
 	"github.com/2manyvcos/paranal/server/schema"
@@ -71,11 +72,12 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		serviceState.lock.Lock()
 		scriptState.running = false
 		scriptState.error = err
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(script.ServiceID) + "/scripts/" + url.PathEscape(script.ID)))
 		scriptState.uptimeStatuses = nil
 		scriptState.versions = nil
 		scriptState.actionGroups = nil
 		scriptState.actions = nil
-		updateServiceState(serviceState)
+		updateServiceState(s, serviceState, script)
 		serviceState.lock.Unlock()
 		alertScriptError(s.app, service, script, err)
 	}
@@ -83,6 +85,8 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 	return func() {
 		serviceState.lock.Lock()
 		scriptState.running = true
+		scriptState.error = nil
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(script.ServiceID) + "/scripts/" + url.PathEscape(script.ID)))
 		serviceState.lock.Unlock()
 
 		service, err := s.app.GetService(schema.ServiceQuery{ID: &script.ServiceID})
@@ -255,6 +259,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		serviceState.lock.Lock()
 		scriptState.running = false
 		scriptState.error = nil
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(script.ServiceID) + "/scripts/" + url.PathEscape(script.ID)))
 		// current uptime statuses
 		scriptState.uptimeStatuses = make(map[string]ServiceUptimeStatus, len(scriptState.uptimeStatuses))
 		for _, uptimeStatus := range uptimeStatuses {
@@ -326,7 +331,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				newlyVulnerableVersions = append(newlyVulnerableVersions, version)
 			}
 		}
-		updateServiceState(serviceState)
+		updateServiceState(s, serviceState, script)
 		serviceState.lock.Unlock()
 
 		if len(newlyUnhealthyUptimeStatuses) > 0 {
@@ -341,7 +346,12 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 	}
 }
 
-func updateServiceState(serviceState *serviceState) {
+func updateServiceState(s *State, serviceState *serviceState, script schema.ServiceScript) {
+	previousVersions := serviceState.versions
+	previousUptimeStatusesSorted := serviceState.uptimeStatusesSorted
+	previousVersionsSorted := serviceState.versionsSorted
+	previousActionGroupsSorted := serviceState.actionGroupsSorted
+	previousActionsSorted := serviceState.actionsSorted
 	serviceState.uptimeStatuses = make(map[string]ServiceUptimeStatus, len(serviceState.uptimeStatuses))
 	serviceState.versions = make(map[string]ServiceVersion, len(serviceState.versions))
 	serviceState.actionGroups = make(map[string]ServiceActionGroup, len(serviceState.actionGroups))
@@ -395,4 +405,27 @@ func updateServiceState(serviceState *serviceState) {
 		serviceState.actionsSorted = append(serviceState.actionsSorted, action)
 	}
 	sort.Sort(ByActionOrder(serviceState.actionsSorted))
+	escapedServiceID := url.PathEscape(script.ServiceID)
+	if objectHash(previousUptimeStatusesSorted) != objectHash(serviceState.uptimeStatusesSorted) {
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/uptimestatuses"))
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/uptimestatuses"))
+	}
+	if objectHash(previousVersionsSorted) != objectHash(serviceState.versionsSorted) {
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/versions"))
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/versions"))
+		for name := range previousVersions {
+			if _, ok := serviceState.versions[name]; !ok {
+				s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/versions/" + url.PathEscape(name) + "/details"))
+			}
+		}
+		for name, version := range serviceState.versions {
+			if previousVersion, ok := previousVersions[name]; !ok || objectHash(previousVersion) != objectHash(version) {
+				s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/versions/" + url.PathEscape(name) + "/details"))
+			}
+		}
+	}
+	if objectHash(previousActionGroupsSorted) != objectHash(serviceState.actionGroupsSorted) ||
+		objectHash(previousActionsSorted) != objectHash(serviceState.actionsSorted) {
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/actions"))
+	}
 }

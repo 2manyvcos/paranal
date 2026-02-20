@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/helper"
@@ -98,6 +99,7 @@ func PostUserCredentials(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/usercredentials/" + url.PathEscape(newRecord.Name)))
 	res.WriteHeader(http.StatusCreated)
 }
 
@@ -197,6 +199,7 @@ func PatchUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/usercredentials/" + url.PathEscape(credentialName)))
 }
 
 func DeleteUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
@@ -218,4 +221,5 @@ func DeleteUserCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/usercredentials/" + url.PathEscape(credentialName)))
 }

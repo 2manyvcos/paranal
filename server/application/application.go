@@ -152,6 +152,10 @@ func (app *App) Close() {
 		app.DataProvider.Close()
 	}
 
+	if app.State != nil {
+		app.State.Close()
+	}
+
 	if app.Scheduler != nil {
 		app.Scheduler.Shutdown()
 	}

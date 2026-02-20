@@ -80,4 +80,5 @@ func PutLayout(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/layout"))
 }

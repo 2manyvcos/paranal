@@ -17,7 +17,7 @@ func WithAuth(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		authorizedUser := authorize(req)
 
-		if authorizedUser == nil {
+		if authorizedUser == nil || authorizedUser.Name == "" {
 			http.Error(res, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
@@ -75,7 +75,7 @@ func authorizeRemoteUser(req *http.Request) *schema.User {
 		admin = slices.Contains(groups, app.Config.Auth.RemoteUser.AdminGroup)
 	}
 
-	if authorizedUser == nil {
+	if authorizedUser == nil || authorizedUser.Name == "" {
 		if !app.Config.Auth.RemoteUser.CreateUnknownUsers {
 			return nil
 		}

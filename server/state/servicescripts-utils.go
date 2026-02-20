@@ -1,9 +1,11 @@
 package state
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/2manyvcos/paranal/crypto"
 	"github.com/go-viper/mapstructure/v2"
 )
 
@@ -75,4 +77,9 @@ func decodeTime(input any) (time.Time, error) {
 	default:
 		return time.Time{}, fmt.Errorf("invalid time")
 	}
+}
+
+func objectHash(orderable any) string {
+	json, _ := json.Marshal(orderable)
+	return crypto.MD5Hash(string(json))
 }

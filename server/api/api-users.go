@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/helper"
@@ -104,6 +105,8 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	res.WriteHeader(http.StatusCreated)
+	app.PublishClientEvent(schema.NewUserUpdateEvent(newRecord.Name, "/v1/user"))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/users/" + url.PathEscape(newRecord.Name)))
 }
 
 func GetUsersByName(res http.ResponseWriter, req *http.Request) {
@@ -209,6 +212,8 @@ func PatchUsersByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUserUpdateEvent(userName, "/v1/user"))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/users/" + url.PathEscape(userName)))
 }
 
 func DeleteUsersByName(res http.ResponseWriter, req *http.Request) {
@@ -236,4 +241,6 @@ func DeleteUsersByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUserUpdateEvent(userName, "/v1/user"))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/users/" + url.PathEscape(userName)))
 }

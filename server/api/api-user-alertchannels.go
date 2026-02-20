@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/helper"
@@ -17,7 +18,7 @@ func GetUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -82,7 +83,7 @@ func PostUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -134,6 +135,7 @@ func PostUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alertchannels/"+url.PathEscape(newRecord.ID)))
 	res.WriteHeader(http.StatusCreated)
 }
 
@@ -141,7 +143,7 @@ func GetUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -195,7 +197,7 @@ func PatchUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -261,13 +263,14 @@ func PatchUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alertchannels/"+url.PathEscape(channelID)))
 }
 
 func DeleteUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -288,4 +291,5 @@ func DeleteUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alertchannels/"+url.PathEscape(channelID)))
 }

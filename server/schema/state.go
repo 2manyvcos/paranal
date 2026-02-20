@@ -1,10 +1,16 @@
 package schema
 
 import (
+	"context"
 	"time"
 )
 
 type State interface {
+	Close()
+
+	PublishClientEvent(event ClientEvent)
+	SubscribeToClientEvents(context context.Context) <-chan ClientEvent
+
 	ListServiceScriptStates(serviceID string) map[string]ServiceScriptState
 	GetServiceScriptState(serviceID string, scriptID string) *ServiceScriptState
 	RunServiceScripts()
@@ -22,6 +28,12 @@ type State interface {
 	ListMaintenanceTaskStates() []MaintenanceTaskState
 	GetMaintenanceTaskState(taskName string) *MaintenanceTaskState
 	RunMaintenanceTask(taskName string) error
+}
+
+type ClientEvent interface {
+	Event() string
+	User() string
+	Data() string
 }
 
 type ServiceScriptState struct {

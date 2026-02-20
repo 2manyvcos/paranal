@@ -2,9 +2,11 @@ package state
 
 import (
 	"log"
+	"net/url"
 	"sync"
 	"time"
 
+	"github.com/2manyvcos/paranal/server/schema"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -26,7 +28,7 @@ func (s *State) setupScheduledMaintenanceTask(name string, schedule gocron.JobDe
 	var task scheduledMaintenanceTask
 	if job, err := s.app.Scheduler.NewJob(
 		schedule,
-		gocron.NewTask(newMaintenanceTaskRunner, name, &task, fn),
+		gocron.NewTask(newMaintenanceTaskRunner, s, name, &task, fn),
 		gocron.WithSingletonMode(gocron.LimitModeReschedule),
 	); err == nil {
 		task.job = job
@@ -61,9 +63,10 @@ func (t *scheduledMaintenanceTask) Run() error {
 	return t.job.RunNow()
 }
 
-func newMaintenanceTaskRunner(name string, task *scheduledMaintenanceTask, fn func()) {
+func newMaintenanceTaskRunner(s *State, name string, task *scheduledMaintenanceTask, fn func()) {
 	task.lock.Lock()
 	task.running = true
+	s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenancetasks/" + url.PathEscape(name)))
 	task.lock.Unlock()
 
 	log.Printf("Running maintenance task \"%s\"\n", name)
@@ -72,6 +75,7 @@ func newMaintenanceTaskRunner(name string, task *scheduledMaintenanceTask, fn fu
 
 	task.lock.Lock()
 	task.running = false
+	s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenancetasks/" + url.PathEscape(name)))
 	task.lock.Unlock()
 }
 
@@ -82,6 +86,7 @@ func (s *State) setupManualMaintenanceTask(name string, fn func()) error {
 			task.lock.Lock()
 			task.lastRun = time.Now()
 			task.running = true
+			s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenancetasks/" + url.PathEscape(name)))
 			task.lock.Unlock()
 
 			log.Printf("Running maintenance task \"%s\"\n", name)
@@ -90,6 +95,7 @@ func (s *State) setupManualMaintenanceTask(name string, fn func()) error {
 
 			task.lock.Lock()
 			task.running = false
+			s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenancetasks/" + url.PathEscape(name)))
 			task.lock.Unlock()
 		}()
 		return nil

@@ -33,7 +33,7 @@ func GetServicesByIDActions(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -78,7 +78,7 @@ func PostServicesByIDActionsByNameRun(res http.ResponseWriter, req *http.Request
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}

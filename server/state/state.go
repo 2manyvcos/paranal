@@ -6,12 +6,17 @@ import (
 
 	"github.com/2manyvcos/paranal/server/application"
 	"github.com/2manyvcos/paranal/server/schema"
+	"github.com/2manyvcos/paranal/utils"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/jplorg/jpl/go/v2/jpl"
 )
 
 func Setup(app *application.App) (*State, error) {
 	s := State{app: app}
+
+	if err := s.setupClientEvents(); err != nil {
+		return nil, err
+	}
 
 	if err := s.setupServiceScripts(); err != nil {
 		return nil, err
@@ -24,8 +29,13 @@ func Setup(app *application.App) (*State, error) {
 	return &s, nil
 }
 
+func (s *State) Close() {
+	s.closeClientEvents()
+}
+
 type State struct {
 	app              *application.App
+	clientEvents     *utils.Broker[schema.ClientEvent]
 	services         map[string]*serviceState
 	servicesLock     sync.RWMutex
 	maintenanceTasks map[string]maintenanceTask

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/helper"
@@ -47,7 +48,7 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -81,13 +82,14 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user"))
 }
 
 func DeleteUser(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -102,13 +104,15 @@ func DeleteUser(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user"))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/users/" + url.PathEscape(authorizedUser.Name)))
 }
 
 func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
-	if authorizedUser == nil || authorizedUser.Name == "" {
+	if authorizedUser == nil {
 		http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
 		return
 	}
@@ -161,4 +165,6 @@ func PutUserPassword(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user"))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/users/" + url.PathEscape(authorizedUser.Name)))
 }
