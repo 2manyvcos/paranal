@@ -1,12 +1,17 @@
-import { Navigate, useSearchParams } from 'react-router';
+import { useEffect } from 'react';
+import { useSearchParams } from 'react-router';
 import { useApplication } from './application';
 
 export default function LoginPage() {
-  const application = useApplication();
+  const { authorized } = useApplication();
   const [searchParams] = useSearchParams();
 
-  if (application.authorized) {
-    return <Navigate to={searchParams.get('origin') || '/'} replace />;
+  useEffect(() => {
+    if (authorized) window.location.replace(searchParams.get('origin') || '/');
+  }, [authorized, searchParams]);
+
+  if (authorized) {
+    return null;
   }
 
   return <div>Login</div>;

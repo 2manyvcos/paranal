@@ -3,7 +3,6 @@ import { createContext, useContext } from 'react';
 type Application = {
   appName: string;
   logo: string;
-  apiURL: string;
 
   authorized: boolean;
   user?: {
@@ -16,7 +15,6 @@ export function useApplicationState(): Application {
   return {
     appName: window.paranal.appName,
     logo: window.paranal.logo,
-    apiURL: import.meta.env.PARANAL_API || '/api',
 
     authorized: true,
     user: {
