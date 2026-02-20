@@ -14,6 +14,7 @@ import (
 
 type App struct {
 	Config struct {
+		AppURL      string
 		AppName     string
 		Tagline     string
 		ScriptsPath string
@@ -68,6 +69,7 @@ type App struct {
 func Setup() (app *App, err error) {
 	app = new(App)
 
+	app.Config.AppURL = utils.LoadConfigValue("APP_URL", "")
 	app.Config.AppName = utils.LoadConfigValue("APP_NAME", "Paranal")
 	app.Config.Tagline = utils.LoadConfigValue("TAGLINE", "Advanced Service Dashboard with Health and Version Monitoring")
 	app.Config.ScriptsPath = utils.LoadConfigValue("SCRIPTS_PATH", ".paranal/scripts")

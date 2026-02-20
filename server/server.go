@@ -35,7 +35,7 @@ func Run() {
 	app.RunServiceScripts()
 
 	apiHandler := api.New()
-	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, helper.OmitTrailingSlash(helper.WithApp(app, apiHandler))))
+	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, helper.OmitTrailingSlash(helper.WithApp(app, helper.WithCORS(apiHandler)))))
 
 	resolvedClientFiles := helper.FileTemplates(client.ClientFiles, map[string]any{
 		"appName":           app.Config.AppName,

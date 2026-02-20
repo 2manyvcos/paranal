@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router';
+import { Route, Routes } from 'react-router';
 import LoginPage from './LoginPage';
 import NavigateToLoginPage from './NavigateToLoginPage';
 import NotFoundPage from './NotFoundPage';
@@ -10,33 +10,31 @@ function App() {
   const application = useApplicationState();
 
   return (
-    <BrowserRouter>
-      <ApplicationContext.Provider value={application}>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
+    <ApplicationContext.Provider value={application}>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
 
-          {!application.authorized ? (
-            <>
-              <Route path="/*" element={<NavigateToLoginPage />} />
-            </>
-          ) : (
-            <>
-              {application.user?.admin && (
-                <Route path="/admin" element={<Admin />}>
-                  <Route path="test/*" index element={<div>Test</div>} />
+        {!application.authorized ? (
+          <>
+            <Route path="/*" element={<NavigateToLoginPage />} />
+          </>
+        ) : (
+          <>
+            {application.user?.admin && (
+              <Route path="/admin" element={<Admin />}>
+                <Route path="test/*" index element={<div>Test</div>} />
 
-                  <Route path="*" element={<NotFoundPage />} />
-                </Route>
-              )}
-
-              <Route path="/" element={<Dashboard />}>
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
-            </>
-          )}
-        </Routes>
-      </ApplicationContext.Provider>
-    </BrowserRouter>
+            )}
+
+            <Route path="/" element={<Dashboard />}>
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+          </>
+        )}
+      </Routes>
+    </ApplicationContext.Provider>
   );
 }
 

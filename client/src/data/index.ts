@@ -32,7 +32,7 @@ const eventSource = new EventSource(
   ),
 );
 eventSource.addEventListener('error', () => {
-  console.warn(console, 'Cannot connect SSE client');
+  console.warn('SSE client failed to connect');
 });
 window.addEventListener('beforeunload', () => {
   eventSource.close();

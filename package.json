@@ -22,7 +22,7 @@
     "prettify": "prettier . --write"
   },
   "dependencies": {
-    "@civet/common": "^2.1.0",
+    "@civet/common": "^2.1.1",
     "@civet/core": "^6.2.0",
     "@civet/events": "^4.1.0",
     "react": "^19.2.4",
