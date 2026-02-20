@@ -108,18 +108,22 @@ func authorizeRemoteUser(req *http.Request) *schema.User {
 func authorizeBearer(req *http.Request) *schema.User {
 	app := GetApp(req)
 
-	bearer := req.Header.Get("Authorization")
-	if bearer != "" && !strings.HasPrefix(bearer, "Bearer ") {
-		return nil
+	accessToken := req.Header.Get("Authorization")
+	if accessToken != "" {
+		if strings.HasPrefix(accessToken, "Bearer ") {
+			accessToken = strings.TrimPrefix(accessToken, "Bearer ")
+		} else {
+			accessToken = ""
+		}
 	}
-	if bearer == "" {
-		bearer = req.URL.Query().Get("accessToken")
+	if accessToken == "" {
+		accessToken = req.URL.Query().Get("accessToken")
 	}
-	if bearer == "" {
+	if accessToken == "" {
 		return nil
 	}
 
-	ok, userName, err := crypto.ValidateJWTToken(app.Config.Auth.JWT.Secret, strings.TrimSpace(strings.TrimPrefix(bearer, "Bearer ")))
+	ok, userName, err := crypto.ValidateJWTToken(app.Config.Auth.JWT.Secret, strings.TrimSpace(accessToken))
 	if !ok || userName == "" || err != nil {
 		// if err != nil {
 		// 	log.Printf("Error validating token - %s\n", err)
