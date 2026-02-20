@@ -27,7 +27,7 @@ export const dataProvider = new FetchProvider({
 
 const eventSource = new EventSource(
   new URL(
-    `v1/events?accessToken=${localStorage.getItem(accessTokenKey)}`,
+    `v1/events?accessToken=${localStorage.getItem(accessTokenKey) ?? ''}`,
     apiURL,
   ),
 );
