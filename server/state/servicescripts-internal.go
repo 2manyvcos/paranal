@@ -77,7 +77,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		scriptState.versions = nil
 		scriptState.actionGroups = nil
 		scriptState.actions = nil
-		updateServiceState(s, serviceState, script)
+		updateServiceState(s, serviceState, script.ServiceID)
 		serviceState.lock.Unlock()
 		alertScriptError(s.app, service, script, err)
 	}
@@ -331,7 +331,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				newlyVulnerableVersions = append(newlyVulnerableVersions, version)
 			}
 		}
-		updateServiceState(s, serviceState, script)
+		updateServiceState(s, serviceState, script.ServiceID)
 		serviceState.lock.Unlock()
 
 		if len(newlyUnhealthyUptimeStatuses) > 0 {
@@ -346,7 +346,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 	}
 }
 
-func updateServiceState(s *State, serviceState *serviceState, script schema.ServiceScript) {
+func updateServiceState(s *State, serviceState *serviceState, serviceID string) {
 	previousVersions := serviceState.versions
 	previousUptimeStatusesSorted := serviceState.uptimeStatusesSorted
 	previousVersionsSorted := serviceState.versionsSorted
@@ -405,7 +405,7 @@ func updateServiceState(s *State, serviceState *serviceState, script schema.Serv
 		serviceState.actionsSorted = append(serviceState.actionsSorted, action)
 	}
 	sort.Sort(ByActionOrder(serviceState.actionsSorted))
-	escapedServiceID := url.PathEscape(script.ServiceID)
+	escapedServiceID := url.PathEscape(serviceID)
 	if objectHash(previousUptimeStatusesSorted) != objectHash(serviceState.uptimeStatusesSorted) {
 		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/uptimestatuses"))
 		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/uptimestatuses"))

@@ -130,10 +130,9 @@ func (s *State) OnServiceScriptDeleted(serviceID string, scriptID string) {
 		}
 		delete(service.scripts, scriptID)
 	}
+	updateServiceState(s, service, serviceID)
 	if len(service.scripts) == 0 {
 		delete(s.services, serviceID)
-	} else {
-		updateServiceState(service)
 	}
 }
 
@@ -296,6 +295,7 @@ func (s *State) OnServiceDeleted(serviceID string) {
 				s.app.Scheduler.RemoveJob(script.job.ID())
 			}
 		}
+		updateServiceState(s, service, serviceID)
 		service.lock.Unlock()
 		delete(s.services, serviceID)
 	}
