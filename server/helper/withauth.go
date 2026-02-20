@@ -109,7 +109,13 @@ func authorizeBearer(req *http.Request) *schema.User {
 	app := GetApp(req)
 
 	bearer := req.Header.Get("Authorization")
-	if !strings.HasPrefix(bearer, "Bearer ") {
+	if bearer != "" && !strings.HasPrefix(bearer, "Bearer ") {
+		return nil
+	}
+	if bearer == "" {
+		bearer = req.URL.Query().Get("accessToken")
+	}
+	if bearer == "" {
 		return nil
 	}
 
