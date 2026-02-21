@@ -5,9 +5,23 @@ import NotFoundPage from './NotFoundPage';
 import Admin from './admin/Admin';
 import { ApplicationContext, useApplicationState } from './application';
 import Dashboard from './dashboard/Dashboard';
+import { HTTP_UNAUTHORIZED, HTTPError } from './data';
+import { useUser } from './data/user';
 
 function App() {
-  const application = useApplicationState();
+  const user = useUser();
+  const application = useApplicationState(user.data);
+
+  if (
+    user.error &&
+    (!(user.error instanceof HTTPError) ||
+      (user.error as HTTPError).status !== HTTP_UNAUTHORIZED)
+  ) {
+    return user.error.toString();
+  }
+  if (user.isLoading && user.isInitial) {
+    return null;
+  }
 
   return (
     <ApplicationContext.Provider value={application}>
@@ -20,7 +34,7 @@ function App() {
           </>
         ) : (
           <>
-            {application.user?.admin && (
+            {application.admin && (
               <Route path="/admin" element={<Admin />}>
                 <Route path="test/*" index element={<div>Test</div>} />
 

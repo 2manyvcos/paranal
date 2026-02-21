@@ -1,6 +1,16 @@
 import { FetchProvider, SSEReceiver } from '@civet/common';
 
-const HTTP_UNAUTHORIZED = 401;
+export class HTTPError extends Error {
+  readonly status: number;
+
+  constructor(msg: string, status: number) {
+    super(msg);
+    Object.setPrototypeOf(this, HTTPError.prototype);
+    this.status = status;
+  }
+}
+
+export const HTTP_UNAUTHORIZED = 401;
 
 const accessTokenKey = 'paranal-access-token';
 const apiURL = new URL(
@@ -16,12 +26,12 @@ export const dataProvider = new FetchProvider({
     const accessToken = localStorage.getItem(accessTokenKey);
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
   },
-  handleError(_url, _request, response, _meta): never {
+  async handleError(_url, _request, response, _meta): Promise<never> {
     if (response.status === HTTP_UNAUTHORIZED) {
       dataProvider.notify('v1/user');
     }
 
-    throw new Error(response.statusText);
+    throw new HTTPError(await response.text(), response.status);
   },
 });
 

@@ -1,26 +1,23 @@
 import { createContext, useContext } from 'react';
+import { type User } from './data/user';
 
 type Application = {
   appName: string;
   logo: string;
 
   authorized: boolean;
-  user?: {
-    startPage: string;
-    admin: boolean;
-  };
+  user?: User;
+  admin: boolean;
 };
 
-export function useApplicationState(): Application {
+export function useApplicationState(user: User | undefined): Application {
   return {
     appName: window.paranal.appName,
     logo: window.paranal.logo,
 
-    authorized: true,
-    user: {
-      startPage: '',
-      admin: false,
-    },
+    authorized: user != null,
+    user: user,
+    admin: user?.role === 'admin',
   };
 }
 
