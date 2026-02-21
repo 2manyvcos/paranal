@@ -31,6 +31,7 @@ func WithCORS(handler http.Handler) http.Handler {
 			}
 
 			res.WriteHeader(http.StatusNoContent)
+			return
 		}
 
 		handler.ServeHTTP(res, req)
