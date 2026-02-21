@@ -15,9 +15,10 @@ func init() {
 		_, err := i.Exec(`
       CREATE TABLE IF NOT EXISTS users (
         name TEXT PRIMARY KEY NOT NULL,
-        displayName TEXT NOT NULL,
         role INTEGER NOT NULL,
         passwordHash TEXT NOT NULL,
+        displayName TEXT NOT NULL,
+        startPage TEXT NOT NULL,
         errorAlerts BOOLEAN NOT NULL,
         uptimeAlerts BOOLEAN NOT NULL,
         versionAlerts BOOLEAN NOT NULL
@@ -39,10 +40,6 @@ func UserQuery(query *schema.UserQuery) (clause string, placeholders []any) {
 		conditions = append(conditions, "users.name = ?")
 		placeholders = append(placeholders, *query.Name)
 	}
-	if query.DisplayName != nil {
-		conditions = append(conditions, "users.displayName = ?")
-		placeholders = append(placeholders, *query.DisplayName)
-	}
 	if query.Role != nil {
 		conditions = append(conditions, "users.role = ?")
 		placeholders = append(placeholders, *query.Role)
@@ -53,6 +50,14 @@ func UserQuery(query *schema.UserQuery) (clause string, placeholders []any) {
 		} else {
 			conditions = append(conditions, "IFNULL(users.passwordHash, '') = ''")
 		}
+	}
+	if query.DisplayName != nil {
+		conditions = append(conditions, "users.displayName = ?")
+		placeholders = append(placeholders, *query.DisplayName)
+	}
+	if query.StartPage != nil {
+		conditions = append(conditions, "users.startPage = ?")
+		placeholders = append(placeholders, *query.StartPage)
 	}
 	if query.ErrorAlerts != nil {
 		conditions = append(conditions, "IFNULL(users.errorAlerts, FALSE) = ?")
@@ -77,7 +82,7 @@ func (i *impl) ListUsers(query *schema.UserQuery) ([]schema.User, error) {
 	where, wherePlaceholders := UserQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT name, displayName, role, passwordHash, errorAlerts, uptimeAlerts, versionAlerts
+      SELECT name, role, passwordHash, displayName, startPage, errorAlerts, uptimeAlerts, versionAlerts
       FROM users
       WHERE `+where+`
       ORDER BY name
@@ -91,7 +96,7 @@ func (i *impl) ListUsers(query *schema.UserQuery) ([]schema.User, error) {
 	var records []schema.User
 	for rows.Next() {
 		var record schema.User
-		if err := rows.Scan(&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts); err != nil {
+		if err := rows.Scan(&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts); err != nil {
 			return nil, err
 		}
 		records = append(records, record)
@@ -107,12 +112,12 @@ func (i *impl) GetUser(query schema.UserQuery) (schema.User, error) {
 	var record schema.User
 	err := i.QueryRow(
 		`
-      SELECT name, displayName, role, passwordHash, errorAlerts, uptimeAlerts, versionAlerts
+      SELECT name, role, passwordHash, displayName, startPage, errorAlerts, uptimeAlerts, versionAlerts
       FROM users
       WHERE `+where+`
     `,
 		wherePlaceholders...,
-	).Scan(&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts)
+	).Scan(&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts)
 	if errors.Is(err, sql.ErrNoRows) {
 		return schema.User{}, schema.ErrNotFound
 	}
@@ -125,10 +130,10 @@ func (i *impl) CreateUser(record schema.User) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO users (name, displayName, role, passwordHash, errorAlerts, uptimeAlerts, versionAlerts)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (name, role, passwordHash, displayName, startPage, errorAlerts, uptimeAlerts, versionAlerts)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `,
-		&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts,
+		&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts,
 	)
 	return requireNoConflict(err)
 }
@@ -139,19 +144,20 @@ func (i *impl) CreateOrUpdateUser(record schema.User) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO users (name, displayName, role, passwordHash, errorAlerts, uptimeAlerts, versionAlerts)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (name, role, passwordHash, displayName, startPage, errorAlerts, uptimeAlerts, versionAlerts)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT (name)
       DO UPDATE
       SET
-        displayName = excluded.displayName,
         role = excluded.role,
         passwordHash = excluded.passwordHash,
+        displayName = excluded.displayName,
+        startPage = excluded.startPage,
         errorAlerts = excluded.errorAlerts,
         uptimeAlerts = excluded.uptimeAlerts,
         versionAlerts = excluded.versionAlerts
     `,
-		&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts,
+		&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts,
 	)
 	return err
 }
@@ -166,16 +172,17 @@ func (i *impl) UpdateUsers(query schema.UserQuery, record schema.User) error {
       UPDATE users
       SET
         name = ?,
-        displayName = ?,
         role = ?,
         passwordHash = ?,
+        displayName = ?,
+        startPage = ?,
         errorAlerts = ?,
         uptimeAlerts = ?,
         versionAlerts = ?
       WHERE `+where+`
     `,
 		slices.Concat(
-			[]any{&record.Name, &record.DisplayName, &record.Role, &record.PasswordHash, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts},
+			[]any{&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts},
 			wherePlaceholders,
 		)...,
 	)
