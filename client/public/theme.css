@@ -167,6 +167,10 @@ body,
   display: block;
 }
 
+.footer.markdown {
+  text-align: center;
+}
+
 /* Admin */
 
 .admin.screen {

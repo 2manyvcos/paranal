@@ -4,6 +4,7 @@ import { type User } from './data/user';
 type Application = {
   appName: string;
   logo: string;
+  footer: string;
 
   authorized: boolean;
   user?: User;
@@ -14,6 +15,7 @@ export function useApplicationState(user: User | undefined): Application {
   return {
     appName: window.paranal.appName,
     logo: window.paranal.logo,
+    footer: window.paranal.footer,
 
     authorized: user != null,
     user: user,

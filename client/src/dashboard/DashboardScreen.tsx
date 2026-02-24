@@ -1,5 +1,7 @@
 import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router';
 import { useApplication } from '@/application';
+import Footer from './Footer';
+import Header from './Header';
 
 export default function DashboardScreen() {
   const application = useApplication();
@@ -14,17 +16,11 @@ export default function DashboardScreen() {
 
   return (
     <div className="dashboard screen">
-      <div className="header">
-        <div className="title-bar">
-          <a href="/" className="title">
-            <div className="logo" />
-
-            <div className="app-name" />
-          </a>
-        </div>
-      </div>
+      <Header />
 
       <Outlet />
+
+      <Footer />
     </div>
   );
 }

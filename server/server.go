@@ -45,6 +45,7 @@ func Run() {
 		"appleTouchIcon":    app.Config.Brand.AppleTouchIcon,
 		"theme":             app.Config.Brand.Theme,
 		"customScript":      app.Config.Brand.CustomScript,
+		"footer":            app.Config.Brand.Footer,
 		"logoutRedirectURL": app.Config.Auth.LogoutRedirectURL,
 	}, "index.html", "manifest.json")
 	http.Handle("/", http.FileServer(helper.FileRewrite(resolvedClientFiles, "index.html")))

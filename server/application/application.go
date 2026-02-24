@@ -27,6 +27,7 @@ type App struct {
 			AppleTouchIcon string
 			Theme          string
 			CustomScript   string
+			Footer         string
 		}
 
 		Server struct {
@@ -85,6 +86,7 @@ func Setup() (app *App, err error) {
 	app.Config.Brand.AppleTouchIcon = utils.LoadConfigValue("BRAND_APPLE_TOUCH_ICON", "/apple-touch-icon.png")
 	app.Config.Brand.Theme = utils.LoadConfigValue("BRAND_THEME", "/theme.css")
 	app.Config.Brand.CustomScript = utils.LoadConfigValue("BRAND_CUSTOM_SCRIPT", "")
+	app.Config.Brand.Footer = utils.LoadConfigValue("BRAND_FOOTER", "Released under the MIT License.\\\nCopyright © 2026-present [Aaron Burmeister](https://github.com/2manyvcos)")
 
 	app.Config.Server.Protocol = utils.LoadConfigValue("SERVER_PROTOCOL", "http")
 	app.Config.Server.Address = utils.LoadConfigValue("SERVER_ADDRESS", "0.0.0.0")

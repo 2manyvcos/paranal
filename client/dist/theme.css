@@ -1,21 +1,47 @@
 html,
 body,
 .app,
+.screen,
 .page {
   margin: unset;
   width: 100%;
   height: 100%;
 }
 
-.app {
+:root {
+  --t-error-unexpected-error: 'Unexpected error';
+  --t-error-not-found: 'Not found';
   --t-notification-close: 'Close';
-  --t-login-title: 'Login to Paranal';
+  --t-login-title: 'Login to ' var(--t-app-name);
   --t-login-username: 'User';
   --t-login-password: 'Password';
   --t-login-rememberLogin: 'Remember me';
   --t-login-submit: 'Login';
 }
+
+.app {
+}
 .app[data-loading] {
+}
+
+/* Errors */
+
+.error.screen {
+}
+
+.error.page {
+}
+
+.unexpected.error.page {
+}
+.unexpected.error.page::before {
+  content: var(--t-error-unexpected-error);
+}
+
+.not-found.error.page {
+}
+.not-found.error.page::before {
+  content: var(--t-error-not-found);
 }
 
 /* Notification */
@@ -40,9 +66,14 @@ body,
   content: var(--t-notification-close);
 }
 
+/* Auth */
+
+.auth.screen {
+}
+
 /* Login */
 
-.login.page {
+.auth .login.page {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -94,4 +125,53 @@ body,
 }
 .login form.login button[type='submit']::before {
   content: var(--t-login-submit);
+}
+
+/* Dashboard */
+
+.dashboard.screen {
+}
+
+.dashboard .header {
+}
+
+.header .title-bar {
+}
+
+.header .title-bar .title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  text-decoration: inherit;
+  color: inherit;
+}
+
+.header .title-bar .title .logo {
+  background-image: var(--t-logo);
+  aspect-ratio: 1/1;
+  height: 3em;
+}
+
+.header .title-bar .title .app-name {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: center;
+}
+.header .title-bar .title .app-name::before {
+  content: var(--t-app-name);
+  font-size: xx-large;
+  display: block;
+}
+.header .title-bar .title .app-name::after {
+  content: var(--t-tagline);
+  display: block;
+}
+
+.footer.markdown {
+  text-align: center;
+}
+
+/* Admin */
+
+.admin.screen {
 }

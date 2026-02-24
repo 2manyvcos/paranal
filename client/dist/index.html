@@ -10,13 +10,26 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="stylesheet" href="{{ .theme }}" />
     <title>{{ .appName }}</title>
+    <style>
+      :root {
+        --t-app-name: '{{ .appName }}';
+        --t-tagline: '{{ .tagline }}';
+        --t-logo: url('{{ .logo }}');
+      }
+    </style>
     <script>
       window.paranal = {
         appName: '{{ .appName }}',
+        tagline: '{{ .tagline }}',
         logo: '{{ .logo }}',
+        footer: '{{ .footer }}',
+        logoutRedirectURL: '{{ .logoutRedirectURL }}',
       };
+
+      const customScript = '{{ .customScript }}';
+      if (customScript) import(customScript);
     </script>
-    <script type="module" crossorigin src="/assets/index-Nh3lA-5G.js"></script>
+    <script type="module" crossorigin src="/assets/index-c5YfPmV9.js"></script>
   </head>
   <body>
     <div id="root" class="app"></div>

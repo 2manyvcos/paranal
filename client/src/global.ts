@@ -4,6 +4,7 @@ declare global {
       appName: string;
       tagline: string;
       logo: string;
+      footer: string;
       logoutRedirectURL: string;
     };
   }
