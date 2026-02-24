@@ -132,6 +132,41 @@ body,
 .dashboard.screen {
 }
 
+.dashboard .header {
+}
+
+.header .title-bar {
+}
+
+.header .title-bar .title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  text-decoration: inherit;
+  color: inherit;
+}
+
+.header .title-bar .title .logo {
+  background-image: var(--t-logo);
+  aspect-ratio: 1/1;
+  height: 3em;
+}
+
+.header .title-bar .title .app-name {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: center;
+}
+.header .title-bar .title .app-name::before {
+  content: var(--t-app-name);
+  font-size: xx-large;
+  display: block;
+}
+.header .title-bar .title .app-name::after {
+  content: var(--t-tagline);
+  display: block;
+}
+
 /* Admin */
 
 .admin.screen {

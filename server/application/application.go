@@ -26,6 +26,7 @@ type App struct {
 			Favicon        string
 			AppleTouchIcon string
 			Theme          string
+			CustomScript   string
 		}
 
 		Server struct {
@@ -83,6 +84,7 @@ func Setup() (app *App, err error) {
 	app.Config.Brand.Favicon = utils.LoadConfigValue("BRAND_FAVICON", "/favicon.svg")
 	app.Config.Brand.AppleTouchIcon = utils.LoadConfigValue("BRAND_APPLE_TOUCH_ICON", "/apple-touch-icon.png")
 	app.Config.Brand.Theme = utils.LoadConfigValue("BRAND_THEME", "/theme.css")
+	app.Config.Brand.CustomScript = utils.LoadConfigValue("BRAND_CUSTOM_SCRIPT", "")
 
 	app.Config.Server.Protocol = utils.LoadConfigValue("SERVER_PROTOCOL", "http")
 	app.Config.Server.Address = utils.LoadConfigValue("SERVER_ADDRESS", "0.0.0.0")

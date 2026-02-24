@@ -14,7 +14,16 @@ export default function DashboardScreen() {
 
   return (
     <div className="dashboard screen">
-      Dashboard
+      <div className="header">
+        <div className="title-bar">
+          <a href="/" className="title">
+            <div className="logo" />
+
+            <div className="app-name" />
+          </a>
+        </div>
+      </div>
+
       <Outlet />
     </div>
   );

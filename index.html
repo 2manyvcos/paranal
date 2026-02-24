@@ -13,14 +13,20 @@
     <style>
       :root {
         --t-app-name: '%PARANAL_CONFIG_APP_NAME%';
+        --t-tagline: '%PARANAL_CONFIG_TAGLINE%';
         --t-logo: url('%PARANAL_CONFIG_LOGO%');
       }
     </style>
     <script>
       window.paranal = {
         appName: '%PARANAL_CONFIG_APP_NAME%',
+        tagline: '%PARANAL_CONFIG_TAGLINE%',
         logo: '%PARANAL_CONFIG_LOGO%',
+        logoutRedirectURL: '%PARANAL_CONFIG_LOGOUT_REDIRECT_URL%',
       };
+
+      const customScript = '%PARANAL_CONFIG_CUSTOM_SCRIPT%';
+      if (customScript) import(customScript);
     </script>
   </head>
   <body>
