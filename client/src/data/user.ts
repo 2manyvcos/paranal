@@ -1,6 +1,6 @@
 import type { FetchProviderType } from '@civet/common';
 import { Meta, useResource } from '@civet/core';
-import { HTTPError } from '@/data/errors';
+import { HTTP_UNAUTHORIZED, HTTPError } from '@/data/errors';
 
 export type User = {
   name: string;
@@ -18,7 +18,9 @@ async function handleError(
   _request: RequestInit,
   response: Response,
   _meta: Meta,
-): Promise<never> {
+): Promise<undefined> {
+  if (response.status === HTTP_UNAUTHORIZED) return undefined;
+
   throw new HTTPError(await response.text(), response.status);
 }
 

@@ -8,14 +8,15 @@ export default function DashboardScreen() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  if (location.pathname === '/' && !searchParams.has('no-redirect')) {
-    if (application.user?.startPage && application.user?.startPage !== '/') {
-      return <Navigate to={application.user?.startPage} replace />;
-    }
-  }
-
   return (
     <div className="dashboard screen">
+      {location.pathname === '/' &&
+      !searchParams.has('no-redirect') &&
+      application.user?.startPage &&
+      application.user.startPage !== '/' ? (
+        <Navigate to={application.user?.startPage} replace />
+      ) : null}
+
       <Header />
 
       <Outlet />

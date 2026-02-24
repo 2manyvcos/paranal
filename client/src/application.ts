@@ -1,13 +1,14 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 import { useErrorNotification } from './data/errors';
 import { useLayout, type Layout } from './data/layout';
 import { useServices, type Service } from './data/services';
 import type { User } from './data/user';
 
-type Application = {
+export type Application = {
   appName: string;
   logo: string;
   footer: string;
+  logoutRedirectURL: string;
 
   authorized: boolean;
   user?: User;
@@ -36,21 +37,25 @@ export function useApplicationContextState(
   });
   useErrorNotification(services);
 
-  return {
-    appName: window.paranal.appName,
-    logo: window.paranal.logo,
-    footer: window.paranal.footer,
+  return useMemo(
+    () => ({
+      appName: window.paranal.appName,
+      logo: window.paranal.logo,
+      footer: window.paranal.footer,
+      logoutRedirectURL: window.paranal.logoutRedirectURL,
 
-    authorized,
-    user: user,
-    admin,
+      authorized,
+      user,
+      admin,
 
-    unhide,
-    layout: layout.data,
-    services: services.data ?? [],
-    favorites:
-      services.data?.filter((service) => service.config.favorite) ?? [],
-  };
+      unhide,
+      layout: layout.data,
+      services: services.data ?? [],
+      favorites:
+        services.data?.filter((service) => service.config.favorite) ?? [],
+    }),
+    [authorized, user, admin, unhide, layout.data, services.data],
+  );
 }
 
 export const ApplicationContext = createContext<Application>(

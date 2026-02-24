@@ -6,40 +6,26 @@ import { ApplicationContext, useApplicationContextState } from './application';
 import AuthScreen from './auth/AuthScreen';
 import LoginPage from './auth/LoginPage';
 import DashboardScreen from './dashboard/DashboardScreen';
-import { HTTP_UNAUTHORIZED, HTTPError } from './data/errors';
+import FavoritesPages from './dashboard/FavoritesPage';
 import { useUser } from './data/user';
 import ErrorScreen from './error/ErrorScreen';
 import NotFoundPage from './error/NotFoundPage';
 import UnexpectedErrorPage from './error/UnexpectedErrorPage';
+import { useCustomization } from './useCustomization';
 
 function App() {
   const user = useUser();
+  const userLoading = user.isLoading && user.isInitial;
+
   const application = useApplicationContextState(user.data);
 
-  const userLoading = user.isLoading && user.isInitial;
-  useEffect(() => {
-    if (!userLoading) return;
-    const root = document.getElementById('root');
-    root!.setAttribute('data-loading', '');
-    return () => {
-      root!.removeAttribute('data-loading');
-    };
-  }, [userLoading]);
+  useCustomization(userLoading, application);
 
   useEffect(() => {
-    if (
-      user.error &&
-      (!(user.error instanceof HTTPError) ||
-        (user.error as HTTPError).status !== HTTP_UNAUTHORIZED)
-    )
-      console.error(user.error);
+    if (user.error) console.error(user.error);
   }, [user.error]);
 
-  if (
-    user.error &&
-    (!(user.error instanceof HTTPError) ||
-      (user.error as HTTPError).status !== HTTP_UNAUTHORIZED)
-  ) {
+  if (user.error) {
     return (
       <Routes>
         <Route path="/" element={<ErrorScreen />}>
@@ -67,17 +53,13 @@ function App() {
           <>
             {application.admin && (
               <Route path="/admin" element={<AdminScreen />}>
-                <Route
-                  path="test/*"
-                  index
-                  element={<div>Test TODO: remove</div>}
-                />
-
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
             )}
 
             <Route path="/" element={<DashboardScreen />}>
+              <Route path="favorites" element={<FavoritesPages />} />
+
               <Route path="*" element={<NotFoundPage />} />
             </Route>
           </>

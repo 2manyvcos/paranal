@@ -53,14 +53,15 @@ export default function LoginPage() {
   return (
     <div className="login page">
       <form
-        className="login"
+        className="login form"
         onSubmit={login}
         data-loading={loading ? '' : undefined}
       >
         <Field className="username">
-          <Label />
+          <Label className="label" />
 
           <Input
+            className="input"
             type="text"
             name="username"
             required
@@ -75,9 +76,10 @@ export default function LoginPage() {
         </Field>
 
         <Field className="password">
-          <Label />
+          <Label className="label" />
 
           <Input
+            className="input"
             type="password"
             name="password"
             required
@@ -91,9 +93,10 @@ export default function LoginPage() {
         </Field>
 
         <Field className="remember-login">
-          <Label />
+          <Label className="label" />
 
           <Input
+            className="input"
             type="checkbox"
             name="remember-login"
             checked={rememberLogin}
@@ -103,7 +106,7 @@ export default function LoginPage() {
           />
         </Field>
 
-        <Button type="submit" />
+        <Button className="submit button" type="submit" />
       </form>
     </div>
   );

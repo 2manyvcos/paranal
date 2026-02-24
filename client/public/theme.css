@@ -17,6 +17,7 @@ body,
   --t-login-password: 'Password';
   --t-login-rememberLogin: 'Remember me';
   --t-login-submit: 'Login';
+  --t-user-logout: 'Logout';
 }
 
 .app {
@@ -79,51 +80,51 @@ body,
   align-items: center;
 }
 
-.login form.login {
+.login .login.form {
 }
-.login form.login::before {
+.login .login.form::before {
   content: var(--t-login-title);
   font-size: large;
   font-weight: bold;
 }
-.login form.login[data-loading] {
+.login .login.form[data-loading] {
   pointer-events: none;
   opacity: 0.5;
 }
 
-.login form.login .username {
+.login .login.form .username {
 }
-.login form.login .username label {
+.login .login.form .username .label {
 }
-.login form.login .username label::before {
+.login .login.form .username .label::before {
   content: var(--t-login-username);
 }
-.login form.login .username input {
+.login .login.form .username .input {
 }
 
-.login form.login .password {
+.login .login.form .password {
 }
-.login form.login .password label {
+.login .login.form .password .label {
 }
-.login form.login .password label::before {
+.login .login.form .password .label::before {
   content: var(--t-login-password);
 }
-.login form.login .password input {
+.login .login.form .password .input {
 }
 
-.login form.login .remember-login {
+.login .login.form .remember-login {
 }
-.login form.login .remember-login label {
+.login .login.form .remember-login .label {
 }
-.login form.login .remember-login label::before {
+.login .login.form .remember-login .label::before {
   content: var(--t-login-rememberLogin);
 }
-.login form.login .remember-login input {
+.login .login.form .remember-login .input {
 }
 
-.login form.login button[type='submit'] {
+.login .login.form .submit.button {
 }
-.login form.login button[type='submit']::before {
+.login .login.form .submit.button::before {
   content: var(--t-login-submit);
 }
 
@@ -147,7 +148,7 @@ body,
 }
 
 .dashboard .header .title-bar .title .logo {
-  background-image: var(--t-logo);
+  content: var(--t-logo);
   aspect-ratio: 1/1;
   height: 3em;
 }
@@ -167,8 +168,34 @@ body,
   display: block;
 }
 
+.dashboard .header .navigation {
+  display: flex;
+  justify-content: space-between;
+}
+
+.dashboard .header .navigation .start {
+}
+
+.dashboard .header .navigation .end {
+}
+
+.dashboard .header .navigation .end .user.item {
+}
+
+.user.menu {
+}
+
+.user.menu .logout.item {
+}
+.user.menu .logout.item::before {
+  content: var(--t-user-logout);
+}
+
 .dashboard .footer.markdown {
   text-align: center;
+}
+
+.dashboard .favorites.page {
 }
 
 /* Admin */
