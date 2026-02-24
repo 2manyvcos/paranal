@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
-import { useSearchParams } from 'react-router';
-import { useApplication } from './application';
+import { Outlet, useSearchParams } from 'react-router';
+import { useApplication } from '@/application';
 
-export default function LoginPage() {
+export default function AuthScreen() {
   const { authorized } = useApplication();
   const [searchParams] = useSearchParams();
 
@@ -14,5 +14,9 @@ export default function LoginPage() {
     return null;
   }
 
-  return <div>Login</div>;
+  return (
+    <div className="auth screen">
+      <Outlet />
+    </div>
+  );
 }

@@ -1,8 +1,8 @@
 import { Outlet } from 'react-router';
 
-export default function Admin() {
+export default function AdminScreen() {
   return (
-    <div>
+    <div className="admin screen">
       Admin
       <Outlet />
     </div>

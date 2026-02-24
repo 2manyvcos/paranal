@@ -1,0 +1,97 @@
+html,
+body,
+.app,
+.page {
+  margin: unset;
+  width: 100%;
+  height: 100%;
+}
+
+.app {
+  --t-notification-close: 'Close';
+  --t-login-title: 'Login to Paranal';
+  --t-login-username: 'User';
+  --t-login-password: 'Password';
+  --t-login-rememberLogin: 'Remember me';
+  --t-login-submit: 'Login';
+}
+.app[data-loading] {
+}
+
+/* Notification */
+
+.notification.popup {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+}
+.notification.popup[data-closed] {
+}
+
+.notification .panel {
+}
+
+.notification .panel .message {
+}
+
+.notification .panel .close {
+}
+.notification .panel .close::before {
+  content: var(--t-notification-close);
+}
+
+/* Login */
+
+.login.page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login form.login {
+}
+.login form.login::before {
+  content: var(--t-login-title);
+  font-size: large;
+  font-weight: bold;
+}
+.login form.login[data-loading] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.login form.login .username {
+}
+.login form.login .username label {
+}
+.login form.login .username label::before {
+  content: var(--t-login-username);
+}
+.login form.login .username input {
+}
+
+.login form.login .password {
+}
+.login form.login .password label {
+}
+.login form.login .password label::before {
+  content: var(--t-login-password);
+}
+.login form.login .password input {
+}
+
+.login form.login .remember-login {
+}
+.login form.login .remember-login label {
+}
+.login form.login .remember-login label::before {
+  content: var(--t-login-rememberLogin);
+}
+.login form.login .remember-login input {
+}
+
+.login form.login button[type='submit'] {
+}
+.login form.login button[type='submit']::before {
+  content: var(--t-login-submit);
+}

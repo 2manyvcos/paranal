@@ -1,29 +1,21 @@
 import { FetchProvider, SSEReceiver } from '@civet/common';
+import { ConfigProvider } from '@civet/core';
+import { ConfigProvider as EventConfigProvider } from '@civet/events';
+import { type ReactNode } from 'react';
+import { getAccessToken } from './accessTokens';
+import { HTTP_UNAUTHORIZED, HTTPError } from './errors';
 
-export class HTTPError extends Error {
-  readonly status: number;
-
-  constructor(msg: string, status: number) {
-    super(msg);
-    Object.setPrototypeOf(this, HTTPError.prototype);
-    this.status = status;
-  }
-}
-
-export const HTTP_UNAUTHORIZED = 401;
-
-const accessTokenKey = 'paranal-access-token';
 const apiURL = new URL(
   (import.meta.env.PARANAL_API || '/api/').replace(/\/*$/g, '/'),
   window.location.href,
 );
 
-export const dataProvider = new FetchProvider({
+const dataProvider = new FetchProvider({
   baseURL: apiURL,
   modifyRequest(_url, request, _meta): void {
     const headers = (request.headers = new Headers(request.headers));
 
-    const accessToken = localStorage.getItem(accessTokenKey);
+    const accessToken = getAccessToken();
     if (accessToken) headers.set('Authorization', `Bearer ${accessToken}`);
   },
   async handleError(_url, _request, response, _meta): Promise<never> {
@@ -35,20 +27,31 @@ export const dataProvider = new FetchProvider({
   },
 });
 
-const eventSource = new EventSource(
-  new URL(
-    `v1/events?accessToken=${localStorage.getItem(accessTokenKey) ?? ''}`,
-    apiURL,
-  ),
-);
-eventSource.addEventListener('error', () => {
-  console.warn('SSE client failed to connect');
-});
-window.addEventListener('beforeunload', () => {
-  eventSource.close();
-});
+let sourceController: AbortController | undefined;
+const nextEventSource = () => {
+  sourceController?.abort();
+  sourceController = new AbortController();
+  const eventSource = new EventSource(
+    new URL(`v1/events?accessToken=${getAccessToken()}`, apiURL),
+  );
+  eventSource.addEventListener(
+    'error',
+    () => {
+      console.warn('Error connecting to the event stream');
+    },
+    { signal: sourceController.signal },
+  );
+  window.addEventListener(
+    'beforeunload',
+    () => {
+      eventSource.close();
+    },
+    { signal: sourceController.signal },
+  );
+  return eventSource;
+};
 
-export const eventReceiver = new SSEReceiver(eventSource, {
+const eventReceiver = new SSEReceiver(nextEventSource(), {
   events: ['update'],
   getEvents(resource, type, event) {
     if (!resource) return [event];
@@ -79,3 +82,18 @@ export const eventReceiver = new SSEReceiver(eventSource, {
     }
   },
 });
+
+window.addEventListener('online', () => {
+  eventReceiver.setEventSource(nextEventSource());
+  dataProvider.notify(undefined);
+});
+
+export default function Data({ children }: { children: ReactNode }) {
+  return (
+    <ConfigProvider dataProvider={dataProvider}>
+      <EventConfigProvider eventReceiver={eventReceiver}>
+        {children}
+      </EventConfigProvider>
+    </ConfigProvider>
+  );
+}

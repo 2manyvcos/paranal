@@ -1,7 +1,7 @@
 import type { FetchProviderType } from '@civet/common';
 import { Meta, useResource } from '@civet/core';
 import { useCallback } from 'react';
-import { HTTPError } from '@/data';
+import { HTTPError } from '@/data/errors';
 
 export type User = {
   name: string;

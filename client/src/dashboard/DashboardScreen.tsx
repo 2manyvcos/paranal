@@ -1,7 +1,7 @@
 import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router';
 import { useApplication } from '@/application';
 
-export default function Dashboard() {
+export default function DashboardScreen() {
   const application = useApplication();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -13,7 +13,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div>
+    <div className="dashboard screen">
       Dashboard
       <Outlet />
     </div>
