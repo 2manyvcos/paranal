@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { Route, Routes } from 'react-router';
 import NavigateToLoginPage from './NavigateToLoginPage';
 import AdminScreen from './admin/AdminScreen';
-import { ApplicationContext, useApplicationState } from './application';
+import { ApplicationContext, useApplicationContextState } from './application';
 import AuthScreen from './auth/AuthScreen';
 import LoginPage from './auth/LoginPage';
 import DashboardScreen from './dashboard/DashboardScreen';
@@ -11,11 +11,10 @@ import { useUser } from './data/user';
 import ErrorScreen from './error/ErrorScreen';
 import NotFoundPage from './error/NotFoundPage';
 import UnexpectedErrorPage from './error/UnexpectedErrorPage';
-import Notifications from './notifications/Notifications';
 
 function App() {
   const user = useUser();
-  const application = useApplicationState(user.data);
+  const application = useApplicationContextState(user.data);
 
   const userLoading = user.isLoading && user.isInitial;
   useEffect(() => {
@@ -84,8 +83,6 @@ function App() {
           </>
         )}
       </Routes>
-
-      <Notifications />
     </ApplicationContext.Provider>
   );
 }

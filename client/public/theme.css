@@ -9,7 +9,7 @@ body,
 }
 
 :root {
-  --t-error-unexpected-error: 'Unexpected error';
+  --t-error-unexpected-error: 'Something went wrong.';
   --t-error-not-found: 'Not found';
   --t-notification-close: 'Close';
   --t-login-title: 'Login to ' var(--t-app-name);
@@ -135,10 +135,10 @@ body,
 .dashboard .header {
 }
 
-.header .title-bar {
+.dashboard .header .title-bar {
 }
 
-.header .title-bar .title {
+.dashboard .header .title-bar .title {
   display: inline-flex;
   align-items: center;
   gap: 0.25em;
@@ -146,28 +146,28 @@ body,
   color: inherit;
 }
 
-.header .title-bar .title .logo {
+.dashboard .header .title-bar .title .logo {
   background-image: var(--t-logo);
   aspect-ratio: 1/1;
   height: 3em;
 }
 
-.header .title-bar .title .app-name {
+.dashboard .header .title-bar .title .app-name {
   display: flex;
   flex-direction: column-reverse;
   justify-content: center;
 }
-.header .title-bar .title .app-name::before {
+.dashboard .header .title-bar .title .app-name::before {
   content: var(--t-app-name);
   font-size: xx-large;
   display: block;
 }
-.header .title-bar .title .app-name::after {
+.dashboard .header .title-bar .title .app-name::after {
   content: var(--t-tagline);
   display: block;
 }
 
-.footer.markdown {
+.dashboard .footer.markdown {
   text-align: center;
 }
 

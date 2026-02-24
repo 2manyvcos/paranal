@@ -22,14 +22,14 @@
     "prettify": "prettier . --write"
   },
   "dependencies": {
-    "@civet/common": "^2.2.0",
+    "@civet/common": "^2.3.1",
     "@civet/core": "^6.2.2",
     "@civet/events": "^4.1.2",
     "@headlessui/react": "^2.2.9",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-markdown": "^10.1.0",
-    "react-router": "^7.13.0",
+    "react-router": "^7.13.1",
     "remark-gfm": "^4.0.1",
     "uuid": "^13.0.0"
   },

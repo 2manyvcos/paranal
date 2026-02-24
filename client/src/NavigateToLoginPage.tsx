@@ -5,11 +5,10 @@ export default function NavigateToLoginPage() {
   const location = useLocation();
 
   useEffect(() => {
-    const search = new URLSearchParams();
-    search.set('origin', location.pathname + location.search + location.hash);
-    const searchString = search.toString();
-
-    window.location.replace('/login?' + searchString);
+    const currentLocation = location.pathname + location.search + location.hash;
+    const url = new URL('/login', window.location.href);
+    url.searchParams.set('origin', currentLocation);
+    window.location.replace(url);
   }, [location]);
 
   return null;

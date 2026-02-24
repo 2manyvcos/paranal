@@ -9,7 +9,7 @@ body,
 }
 
 :root {
-  --t-error-unexpected-error: 'Unexpected error';
+  --t-error-unexpected-error: 'Something went wrong.';
   --t-error-not-found: 'Not found';
   --t-notification-close: 'Close';
   --t-login-title: 'Login to ' var(--t-app-name);
