@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@civet/common": "^2.3.1",
-    "@civet/core": "^6.2.2",
+    "@civet/core": "^6.2.4",
     "@civet/events": "^4.1.2",
     "@headlessui/react": "^2.2.9",
     "react": "^19.2.4",
