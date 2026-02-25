@@ -6,12 +6,14 @@ import type { User } from './data/user';
 
 export type Application = {
   appName: string;
+  tagline: string;
   logo: string;
   footer: string;
   logoutRedirectURL: string;
 
   authorized: boolean;
   user?: User;
+  userName?: string;
   admin: boolean;
 
   unhide: boolean;
@@ -40,12 +42,14 @@ export function useApplicationContextState(
   return useMemo(
     () => ({
       appName: window.paranal.appName,
+      tagline: window.paranal.tagline,
       logo: window.paranal.logo,
       footer: window.paranal.footer,
       logoutRedirectURL: window.paranal.logoutRedirectURL,
 
       authorized,
       user,
+      userName: user?.displayName || user?.name,
       admin,
 
       unhide,

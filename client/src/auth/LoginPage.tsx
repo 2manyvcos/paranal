@@ -2,6 +2,7 @@ import type { FetchProviderType } from '@civet/common';
 import { useConfigContext } from '@civet/core';
 import { Button, Field, Input, Label } from '@headlessui/react';
 import { useCallback, useState, type SubmitEvent } from 'react';
+import { useApplication } from '@/application';
 import { setAccessToken } from '@/data/accessTokens';
 import type { Auth } from '@/data/auth';
 import { HTTP_UNAUTHORIZED, HTTPError } from '@/data/errors';
@@ -9,6 +10,7 @@ import { notify } from '@/notifications/notification';
 
 export default function LoginPage() {
   const { dataProvider } = useConfigContext<FetchProviderType>();
+  const { appName } = useApplication();
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -57,8 +59,14 @@ export default function LoginPage() {
         onSubmit={login}
         data-loading={loading ? '' : undefined}
       >
-        <Field className="username">
-          <Label className="label" />
+        <h1 className="title">
+          <span className="text">Login to {appName}</span>
+        </h1>
+
+        <Field className="username field">
+          <Label className="label">
+            <span className="text">User</span>
+          </Label>
 
           <Input
             className="input"
@@ -75,8 +83,10 @@ export default function LoginPage() {
           />
         </Field>
 
-        <Field className="password">
-          <Label className="label" />
+        <Field className="password field">
+          <Label className="label">
+            <span className="text">Password</span>
+          </Label>
 
           <Input
             className="input"
@@ -92,8 +102,10 @@ export default function LoginPage() {
           />
         </Field>
 
-        <Field className="remember-login">
-          <Label className="label" />
+        <Field className="remember-login field">
+          <Label className="label">
+            <span className="text">Remember me</span>
+          </Label>
 
           <Input
             className="input"
@@ -106,7 +118,9 @@ export default function LoginPage() {
           />
         </Field>
 
-        <Button className="submit button" type="submit" />
+        <Button className="submit button" type="submit">
+          <span className="text">Login</span>
+        </Button>
       </form>
     </div>
   );

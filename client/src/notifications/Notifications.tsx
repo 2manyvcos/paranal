@@ -49,7 +49,9 @@ export default function Notifications() {
             onClick={() => {
               setVisible(false);
             }}
-          />
+          >
+            <span className="text">Close</span>
+          </Button>
         </div>
       </div>
     </Transition>

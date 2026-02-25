@@ -8,18 +8,26 @@ import LoginPage from './auth/LoginPage';
 import DashboardScreen from './dashboard/DashboardScreen';
 import FavoritesPages from './dashboard/FavoritesPage';
 import { useUser } from './data/user';
+import { useBooleanDataAttribute, useDataAttribute } from './dataAttributes';
 import ErrorScreen from './error/ErrorScreen';
 import NotFoundPage from './error/NotFoundPage';
 import UnexpectedErrorPage from './error/UnexpectedErrorPage';
-import { useCustomization } from './useCustomization';
+
+const root = document.getElementById('root')!;
 
 function App() {
   const user = useUser();
   const userLoading = user.isLoading && user.isInitial;
 
   const application = useApplicationContextState(user.data);
+  const { appName, tagline, userName, admin, unhide } = application;
 
-  useCustomization(userLoading, application);
+  useBooleanDataAttribute(root, 'loading', userLoading);
+  useDataAttribute(root, 'app-name', appName);
+  useDataAttribute(root, 'tagline', tagline);
+  useDataAttribute(root, 'user-name', userName);
+  useBooleanDataAttribute(root, 'admin', admin);
+  useBooleanDataAttribute(root, 'unhide', unhide);
 
   useEffect(() => {
     if (user.error) console.error(user.error);

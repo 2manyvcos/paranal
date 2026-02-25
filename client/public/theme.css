@@ -1,23 +1,10 @@
 html,
 body,
 .app,
-.screen,
-.page {
+.screen {
   margin: unset;
   width: 100%;
   height: 100%;
-}
-
-:root {
-  --t-error-unexpected-error: 'Something went wrong.';
-  --t-error-not-found: 'Not found';
-  --t-notification-close: 'Close';
-  --t-login-title: 'Login to ' var(--t-app-name);
-  --t-login-username: 'User';
-  --t-login-password: 'Password';
-  --t-login-rememberLogin: 'Remember me';
-  --t-login-submit: 'Login';
-  --t-user-logout: 'Logout';
 }
 
 .app {
@@ -35,14 +22,14 @@ body,
 
 .unexpected.error.page {
 }
-.unexpected.error.page::before {
-  content: var(--t-error-unexpected-error);
+
+.unexpected.error.page > .text {
 }
 
 .not-found.error.page {
 }
-.not-found.error.page::before {
-  content: var(--t-error-not-found);
+
+.not-found.error.page > .text {
 }
 
 /* Notification */
@@ -55,16 +42,16 @@ body,
 .notification.popup[data-closed] {
 }
 
-.notification .panel {
+.notification > .panel {
 }
 
-.notification .panel .message {
+.notification > .panel > .message {
 }
 
-.notification .panel .close {
+.notification > .panel > .close {
 }
-.notification .panel .close::before {
-  content: var(--t-notification-close);
+
+.notification > .panel > .close > .text {
 }
 
 /* Auth */
@@ -74,58 +61,67 @@ body,
 
 /* Login */
 
-.auth .login.page {
+.auth > .login.page {
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.login .login.form {
+.auth > .login > .login.form {
 }
-.login .login.form::before {
-  content: var(--t-login-title);
-  font-size: large;
-  font-weight: bold;
-}
-.login .login.form[data-loading] {
+.auth > .login > .login[data-loading] {
   pointer-events: none;
   opacity: 0.5;
 }
 
-.login .login.form .username {
-}
-.login .login.form .username .label {
-}
-.login .login.form .username .label::before {
-  content: var(--t-login-username);
-}
-.login .login.form .username .input {
+.auth > .login > .login > .title {
 }
 
-.login .login.form .password {
-}
-.login .login.form .password .label {
-}
-.login .login.form .password .label::before {
-  content: var(--t-login-password);
-}
-.login .login.form .password .input {
+.auth > .login > .login > .title > .text {
 }
 
-.login .login.form .remember-login {
-}
-.login .login.form .remember-login .label {
-}
-.login .login.form .remember-login .label::before {
-  content: var(--t-login-rememberLogin);
-}
-.login .login.form .remember-login .input {
+.auth > .login > .login > .username.field {
 }
 
-.login .login.form .submit.button {
+.auth > .login .login > .username > .label {
 }
-.login .login.form .submit.button::before {
-  content: var(--t-login-submit);
+
+.auth > .login .login > .username > .label > .text {
+}
+
+.auth > .login .login > .username > .input {
+}
+
+.auth > .login .login > .password.field {
+}
+
+.auth > .login .login > .password > .label {
+}
+
+.auth > .login .login > .password > .label > .text {
+}
+
+.auth > .login .login > .password > .input {
+}
+
+.auth > .login > .login > .remember-login.field {
+}
+
+.auth > .login > .login > .remember-login > .label {
+}
+
+.auth > .login > .login > .remember-login > .label > .text {
+}
+
+.auth > .login > .login > .remember-login > .input {
+}
+
+.auth > .login > .login > .submit.button {
+}
+
+.auth > .login > .login > .submit > .text {
 }
 
 /* Dashboard */
@@ -133,69 +129,97 @@ body,
 .dashboard.screen {
 }
 
-.dashboard .header {
+.dashboard > .navigation {
 }
 
-.dashboard .header .title-bar {
-}
-
-.dashboard .header .title-bar .title {
+.dashboard > .navigation > .title {
   display: inline-flex;
   align-items: center;
-  gap: 0.25em;
   text-decoration: inherit;
   color: inherit;
 }
 
-.dashboard .header .title-bar .title .logo {
-  content: var(--t-logo);
+.dashboard > .navigation > .title > .logo {
   aspect-ratio: 1/1;
   height: 3em;
 }
 
-.dashboard .header .title-bar .title .app-name {
-  display: flex;
-  flex-direction: column-reverse;
-  justify-content: center;
-}
-.dashboard .header .title-bar .title .app-name::before {
-  content: var(--t-app-name);
-  font-size: xx-large;
-  display: block;
-}
-.dashboard .header .title-bar .title .app-name::after {
-  content: var(--t-tagline);
-  display: block;
+.dashboard > .navigation > .title > .logo > .image {
 }
 
-.dashboard .header .navigation {
-  display: flex;
+.dashboard > .navigation > .title > .app-name {
+}
+
+.dashboard > .navigation > .title > .app-name > .text {
+}
+
+.dashboard > .navigation > .menu {
   justify-content: space-between;
 }
 
-.dashboard .header .navigation .start {
+.navigation .menu,
+.navigation .sub.menu {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 
-.dashboard .header .navigation .end {
+.dashboard > .navigation > .menu > .start.menu-item {
 }
 
-.dashboard .header .navigation .end .user.item {
+.dashboard > .navigation > .menu > .start > .sub.menu {
 }
 
-.user.menu {
+.dashboard > .navigation > .menu > .start > .sub > .favorites.menu-item {
+}
+.dashboard .favorites.menu-item[data-count='0'] {
+  display: none;
 }
 
-.user.menu .logout.item {
-}
-.user.menu .logout.item::before {
-  content: var(--t-user-logout);
+.dashboard .favorites.menu-item > .item {
 }
 
-.dashboard .footer.markdown {
+.dashboard .favorites.menu-item > .item > .text {
+}
+
+.dashboard > .navigation > .menu > .start > .sub > .page.menu-item {
+}
+
+.dashboard .page.menu-item > .item {
+}
+
+.dashboard .page.menu-item > .item > .text {
+}
+
+.dashboard > .navigation > .menu > .end.menu-item {
+}
+
+.dashboard > .navigation > .menu > .end > .sub.menu {
+}
+
+.dashboard > .navigation > .menu > .end > .sub > .user.menu-item {
+}
+
+.dashboard .user.menu-item > .item {
+}
+
+.dashboard .user.menu-item > .item > .text {
+}
+
+.user.dropdown {
+}
+
+.user.dropdown > .logout.dropdown-item {
+}
+.user.dropdown > .logout > .text {
+}
+
+.dashboard > .footer.markdown {
   text-align: center;
 }
 
-.dashboard .favorites.page {
+.dashboard > .favorites.page {
 }
 
 /* Admin */
