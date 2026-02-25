@@ -131,6 +131,8 @@ body,
 
 .dashboard > .navigation {
 }
+.dashboard > .navigation[data-active] {
+}
 
 .dashboard > .navigation > .title {
   display: inline-flex;
@@ -151,6 +153,12 @@ body,
 }
 
 .dashboard > .navigation > .title > .app-name > .text {
+}
+
+.dashboard > .navigation > .burger-container {
+}
+.dashboard > .navigation > .burger-container > .burger {
+  /* controls .navigation[data-active] */
 }
 
 .dashboard > .navigation > .menu {
