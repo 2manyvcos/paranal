@@ -45,22 +45,20 @@ export default function Navigation() {
               </NavLink>
             </li>
 
-            {layout?.pages?.map((page, index) => (
-              <li
-                key={page.name ? `n-${page.name}` : `i-${index}`}
-                className="page menu-item"
-                data-invalid={!page.name ? '' : undefined}
-              >
-                <NavLink
-                  className="item"
-                  to={page.name ? `/${encodeURIComponent(page.name)}` : '#'}
-                >
-                  <span className="text">
-                    {page.displayName || page.name || ''}
-                  </span>
-                </NavLink>
-              </li>
-            ))}
+            {layout?.pages?.map((page) =>
+              !page.name ? null : (
+                <li key={page.name} className="page menu-item">
+                  <NavLink
+                    className="item"
+                    to={page.name ? `/${encodeURIComponent(page.name)}` : '#'}
+                  >
+                    <span className="text">
+                      {page.displayName || page.name || ''}
+                    </span>
+                  </NavLink>
+                </li>
+              ),
+            )}
           </ul>
         </li>
 
