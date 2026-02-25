@@ -12,9 +12,8 @@ export default function DashboardScreen() {
     <div className="dashboard screen">
       {location.pathname === '/' &&
       !searchParams.has('no-redirect') &&
-      user?.startPage &&
-      user.startPage !== '/' ? (
-        <Navigate to={user?.startPage} replace />
+      user?.startPage ? (
+        <Navigate to={`/${encodeURIComponent(user?.startPage)}`} replace />
       ) : null}
 
       <Navigation />

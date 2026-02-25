@@ -173,25 +173,27 @@ body,
   padding: 0;
 }
 
+.dashboard .menu-item > .item[data-active] {
+}
+
 .dashboard > .navigation > .menu > .start.menu-item {
 }
 
 .dashboard > .navigation > .menu > .start > .sub.menu {
 }
 
-.dashboard > .navigation > .menu > .start > .sub > .favorites.menu-item {
-}
-.dashboard .favorites.menu-item[data-count='0'] {
-  display: none;
+.dashboard > .navigation > .menu > .start > .sub > .home.menu-item {
 }
 
-.dashboard .favorites.menu-item > .item {
+.dashboard .home.menu-item > .item {
 }
 
-.dashboard .favorites.menu-item > .item > .text {
+.dashboard .home.menu-item > .item > .text {
 }
 
 .dashboard > .navigation > .menu > .start > .sub > .page.menu-item {
+}
+.dashboard .page.menu-item[data-invalid] {
 }
 
 .dashboard .page.menu-item > .item {
@@ -227,7 +229,7 @@ body,
   text-align: center;
 }
 
-.dashboard > .favorites.page {
+.dashboard > .home.page {
 }
 
 /* Admin */

@@ -3,19 +3,20 @@ import { useConfigContext } from '@civet/core';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import { useState } from 'react';
 import { Link } from 'react-router';
+import NavLink from '@/NavLink';
 import { useApplication } from '@/application';
 import { unsetAccessToken } from '@/data/accessTokens';
 
 export default function Navigation() {
   const { dataProvider } = useConfigContext<FetchProviderType>();
-  const { appName, logo, userName, favorites, logoutRedirectURL } =
+  const { appName, logo, userName, layout, logoutRedirectURL } =
     useApplication();
 
   const [active, setActive] = useState(false);
 
   return (
     <nav className="navigation" data-active={active ? '' : undefined}>
-      <Link className="title" to="/?no-redirect">
+      <Link className="title" to="/">
         <div className="logo">
           <img className="image" src={logo} />
         </div>
@@ -38,17 +39,28 @@ export default function Navigation() {
       <ul className="menu">
         <li className="start menu-item">
           <ul className="sub menu">
-            <li className="favorites menu-item" data-count={favorites.length}>
-              <Link className="item" to="/favorites">
-                <span className="text">Favorites</span>
-              </Link>
+            <li className="home menu-item">
+              <NavLink className="item" to="/?no-redirect">
+                <span className="text">Home</span>
+              </NavLink>
             </li>
 
-            <li className="page menu-item">
-              <Link className="item" to="/services">
-                <span className="text">Services</span>
-              </Link>
-            </li>
+            {layout?.pages?.map((page, index) => (
+              <li
+                key={page.name ? `n-${page.name}` : `i-${index}`}
+                className="page menu-item"
+                data-invalid={!page.name ? '' : undefined}
+              >
+                <NavLink
+                  className="item"
+                  to={page.name ? `/${encodeURIComponent(page.name)}` : '#'}
+                >
+                  <span className="text">
+                    {page.displayName || page.name || ''}
+                  </span>
+                </NavLink>
+              </li>
+            ))}
           </ul>
         </li>
 

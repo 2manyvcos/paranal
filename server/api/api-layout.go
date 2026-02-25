@@ -13,8 +13,9 @@ import (
 
 type Layout struct {
 	Pages []struct {
-		Name   string `json:"name"`
-		Header string `json:"header"`
+		Name        string `json:"name"`
+		DisplayName string `json:"displayName"`
+		Header      string `json:"header"`
 
 		Sections []struct {
 			Name       string   `json:"name"`

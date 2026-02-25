@@ -11,6 +11,7 @@ export type Layout = {
 
 export type Page = {
   name?: string;
+  displayName?: string;
   header?: string;
 
   sections?: Section[];

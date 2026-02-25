@@ -6,7 +6,7 @@ import { ApplicationContext, useApplicationContextState } from './application';
 import AuthScreen from './auth/AuthScreen';
 import LoginPage from './auth/LoginPage';
 import DashboardScreen from './dashboard/DashboardScreen';
-import FavoritesPages from './dashboard/FavoritesPage';
+import HomePage from './dashboard/HomePage';
 import { useUser } from './data/user';
 import { useBooleanDataAttribute, useDataAttribute } from './dataAttributes';
 import ErrorScreen from './error/ErrorScreen';
@@ -66,7 +66,7 @@ function App() {
             )}
 
             <Route path="/" element={<DashboardScreen />}>
-              <Route path="favorites" element={<FavoritesPages />} />
+              <Route index element={<HomePage />} />
 
               <Route path="*" element={<NotFoundPage />} />
             </Route>
