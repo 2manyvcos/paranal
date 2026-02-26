@@ -1,4 +1,4 @@
-openapi: 3.1.1
+openapi: 3.0.0
 info:
   title: Paranal API
   description: |-
@@ -13,7 +13,157 @@ externalDocs:
 servers:
   - url: '{{ .api }}/v1'
 tags:
+  - name: events
+    description: Client events
   - name: user
-    description: Authorized user
+    description: User profile
 paths:
-  
+  /events:
+    get:
+      tags: [events]
+      summary: Subscribe to client events using server-sent events
+      operationId: getEvents
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/event-stream:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UpdateEvent'
+                discriminator:
+                  propertyName: event
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /user:
+    get:
+      tags: [user]
+      summary: Get user profile
+      operationId: getUser
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    example: max
+                  role:
+                    type: string
+                    enum: [common, admin]
+                  hasPassword:
+                    type: boolean
+                  displayName:
+                    type: string
+                    example: Max
+                  startPage:
+                    type: string
+                    example: my-services
+                  errorAlerts:
+                    type: boolean
+                  uptimeAlerts:
+                    type: boolean
+                  versionAlerts:
+                    type: boolean
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    patch:
+      tags: [user]
+      summary: Patch user profile
+      operationId: patchUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                  example: Max
+                startPage:
+                  type: string
+                  example: my-services
+                errorAlerts:
+                  type: boolean
+                uptimeAlerts:
+                  type: boolean
+                versionAlerts:
+                  type: boolean
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    delete:
+      tags: [user]
+      summary: Delete user profile
+      operationId: deleteUser
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /user/password:
+    put:
+      tags: [user]
+      summary: Update user password
+      operationId: putUserPassword
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+components:
+  schemas:
+    UpdateEvent:
+      description: A server-sent event indicating that an endpoint was updated
+      type: object
+      required: [event, data]
+      properties:
+        event:
+          type: string
+          enum: [update]
+        data:
+          type: string
+          format: uri
+          example: /v1/services/demo-service
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    BearerAuthInHeader:
+      type: apiKey
+      in: query
+      name: accessToken
+security:
+  - BearerAuth: []
+  - BearerAuthInHeader: []
