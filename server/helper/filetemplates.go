@@ -60,7 +60,7 @@ func (t fileTemplate) Open(file string) (http.File, error) {
 	entry, ok := t.cache[file]
 	if !ok {
 		var b bytes.Buffer
-		if err := t.tmpls.ExecuteTemplate(&b, file, t.tmplData); err != nil {
+		if err := t.tmpls.ExecuteTemplate(&b, filepath.Base(file), t.tmplData); err != nil {
 			entry.error = err
 		} else {
 			entry.name = filepath.Base(file)

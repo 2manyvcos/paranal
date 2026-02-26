@@ -40,7 +40,7 @@ func Run() {
 	apiHandler := api.New()
 	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, helper.OmitTrailingSlash(helper.WithApp(app, helper.WithCORS(apiHandler)))))
 
-	resolvedClientFiles := helper.FileTemplates(client.ClientFiles, map[string]any{
+	http.Handle("/", http.FileServer(helper.FileRewrite(helper.FileTemplates(client.ClientFiles, map[string]any{
 		"appName":           app.Config.AppName,
 		"tagline":           app.Config.Tagline,
 		"logo":              app.Config.Brand.Logo,
@@ -51,15 +51,16 @@ func Run() {
 		"footer":            app.Config.Brand.Footer,
 		"api":               app.Config.Client.API,
 		"logoutRedirectURL": app.Config.Auth.LogoutRedirectURL,
-	}, "index.html", "manifest.json")
-	http.Handle("/", http.FileServer(helper.FileRewrite(resolvedClientFiles, "index.html")))
-	http.Handle("/api/swagger/", http.FileServer(resolvedClientFiles))
+	}, "index.html", "manifest.json"), "index.html")))
 
-	schemaFiles, _ := fs.Glob(apischema.SchemaFiles, "*.yaml")
-	resolvedSchemaFiles := helper.FileTemplates(apischema.SchemaFiles, map[string]any{
+	http.Handle("/api/swagger/", http.FileServer(helper.FileTemplates(client.ClientFiles, map[string]any{
 		"api": app.Config.Client.API,
-	}, schemaFiles...)
-	apiSchemaServer := helper.WithApp(app, helper.WithCORS(http.FileServer(resolvedSchemaFiles)))
+	}, "api/swagger/index.html")))
+
+	apiSchemaFiles, _ := fs.Glob(apischema.SchemaFiles, "*.yaml")
+	apiSchemaServer := helper.WithApp(app, helper.WithCORS(http.FileServer(helper.FileTemplates(apischema.SchemaFiles, map[string]any{
+		"api": app.Config.Client.API,
+	}, apiSchemaFiles...))))
 	http.Handle("/api/schema/", http.StripPrefix("/api/schema/", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		if ext := filepath.Ext(req.URL.Path); ext == ".yaml" || ext == ".yml" {
 			res.Header().Set("Content-Type", "text/yaml")
