@@ -30,5 +30,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["client/src"]
+  "include": ["client/src", "api/swagger/src"]
 }

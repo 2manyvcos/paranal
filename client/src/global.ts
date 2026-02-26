@@ -5,6 +5,7 @@ declare global {
       tagline: string;
       logo: string;
       footer: string;
+      api: string;
       logoutRedirectURL: string;
     };
   }

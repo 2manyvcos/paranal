@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="description" content="%PARANAL_CONFIG_TAGLINE%" />
+    <link rel="icon" href="./assets/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" href="./assets/apple-touch-icon.png" />
+    <title>Paranal API</title>
+    <script>
+      window.paranal = {
+        api: '%PARANAL_CONFIG_CLIENT_API%',
+      };
+    </script>
+  </head>
+  <body>
+    <div id="swagger"></div>
+    <script type="module" src="/api/swagger/src/swagger.tsx"></script>
+  </body>
+</html>

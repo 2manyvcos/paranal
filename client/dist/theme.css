@@ -1,22 +1,10 @@
 html,
 body,
 .app,
-.screen,
-.page {
+.screen {
   margin: unset;
   width: 100%;
   height: 100%;
-}
-
-:root {
-  --t-error-unexpected-error: 'Something went wrong.';
-  --t-error-not-found: 'Not found';
-  --t-notification-close: 'Close';
-  --t-login-title: 'Login to ' var(--t-app-name);
-  --t-login-username: 'User';
-  --t-login-password: 'Password';
-  --t-login-rememberLogin: 'Remember me';
-  --t-login-submit: 'Login';
 }
 
 .app {
@@ -34,14 +22,14 @@ body,
 
 .unexpected.error.page {
 }
-.unexpected.error.page::before {
-  content: var(--t-error-unexpected-error);
+
+.unexpected.error.page > .text {
 }
 
 .not-found.error.page {
 }
-.not-found.error.page::before {
-  content: var(--t-error-not-found);
+
+.not-found.error.page > .text {
 }
 
 /* Notification */
@@ -54,16 +42,16 @@ body,
 .notification.popup[data-closed] {
 }
 
-.notification .panel {
+.notification > .panel {
 }
 
-.notification .panel .message {
+.notification > .panel > .message {
 }
 
-.notification .panel .close {
+.notification > .panel > .close {
 }
-.notification .panel .close::before {
-  content: var(--t-notification-close);
+
+.notification > .panel > .close > .text {
 }
 
 /* Auth */
@@ -73,58 +61,67 @@ body,
 
 /* Login */
 
-.auth .login.page {
+.auth > .login.page {
+  width: 100%;
+  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.login form.login {
+.auth > .login > .login.form {
 }
-.login form.login::before {
-  content: var(--t-login-title);
-  font-size: large;
-  font-weight: bold;
-}
-.login form.login[data-loading] {
+.auth > .login > .login[data-loading] {
   pointer-events: none;
   opacity: 0.5;
 }
 
-.login form.login .username {
-}
-.login form.login .username label {
-}
-.login form.login .username label::before {
-  content: var(--t-login-username);
-}
-.login form.login .username input {
+.auth > .login > .login > .title {
 }
 
-.login form.login .password {
-}
-.login form.login .password label {
-}
-.login form.login .password label::before {
-  content: var(--t-login-password);
-}
-.login form.login .password input {
+.auth > .login > .login > .title > .text {
 }
 
-.login form.login .remember-login {
-}
-.login form.login .remember-login label {
-}
-.login form.login .remember-login label::before {
-  content: var(--t-login-rememberLogin);
-}
-.login form.login .remember-login input {
+.auth > .login > .login > .username.field {
 }
 
-.login form.login button[type='submit'] {
+.auth > .login .login > .username > .label {
 }
-.login form.login button[type='submit']::before {
-  content: var(--t-login-submit);
+
+.auth > .login .login > .username > .label > .text {
+}
+
+.auth > .login .login > .username > .input {
+}
+
+.auth > .login .login > .password.field {
+}
+
+.auth > .login .login > .password > .label {
+}
+
+.auth > .login .login > .password > .label > .text {
+}
+
+.auth > .login .login > .password > .input {
+}
+
+.auth > .login > .login > .remember-login.field {
+}
+
+.auth > .login > .login > .remember-login > .label {
+}
+
+.auth > .login > .login > .remember-login > .label > .text {
+}
+
+.auth > .login > .login > .remember-login > .input {
+}
+
+.auth > .login > .login > .submit.button {
+}
+
+.auth > .login > .login > .submit > .text {
 }
 
 /* Dashboard */
@@ -132,43 +129,105 @@ body,
 .dashboard.screen {
 }
 
-.dashboard .header {
+.dashboard > .navigation {
+}
+.dashboard > .navigation[data-active] {
 }
 
-.header .title-bar {
-}
-
-.header .title-bar .title {
+.dashboard > .navigation > .title {
   display: inline-flex;
   align-items: center;
-  gap: 0.25em;
   text-decoration: inherit;
   color: inherit;
 }
 
-.header .title-bar .title .logo {
-  background-image: var(--t-logo);
+.dashboard > .navigation > .title > .logo {
   aspect-ratio: 1/1;
   height: 3em;
 }
 
-.header .title-bar .title .app-name {
-  display: flex;
-  flex-direction: column-reverse;
-  justify-content: center;
-}
-.header .title-bar .title .app-name::before {
-  content: var(--t-app-name);
-  font-size: xx-large;
-  display: block;
-}
-.header .title-bar .title .app-name::after {
-  content: var(--t-tagline);
-  display: block;
+.dashboard > .navigation > .title > .logo > .image {
 }
 
-.footer.markdown {
+.dashboard > .navigation > .title > .app-name {
+}
+
+.dashboard > .navigation > .title > .app-name > .text {
+}
+
+.dashboard > .navigation > .burger-container {
+}
+.dashboard > .navigation > .burger-container > .burger {
+  /* controls .navigation[data-active] */
+}
+
+.dashboard > .navigation > .menu {
+  justify-content: space-between;
+}
+
+.navigation .menu,
+.navigation .sub.menu {
+  display: flex;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dashboard .menu-item > .item[data-active] {
+}
+
+.dashboard > .navigation > .menu > .start.menu-item {
+}
+
+.dashboard > .navigation > .menu > .start > .sub.menu {
+}
+
+.dashboard > .navigation > .menu > .start > .sub > .home.menu-item {
+}
+
+.dashboard .home.menu-item > .item {
+}
+
+.dashboard .home.menu-item > .item > .text {
+}
+
+.dashboard > .navigation > .menu > .start > .sub > .page.menu-item {
+}
+
+.dashboard .page.menu-item > .item {
+}
+
+.dashboard .page.menu-item > .item > .text {
+}
+
+.dashboard > .navigation > .menu > .end.menu-item {
+}
+
+.dashboard > .navigation > .menu > .end > .sub.menu {
+}
+
+.dashboard > .navigation > .menu > .end > .sub > .user.menu-item {
+}
+
+.dashboard .user.menu-item > .item {
+}
+
+.dashboard .user.menu-item > .item > .text {
+}
+
+.user.dropdown {
+}
+
+.user.dropdown > .logout.dropdown-item {
+}
+.user.dropdown > .logout > .text {
+}
+
+.dashboard > .footer.markdown {
   text-align: center;
+}
+
+.dashboard > .home.page {
 }
 
 /* Admin */

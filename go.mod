@@ -6,6 +6,8 @@ ignore (
 	./client/dist
 	./client/public
 	./client/src
+	./api/schema
+	./api/swagger
 	./docs
 	node_modules
 )

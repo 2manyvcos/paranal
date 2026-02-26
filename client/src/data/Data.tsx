@@ -6,7 +6,7 @@ import { getAccessToken } from './accessTokens';
 import { HTTP_UNAUTHORIZED, HTTPError } from './errors';
 
 const apiURL = new URL(
-  (import.meta.env.PARANAL_API || '/api/').replace(/\/*$/g, '/'),
+  window.paranal.api.replace(/\/*$/g, '/'),
   window.location.href,
 );
 

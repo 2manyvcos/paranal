@@ -2,11 +2,14 @@ package server
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strings"
 
 	meta "github.com/2manyvcos/paranal"
+	apischema "github.com/2manyvcos/paranal/api"
 	"github.com/2manyvcos/paranal/client"
 	"github.com/2manyvcos/paranal/server/api"
 	"github.com/2manyvcos/paranal/server/application"
@@ -46,9 +49,23 @@ func Run() {
 		"theme":             app.Config.Brand.Theme,
 		"customScript":      app.Config.Brand.CustomScript,
 		"footer":            app.Config.Brand.Footer,
+		"api":               app.Config.Client.API,
 		"logoutRedirectURL": app.Config.Auth.LogoutRedirectURL,
 	}, "index.html", "manifest.json")
 	http.Handle("/", http.FileServer(helper.FileRewrite(resolvedClientFiles, "index.html")))
+	http.Handle("/api/swagger/", http.FileServer(resolvedClientFiles))
+
+	schemaFiles, _ := fs.Glob(apischema.SchemaFiles, "*.yaml")
+	resolvedSchemaFiles := helper.FileTemplates(apischema.SchemaFiles, map[string]any{
+		"api": app.Config.Client.API,
+	}, schemaFiles...)
+	apiSchemaServer := helper.WithApp(app, helper.WithCORS(http.FileServer(resolvedSchemaFiles)))
+	http.Handle("/api/schema/", http.StripPrefix("/api/schema/", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		if ext := filepath.Ext(req.URL.Path); ext == ".yaml" || ext == ".yml" {
+			res.Header().Set("Content-Type", "text/yaml")
+		}
+		apiSchemaServer.ServeHTTP(res, req)
+	})))
 
 	hostname := fmt.Sprintf("%s:%s", app.Config.Server.Address, app.Config.Server.Port)
 	switch strings.ToLower(app.Config.Server.Protocol) {

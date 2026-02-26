@@ -1,0 +1,19 @@
+openapi: 3.1.1
+info:
+  title: Paranal API
+  description: |-
+    This documentation describes the Paranal API.
+  license:
+    name: This file is distributed under the MIT license for the purpose of interoperability
+    url: https://opensource.org/licenses/MIT
+  version: 1.0.0
+externalDocs:
+  description: Paranal Documentation
+  url: https://2manyvcos.github.io/paranal
+servers:
+  - url: '{{ .api }}/v1'
+tags:
+  - name: user
+    description: Authorized user
+paths:
+  

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/2manyvcos/paranal/crypto"
 	"github.com/2manyvcos/paranal/server/data"
@@ -36,6 +37,10 @@ type App struct {
 			Port     string
 			CertFile string
 			KeyFile  string
+		}
+
+		Client struct {
+			API string
 		}
 
 		DB data.Config
@@ -93,6 +98,8 @@ func Setup() (app *App, err error) {
 	app.Config.Server.Port = utils.LoadConfigValue("SERVER_PORT", "8080")
 	app.Config.Server.CertFile = utils.LoadConfigValue("SERVER_CERT_FILE", ".paranal/ssl/cert.pem")
 	app.Config.Server.KeyFile = utils.LoadConfigValue("SERVER_KEY_FILE", ".paranal/ssl/key.pem")
+
+	app.Config.Client.API = strings.TrimSuffix(utils.LoadConfigValue("CLIENT_API", "/api"), "/")
 
 	app.Config.DB.Type = utils.LoadConfigValue("DB_TYPE", "sqlite")
 	app.Config.DB.Path = utils.LoadConfigValue("DB_PATH", ".paranal/paranal.db")
