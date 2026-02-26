@@ -59,7 +59,7 @@ const eventReceiver = new SSEReceiver(nextEventSource(), {
     switch (type) {
       case 'update': {
         const resourcePath = new URL(resource.name, apiURL).pathname
-          .substring(0, apiURL.toString().length - 1)
+          .substring(apiURL.pathname.length - 1)
           .replace(/\/*$/g, '/');
         const eventPath = event.data.replace(/\/*$/g, '/');
 
