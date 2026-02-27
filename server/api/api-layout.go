@@ -18,6 +18,7 @@ type Layout struct {
 		Header      string `json:"header"`
 
 		Sections []struct {
+			ID         string   `json:"id"`
 			Name       string   `json:"name"`
 			Icon       string   `json:"icon"`
 			ServiceIDs []string `json:"serviceIDs,omitempty"`

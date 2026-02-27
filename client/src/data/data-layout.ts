@@ -18,6 +18,7 @@ export type Page = {
 };
 
 export type Section = {
+  id?: string;
   name?: string;
   icon?: string;
   serviceIDs?: string[];

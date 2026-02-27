@@ -1,7 +1,5 @@
-export default function UnexpectedErrorPage() {
-  return (
-    <div className="not-found error page">
-      <span className="text">Not found</span>
-    </div>
-  );
+import Text from '@/components/Text';
+
+export default function NotFoundPage() {
+  return <Text className="not-found error page" text="Not found" />;
 }

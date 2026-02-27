@@ -1,14 +1,8 @@
-import Markdown from '@/Markdown';
 import { useApplication } from '@/application';
+import Markdown from '@/components/Markdown';
 
 export default function Footer() {
   const { footer } = useApplication();
 
-  if (!footer) return null;
-
-  return (
-    <footer className="footer markdown">
-      <Markdown>{footer}</Markdown>
-    </footer>
-  );
+  return <Markdown className="footer" as="footer" markdown={footer} />;
 }

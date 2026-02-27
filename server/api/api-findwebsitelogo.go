@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/2manyvcos/paranal/utils"
 	"github.com/thanhpk/go-favicon"
@@ -67,6 +68,8 @@ func selectLogo(icons []*favicon.Icon) string {
 		logo, err := fetchLogo(icon)
 		if err == nil {
 			return logo
+		} else {
+			log.Printf("Error fetching logo - %s\n", err)
 		}
 	}
 	return ""
@@ -77,13 +80,18 @@ func fetchLogo(icon *favicon.Icon) (string, error) {
 	if mimeType == "image/vnd.microsoft.icon" {
 		mimeType = "image/x-icon"
 	}
-	resp, err := http.Get(icon.URL)
+	res, err := http.Get(icon.URL)
 	if err != nil {
-		log.Printf("Error fetching logo - %s\n", err)
 		return "", err
 	}
-	defer resp.Body.Close()
-	data, err := io.ReadAll(resp.Body)
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("unexpected status %v", res.StatusCode)
+	}
+	if contentType := res.Header.Get("Content-Type"); contentType != "" && !strings.HasPrefix(contentType, "image/") {
+		return "", fmt.Errorf(`unexpected Content-Type "%s"`, contentType)
+	}
+	data, err := io.ReadAll(res.Body)
 	if err != nil {
 		return "", err
 	}

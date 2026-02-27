@@ -30,7 +30,7 @@ export type Service = {
   };
 };
 
-export function useServices(query?: ServiceQuery) {
+function serviceQuery(query?: ServiceQuery): string {
   const search = new URLSearchParams();
   if (query?.id != null) search.set('id', query.id);
   if (query?.name != null) search.set('name', query.name);
@@ -45,10 +45,13 @@ export function useServices(query?: ServiceQuery) {
     search.set('config.uptimeAlerts', query.config.uptimeAlerts.toString());
   if (query?.config?.versionAlerts != null)
     search.set('config.versionAlerts', query.config.versionAlerts.toString());
+  return search.toString();
+}
 
+export function useServices(query?: ServiceQuery) {
   return useResource<FetchProviderType, Service[] | undefined>({
     name: 'v1/services',
-    query: { search: search.toString() },
+    query: { search: serviceQuery(query) },
     events: true,
     disabled: query?.disabled,
   });

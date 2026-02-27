@@ -1,5 +1,7 @@
-import { Button, Transition } from '@headlessui/react';
+import { Transition } from '@headlessui/react';
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import Button from '@/components/Button';
+import Text from '@/components/Text';
 import {
   getCurrentNotification,
   removeCurrentNotification,
@@ -42,16 +44,15 @@ export default function Notifications() {
     >
       <div className="notification popup" role="dialog" tabIndex={-1}>
         <div className="panel">
-          <div className="message">{currentNotification.message}</div>
+          <Text className="message" text={currentNotification.message} />
 
           <Button
             className="close"
             onClick={() => {
               setVisible(false);
             }}
-          >
-            <span className="text">Close</span>
-          </Button>
+            text="Close"
+          />
         </div>
       </div>
     </Transition>

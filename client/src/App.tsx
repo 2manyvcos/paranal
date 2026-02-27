@@ -7,7 +7,8 @@ import AuthScreen from './auth/AuthScreen';
 import LoginPage from './auth/LoginPage';
 import DashboardScreen from './dashboard/DashboardScreen';
 import HomePage from './dashboard/HomePage';
-import { useUser } from './data/user';
+import ServicePage from './dashboard/ServicePage';
+import { useUser } from './data/data-user';
 import { useBooleanDataAttribute, useDataAttribute } from './dataAttributes';
 import ErrorScreen from './error/ErrorScreen';
 import NotFoundPage from './error/NotFoundPage';
@@ -20,7 +21,7 @@ function App() {
   const userLoading = user.isLoading && user.isInitial;
 
   const application = useApplicationContextState(user.data);
-  const { appName, tagline, userName, admin, unhide } = application;
+  const { appName, tagline, userName, admin, unhide, layout } = application;
 
   useBooleanDataAttribute(root, 'loading', userLoading);
   useDataAttribute(root, 'app-name', appName);
@@ -67,6 +68,16 @@ function App() {
 
             <Route path="/" element={<DashboardScreen />}>
               <Route index element={<HomePage />} />
+
+              {layout?.pages?.map((page) =>
+                !page.name ? null : (
+                  <Route
+                    key={page.name}
+                    path={encodeURIComponent(page.name)}
+                    element={<ServicePage page={page} />}
+                  />
+                ),
+              )}
 
               <Route path="*" element={<NotFoundPage />} />
             </Route>

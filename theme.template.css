@@ -1,0 +1,274 @@
+.html > .body > .app {
+  /* React entrypoint */
+  /* contains the current screen (as a child) and popups (as descendants) */
+}
+.app[data-loading] {
+  /* used for when the app is still loading */
+}
+.app > .screen {
+  /* contains a page (as a child) and additional screen specific elements */
+}
+
+/* Components */
+
+.text[data-text],
+.button[data-text],
+.link[data-text],
+.nav-item[data-text] {
+  /* contains a component's text if present */
+}
+.nav-item[data-active] {
+  /* used for when the component refers to the active page */
+}
+.image[data-image] {
+  /* contains a component's image if present */
+  /* if set, the component also exposes a CSS variable --image */
+}
+.markdown[data-markdown] {
+  /* contains a component's markdown if present */
+}
+.text > span.content,
+.button > span.content,
+.link > span.content,
+.nav-item > span.content,
+.image > img.content,
+.markdown > div.content {
+  /* contains the component's content if present */
+}
+
+/* Errors */
+
+.error.screen {
+  /* used for global errors */
+}
+
+.error.page {
+  /* error pages can be displayed in any .screen */
+}
+
+.unexpected.error.page.text {
+}
+
+.not-found.error.page.text {
+}
+
+/* Notification */
+
+.notification.popup {
+}
+.notification.popup[data-closed] {
+  /* used for transitioning */
+}
+
+.notification > .panel {
+}
+
+.notification > .panel > .message.text {
+}
+
+.notification > .panel > .close.button {
+}
+
+/* Auth */
+
+.auth.screen {
+}
+
+/* Login */
+
+.auth > .login.page {
+}
+
+.auth > .login > .login.form {
+}
+.auth > .login > .login.form[data-loading] {
+  /* used for when a login request is active */
+}
+
+.auth > .login > .login > .title.text {
+}
+
+.auth > .login > .login > .username.field {
+}
+
+.auth > .login > .login > .username > .label.text {
+}
+
+.auth > .login > .login > .username > .input {
+}
+
+.auth > .login > .login > .password.field {
+}
+
+.auth > .login > .login > .password > .label.text {
+}
+
+.auth > .login > .login > .password > .input {
+}
+
+.auth > .login > .login > .remember-login.field {
+}
+
+.auth > .login > .login > .remember-login > .label.text {
+}
+
+.auth > .login > .login > .remember-login > .input {
+}
+
+.auth > .login > .login > .submit.button {
+}
+
+/* Dashboard */
+
+.dashboard.screen {
+}
+
+.dashboard > .navigation {
+}
+.dashboard > .navigation[data-active] {
+  /* used for when the navigation is requested to be displayed (via .burger>.button) */
+}
+
+.dashboard > .navigation > .header {
+}
+.dashboard > .navigation > .header > .header-link {
+}
+
+.dashboard > .navigation > .header > .header-link > .logo.image {
+}
+
+.dashboard > .navigation > .header > .header-link > .title {
+}
+
+.dashboard > .navigation > .header > .header-link > .title > .name.text {
+}
+
+.dashboard > .navigation > .header > .header-link > .title > .tagline.text {
+}
+
+.dashboard > .navigation > .burger {
+}
+
+.dashboard > .navigation > .burger > .button {
+  /* toggles .navigation[data-active] on click */
+}
+
+.dashboard > .navigation > .menu {
+}
+
+.dashboard > .navigation > .menu > .start.menu-item {
+}
+
+.dashboard > .navigation > .menu > .start > .sub.menu {
+}
+
+.dashboard > .navigation > .menu > .start > .sub > .home.menu-item {
+}
+
+.dashboard > .navigation > .menu > .start > .sub > .home.menu-item > .nav-item {
+}
+
+.dashboard > .navigation > .menu > .start > .sub > .page.menu-item {
+}
+
+.dashboard > .navigation > .menu > .start > .sub > .page.menu-item > .nav-item {
+}
+
+.dashboard > .navigation > .menu > .end.menu-item {
+}
+
+.dashboard > .navigation > .menu > .end > .sub.menu {
+}
+
+.dashboard > .navigation > .menu > .end > .sub > .user.menu-item {
+}
+
+.dashboard > .navigation > .menu > .end > .sub > .user.menu-item > .nav-item {
+}
+
+.user.dropdown {
+}
+
+.user.dropdown > .logout.dropdown-item.link {
+}
+
+.dashboard > .footer.markdown {
+}
+
+.dashboard > .home.page {
+}
+
+.dashboard > .service.page {
+}
+
+.dashboard > .service > .header {
+}
+
+.dashboard > .service > .header > .name.text {
+}
+
+.dashboard > .service > .header > .header.markdown {
+}
+
+.dashboard > .service > .sections {
+}
+
+.dashboard > .service > .sections > .section {
+}
+
+.dashboard > .service > .sections > .section > .header {
+}
+
+.dashboard > .service > .sections > .section > .header > .icon.image {
+}
+
+.dashboard > .service > .sections > .section > .header > .title {
+}
+
+.dashboard > .service > .sections > .section > .header > .title > .name.text {
+}
+
+.dashboard > .service > .sections > .section > .services {
+}
+
+.dashboard > .service > .sections > .section > .services > .service {
+}
+
+.dashboard > .service > .sections > .section > .services > .service > .header {
+}
+.dashboard
+  > .service
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .header-link {
+}
+
+.dashboard
+  > .service
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .header-link
+  > .logo.image {
+}
+
+.dashboard
+  > .service
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .header-link
+  > .name.text {
+}
+
+/* Admin */
+
+.admin.screen {
+}

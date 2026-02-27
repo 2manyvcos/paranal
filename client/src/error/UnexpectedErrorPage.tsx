@@ -1,7 +1,5 @@
+import Text from '@/components/Text';
+
 export default function UnexpectedErrorPage() {
-  return (
-    <div className="unexpected error page">
-      <span className="text">Something went wrong</span>
-    </div>
-  );
+  return <Text className="unexpected error page" text="Something went wrong" />;
 }

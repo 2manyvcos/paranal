@@ -1,10 +1,12 @@
 import type { FetchProviderType } from '@civet/common';
 import { useConfigContext } from '@civet/core';
-import { Button, Field, Input, Label } from '@headlessui/react';
+import { Field, Input, Label } from '@headlessui/react';
 import { useCallback, useState, type SubmitEvent } from 'react';
 import { useApplication } from '@/application';
+import Button from '@/components/Button';
+import Text from '@/components/Text';
 import { setAccessToken } from '@/data/accessTokens';
-import type { Auth } from '@/data/auth';
+import type { Auth } from '@/data/data-auth';
 import { HTTP_UNAUTHORIZED, HTTPError } from '@/data/errors';
 import { notify } from '@/notifications/notification';
 
@@ -59,14 +61,10 @@ export default function LoginPage() {
         onSubmit={login}
         data-loading={loading ? '' : undefined}
       >
-        <h1 className="title">
-          <span className="text">Login to {appName}</span>
-        </h1>
+        <Text className="title" as="h1" text={`Login to ${appName}`} />
 
         <Field className="username field">
-          <Label className="label">
-            <span className="text">User</span>
-          </Label>
+          <Text as={Label} className="label" text="User" />
 
           <Input
             className="input"
@@ -84,9 +82,7 @@ export default function LoginPage() {
         </Field>
 
         <Field className="password field">
-          <Label className="label">
-            <span className="text">Password</span>
-          </Label>
+          <Text as={Label} className="label" text="Password" />
 
           <Input
             className="input"
@@ -103,9 +99,7 @@ export default function LoginPage() {
         </Field>
 
         <Field className="remember-login field">
-          <Label className="label">
-            <span className="text">Remember me</span>
-          </Label>
+          <Text as={Label} className="label" text="Remember me" />
 
           <Input
             className="input"
@@ -118,9 +112,7 @@ export default function LoginPage() {
           />
         </Field>
 
-        <Button className="submit button" type="submit">
-          <span className="text">Login</span>
-        </Button>
+        <Button className="submit" type="submit" text="Login" />
       </form>
     </div>
   );

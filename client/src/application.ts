@@ -1,8 +1,8 @@
 import { createContext, useContext, useMemo } from 'react';
+import { useLayout, type Layout } from './data/data-layout';
+import { useServices, type Service } from './data/data-services';
+import type { User } from './data/data-user';
 import { useErrorNotification } from './data/errors';
-import { useLayout, type Layout } from './data/layout';
-import { useServices, type Service } from './data/services';
-import type { User } from './data/user';
 
 export type Application = {
   appName: string;
@@ -19,6 +19,7 @@ export type Application = {
   unhide: boolean;
   layout?: Layout;
   services: Service[];
+  servicesByID: { [serviceID: string]: Service };
   favorites: Service[];
 };
 
@@ -38,6 +39,13 @@ export function useApplicationContextState(
     disabled: !authorized,
   });
   useErrorNotification(services);
+  const servicesByID = useMemo(
+    () =>
+      Object.fromEntries(
+        services.data?.map((service) => [service.id, service]) ?? [],
+      ),
+    [services.data],
+  );
 
   return useMemo(
     () => ({
@@ -55,10 +63,11 @@ export function useApplicationContextState(
       unhide,
       layout: layout.data,
       services: services.data ?? [],
+      servicesByID,
       favorites:
         services.data?.filter((service) => service.config.favorite) ?? [],
     }),
-    [authorized, user, admin, unhide, layout.data, services.data],
+    [authorized, user, admin, unhide, layout.data, services.data, servicesByID],
   );
 }
 
