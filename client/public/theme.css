@@ -34,19 +34,19 @@ body,
   opacity: 0.5;
 }
 
-.dashboard > .navigation > .header > .header-link {
+.dashboard .header-link {
   display: inline-flex;
   align-items: center;
   text-decoration: inherit;
   color: inherit;
 }
 
-.dashboard > .navigation > .header > .header-link > .title {
+.dashboard .header-link > .title {
   display: flex;
   flex-direction: column-reverse;
 }
 
-.dashboard > .navigation > .header > .header-link > .title > .name {
+.dashboard .header-link > .title > .name {
   margin: 0;
 }
 

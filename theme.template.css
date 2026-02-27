@@ -265,7 +265,20 @@
   > .service
   > .header
   > .header-link
+  > .title
   > .name.text {
+}
+
+.dashboard
+  > .service
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .header-link
+  > .title
+  > .description.text {
 }
 
 /* Admin */

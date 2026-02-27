@@ -41,7 +41,18 @@ export default function ServicePage({ page }: { page: Page }) {
                         >
                           <Image className="logo" image={service.logo} />
 
-                          <Text className="name" as="h4" text={service.name} />
+                          <div className="title">
+                            <Text
+                              className="name"
+                              as="h4"
+                              text={service.name}
+                            />
+
+                            <Text
+                              className="description"
+                              text={service.description}
+                            />
+                          </div>
                         </a>
                       </header>
                     </article>
