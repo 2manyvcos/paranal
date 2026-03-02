@@ -15,6 +15,10 @@ body,
   display: none;
 }
 
+a[role='button'] {
+  cursor: pointer;
+}
+
 .notification.popup {
   position: fixed;
   left: 0;

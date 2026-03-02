@@ -1,7 +1,12 @@
 import { createContext, useContext, useMemo } from 'react';
 import { useLayout, type Layout } from './data/data-layout';
 import { useServices, type Service } from './data/data-services';
+import {
+  useUptimeStatuses,
+  type UptimeStatus,
+} from './data/data-uptimestatuses';
 import type { User } from './data/data-user';
+import { useVersions, type Version } from './data/data-versions';
 import { useErrorNotification } from './data/errors';
 
 export type Application = {
@@ -19,8 +24,14 @@ export type Application = {
   unhide: boolean;
   layout?: Layout;
   services: Service[];
-  servicesByID: { [serviceID: string]: Service };
-  favorites: Service[];
+  servicesByID: Partial<{ [serviceID: string]: Service }>;
+  servicesWithFavorite: Service[];
+  uptimeStatuses: UptimeStatus[];
+  uptimeStatusesByServiceID: Partial<{
+    [serviceID: string]: UptimeStatus[];
+  }>;
+  versions: Version[];
+  versionsByServiceID: Partial<{ [serviceID: string]: Version[] }>;
 };
 
 export function useApplicationContextState(
@@ -29,14 +40,14 @@ export function useApplicationContextState(
   const authorized = user != null;
   const admin = user?.role === 'admin';
 
-  const unhide = false;
+  const unhide = true;
 
   const layout = useLayout({ disabled: !authorized });
   useErrorNotification(layout);
 
   const services = useServices({
-    config: { hidden: unhide ? undefined : false },
     disabled: !authorized,
+    config: { hidden: unhide ? undefined : false },
   });
   useErrorNotification(services);
   const servicesByID = useMemo(
@@ -45,6 +56,30 @@ export function useApplicationContextState(
         services.data?.map((service) => [service.id, service]) ?? [],
       ),
     [services.data],
+  );
+
+  const uptimeStatuses = useUptimeStatuses({
+    disabled: !authorized,
+    service: { config: { hidden: unhide ? undefined : false } },
+  });
+  useErrorNotification(uptimeStatuses);
+  const uptimeStatusesByServiceID = useMemo(
+    () =>
+      Object.groupBy(
+        uptimeStatuses.data ?? [],
+        (uptimeStatus) => uptimeStatus.serviceID,
+      ),
+    [uptimeStatuses.data],
+  );
+
+  const versions = useVersions({
+    disabled: !authorized,
+    service: { config: { hidden: unhide ? undefined : false } },
+  });
+  useErrorNotification(versions);
+  const versionsByServiceID = useMemo(
+    () => Object.groupBy(versions.data ?? [], (version) => version.serviceID),
+    [versions.data],
   );
 
   return useMemo(
@@ -64,10 +99,26 @@ export function useApplicationContextState(
       layout: layout.data,
       services: services.data ?? [],
       servicesByID,
-      favorites:
+      servicesWithFavorite:
         services.data?.filter((service) => service.config.favorite) ?? [],
+      uptimeStatuses: uptimeStatuses.data ?? [],
+      uptimeStatusesByServiceID,
+      versions: versions.data ?? [],
+      versionsByServiceID,
     }),
-    [authorized, user, admin, unhide, layout.data, services.data, servicesByID],
+    [
+      authorized,
+      user,
+      admin,
+      unhide,
+      layout.data,
+      services.data,
+      servicesByID,
+      uptimeStatuses,
+      uptimeStatusesByServiceID,
+      versions,
+      versionsByServiceID,
+    ],
   );
 }
 

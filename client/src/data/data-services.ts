@@ -2,6 +2,7 @@ import type { FetchProviderType } from '@civet/common';
 import { useResource } from '@civet/core';
 
 export type ServiceQuery = {
+  disabled?: boolean;
   id?: string;
   name?: string;
   description?: string;
@@ -13,7 +14,6 @@ export type ServiceQuery = {
     uptimeAlerts?: boolean;
     versionAlerts?: boolean;
   };
-  disabled?: boolean;
 };
 
 export type Service = {

@@ -6,7 +6,7 @@ import {
   type LinkProps,
 } from 'react-router';
 
-export default function NavItem({
+export default function NavItemLink({
   className,
   to,
   text,
@@ -16,7 +16,7 @@ export default function NavItem({
 
   return (
     <RouterLink
-      className={clsx(className, 'nav-item')}
+      className={clsx(className, 'nav-item link')}
       to={to}
       {...rest}
       data-active={match != null ? '' : undefined}

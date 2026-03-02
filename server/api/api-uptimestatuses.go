@@ -35,6 +35,9 @@ func GetUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 	if v, ok := utils.LoadQueryValue(q, "serviceID"); ok {
 		serviceQuery.ID = &v
 	}
+	if v, ok := utils.LoadQueryBool(q, "service.config.hidden"); ok {
+		serviceQuery.Hidden = &v
+	}
 	if v, ok := utils.LoadQueryValue(q, "name"); ok {
 		nameQuery = &v
 	}

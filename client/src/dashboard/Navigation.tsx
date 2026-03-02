@@ -6,7 +6,7 @@ import { Link as RouterLink } from 'react-router';
 import { useApplication } from '@/application';
 import Image from '@/components/Image';
 import Link from '@/components/Link';
-import NavItem from '@/components/NavItem';
+import NavItemLink from '@/components/NavItemLink';
 import Text from '@/components/Text';
 import { unsetAccessToken } from '@/data/accessTokens';
 
@@ -39,7 +39,7 @@ export default function Navigation() {
             setActive((prev) => !prev);
           }}
         >
-          <span className="content" />
+          <span className="content">&#x2630;</span>
         </a>
       </div>
 
@@ -47,13 +47,13 @@ export default function Navigation() {
         <li className="start menu-item">
           <ul className="sub menu">
             <li className="home menu-item">
-              <NavItem to="/?no-redirect" text="Home" />
+              <NavItemLink to="/?no-redirect" text="Home" />
             </li>
 
             {layout?.pages?.map((page) =>
               !page.name ? null : (
                 <li key={page.name} className="page menu-item">
-                  <NavItem
+                  <NavItemLink
                     to={`/${encodeURIComponent(page.name)}`}
                     text={page.displayName || page.name}
                   />
@@ -68,7 +68,7 @@ export default function Navigation() {
             <li className="user menu-item">
               <Menu>
                 <MenuButton
-                  className="nav-item"
+                  className="nav-item link"
                   as="a"
                   role="button"
                   data-text={userName || undefined}

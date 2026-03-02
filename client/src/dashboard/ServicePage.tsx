@@ -1,3 +1,4 @@
+import { Menu, MenuButton, MenuItems } from '@headlessui/react';
 import { useApplication } from '@/application';
 import Image from '@/components/Image';
 import Markdown from '@/components/Markdown';
@@ -5,7 +6,12 @@ import Text from '@/components/Text';
 import type { Page } from '@/data/data-layout';
 
 export default function ServicePage({ page }: { page: Page }) {
-  const { appName, servicesByID } = useApplication();
+  const {
+    appName,
+    servicesByID,
+    uptimeStatusesByServiceID,
+    versionsByServiceID,
+  } = useApplication();
 
   return (
     <div className="service page">
@@ -32,7 +38,20 @@ export default function ServicePage({ page }: { page: Page }) {
               <div className="services">
                 {section.serviceIDs?.map((serviceID) => {
                   const service = servicesByID[serviceID];
-                  return !service ? null : (
+                  if (!service) return null;
+                  const uptimeStatuses =
+                    uptimeStatusesByServiceID[serviceID] ?? [];
+                  const unhealthyUptimeStatuses = uptimeStatuses.filter(
+                    (uptimeStatus) => uptimeStatus.unhealthy,
+                  );
+                  const versions = versionsByServiceID[serviceID] ?? [];
+                  const outdatedVersions = versions.filter(
+                    (version) => version.outdated,
+                  );
+                  const vulnerableVersions = versions.filter(
+                    (version) => version.vulnerable,
+                  );
+                  return (
                     <article key={serviceID} className="service">
                       <header className="header">
                         <a
@@ -54,7 +73,101 @@ export default function ServicePage({ page }: { page: Page }) {
                             />
                           </div>
                         </a>
+
+                        <div className="controls">
+                          <div className="badges control">
+                            <div className="badges">
+                              <Text
+                                className="favorite badge"
+                                text={
+                                  service.config?.favorite
+                                    ? 'favorite'
+                                    : undefined
+                                }
+                              />
+
+                              <Text
+                                className="hidden badge"
+                                text={
+                                  service.config?.hidden ? 'hidden' : undefined
+                                }
+                              />
+                            </div>
+                          </div>
+
+                          <div className="context control">
+                            <Menu>
+                              <MenuButton
+                                className="context-menu link"
+                                as="a"
+                                role="button"
+                                data-text={'\u22ee;'}
+                              >
+                                <span className="content">&#x22ee;</span>
+                              </MenuButton>
+
+                              <MenuItems
+                                className="service context dropdown"
+                                anchor="bottom"
+                              >
+                                {/* TODO: <MenuItem>
+                                  <Link
+                                    className="edit dropdown-item"
+                                    as="a"
+                                    onClick={() => {}}
+                                    text="Edit"
+                                  />
+                                </MenuItem> */}
+                              </MenuItems>
+                            </Menu>
+                          </div>
+                        </div>
                       </header>
+
+                      <div className="badges">
+                        <Text
+                          className="unhealthy badge"
+                          text={
+                            uptimeStatuses.length
+                              ? unhealthyUptimeStatuses.length
+                                ? 'unhealthy'
+                                : 'healthy'
+                              : undefined
+                          }
+                          data-total={uptimeStatuses.length || undefined}
+                          data-count={
+                            unhealthyUptimeStatuses.length || undefined
+                          }
+                        />
+
+                        <Text
+                          className="outdated badge"
+                          text={
+                            versions.length
+                              ? outdatedVersions.length
+                                ? 'outdated'
+                                : 'up to date'
+                              : undefined
+                          }
+                          data-total={versions.length || undefined}
+                          data-count={outdatedVersions.length || undefined}
+                        />
+
+                        <Text
+                          className="vulnerable badge"
+                          text={
+                            vulnerableVersions.length ? 'vulnerable' : undefined
+                          }
+                          data-total={versions.length || undefined}
+                          data-count={vulnerableVersions.length || undefined}
+                          data-cves={
+                            versions.reduce(
+                              (sum, version) => sum + version.currentCVEs,
+                              0,
+                            ) || undefined
+                          }
+                        />
+                      </div>
                     </article>
                   );
                 })}

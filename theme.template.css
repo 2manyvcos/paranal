@@ -11,29 +11,55 @@
 
 /* Components */
 
-.text[data-text],
-.button[data-text],
-.link[data-text],
-.nav-item[data-text] {
-  /* contains a component's text if present */
+.text {
+  /* text component */
 }
-.nav-item[data-active] {
-  /* used for when the component refers to the active page */
+.text[data-text] {
+  /* contains the component's text if any */
+}
+.text > span.content {
+  /* contains the component's text if any */
+}
+
+.button {
+  /* button component */
+}
+.button[data-text] {
+  /* contains the component's text if any */
+}
+.button > span.content {
+  /* contains the component's text if any */
+}
+
+.link {
+  /* link component */
+}
+.link[data-text] {
+  /* contains the component's text if any */
+}
+.link > span.content {
+  /* contains the component's text if any */
+}
+
+.image {
+  /* image component */
 }
 .image[data-image] {
-  /* contains a component's image if present */
-  /* if set, the component also exposes a CSS variable --image */
+  /* contains the component's image if any */
+  /* if present, the component also exposes its image URL as a CSS variable `--image` */
+}
+.image > img.content {
+  /* contains the component's image if any */
+}
+
+.markdown {
+  /* markdown component */
 }
 .markdown[data-markdown] {
-  /* contains a component's markdown if present */
+  /* contains the component's markdown if any */
 }
-.text > span.content,
-.button > span.content,
-.link > span.content,
-.nav-item > span.content,
-.image > img.content,
 .markdown > div.content {
-  /* contains the component's content if present */
+  /* contains the component's markdown if any */
 }
 
 /* Errors */
@@ -79,43 +105,43 @@
 .auth > .login.page {
 }
 
-.auth > .login > .login.form {
+.auth > .login.page > .login.form {
 }
-.auth > .login > .login.form[data-loading] {
+.auth > .login.page > .login.form[data-loading] {
   /* used for when a login request is active */
 }
 
-.auth > .login > .login > .title.text {
+.auth > .login.page > .login.form > .title.text {
 }
 
-.auth > .login > .login > .username.field {
+.auth > .login.page > .login.form > .username.field {
 }
 
-.auth > .login > .login > .username > .label.text {
+.auth > .login.page > .login.form > .username.field > .label.text {
 }
 
-.auth > .login > .login > .username > .input {
+.auth > .login.page > .login.form > .username.field > .input {
 }
 
-.auth > .login > .login > .password.field {
+.auth > .login.page > .login.form > .password.field {
 }
 
-.auth > .login > .login > .password > .label.text {
+.auth > .login.page > .login.form > .password.field > .label.text {
 }
 
-.auth > .login > .login > .password > .input {
+.auth > .login.page > .login.form > .password.field > .input {
 }
 
-.auth > .login > .login > .remember-login.field {
+.auth > .login.page > .login.form > .remember-login.field {
 }
 
-.auth > .login > .login > .remember-login > .label.text {
+.auth > .login.page > .login.form > .remember-login.field > .label.text {
 }
 
-.auth > .login > .login > .remember-login > .input {
+.auth > .login.page > .login.form > .remember-login.field > .input {
 }
 
-.auth > .login > .login > .submit.button {
+.auth > .login.page > .login.form > .submit.button {
 }
 
 /* Dashboard */
@@ -159,31 +185,82 @@
 .dashboard > .navigation > .menu > .start.menu-item {
 }
 
-.dashboard > .navigation > .menu > .start > .sub.menu {
+.dashboard > .navigation > .menu > .start.menu-item > .sub.menu {
 }
 
-.dashboard > .navigation > .menu > .start > .sub > .home.menu-item {
+.dashboard
+  > .navigation
+  > .menu
+  > .start.menu-item
+  > .sub.menu
+  > .home.menu-item {
 }
 
-.dashboard > .navigation > .menu > .start > .sub > .home.menu-item > .nav-item {
+.dashboard
+  > .navigation
+  > .menu
+  > .start.menu-item
+  > .sub.menu
+  > .home.menu-item
+  > .nav-item.link {
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .start.menu-item
+  > .sub.menu
+  > .home.menu-item
+  > .nav-item.link[data-active] {
+  /* used for when the link refers to the active page */
 }
 
-.dashboard > .navigation > .menu > .start > .sub > .page.menu-item {
+.dashboard
+  > .navigation
+  > .menu
+  > .start.menu-item
+  > .sub.menu
+  > .page.menu-item {
 }
 
-.dashboard > .navigation > .menu > .start > .sub > .page.menu-item > .nav-item {
+.dashboard
+  > .navigation
+  > .menu
+  > .start.menu-item
+  > .sub.menu
+  > .page.menu-item
+  > .nav-item.link {
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .start.menu-item
+  > .sub.menu
+  > .page.menu-item
+  > .nav-item.link[data-active] {
+  /* used for when the link refers to the active page */
 }
 
 .dashboard > .navigation > .menu > .end.menu-item {
 }
 
-.dashboard > .navigation > .menu > .end > .sub.menu {
+.dashboard > .navigation > .menu > .end.menu-item > .sub.menu {
 }
 
-.dashboard > .navigation > .menu > .end > .sub > .user.menu-item {
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .user.menu-item {
 }
 
-.dashboard > .navigation > .menu > .end > .sub > .user.menu-item > .nav-item {
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .user.menu-item
+  > .nav-item.link {
 }
 
 .user.dropdown {
@@ -201,43 +278,55 @@
 .dashboard > .service.page {
 }
 
-.dashboard > .service > .header {
+.dashboard > .service.page > .header {
 }
 
-.dashboard > .service > .header > .name.text {
+.dashboard > .service.page > .header > .name.text {
 }
 
-.dashboard > .service > .header > .header.markdown {
+.dashboard > .service.page > .header > .header.markdown {
 }
 
-.dashboard > .service > .sections {
+.dashboard > .service.page > .sections {
 }
 
-.dashboard > .service > .sections > .section {
+.dashboard > .service.page > .sections > .section {
 }
 
-.dashboard > .service > .sections > .section > .header {
+.dashboard > .service.page > .sections > .section > .header {
 }
 
-.dashboard > .service > .sections > .section > .header > .icon.image {
+.dashboard > .service.page > .sections > .section > .header > .icon.image {
 }
 
-.dashboard > .service > .sections > .section > .header > .title {
+.dashboard > .service.page > .sections > .section > .header > .title {
 }
 
-.dashboard > .service > .sections > .section > .header > .title > .name.text {
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .header
+  > .title
+  > .name.text {
 }
 
-.dashboard > .service > .sections > .section > .services {
+.dashboard > .service.page > .sections > .section > .services {
 }
 
-.dashboard > .service > .sections > .section > .services > .service {
+.dashboard > .service.page > .sections > .section > .services > .service {
 }
 
-.dashboard > .service > .sections > .section > .services > .service > .header {
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header {
 }
 .dashboard
-  > .service
+  > .service.page
   > .sections
   > .section
   > .services
@@ -247,7 +336,7 @@
 }
 
 .dashboard
-  > .service
+  > .service.page
   > .sections
   > .section
   > .services
@@ -258,7 +347,7 @@
 }
 
 .dashboard
-  > .service
+  > .service.page
   > .sections
   > .section
   > .services
@@ -270,7 +359,7 @@
 }
 
 .dashboard
-  > .service
+  > .service.page
   > .sections
   > .section
   > .services
@@ -279,6 +368,203 @@
   > .header-link
   > .title
   > .description.text {
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .controls {
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .controls
+  > .badges.control {
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .controls
+  > .badges.control
+  > .badges {
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .controls
+  > .badges.control
+  > .badges
+  > .favorite.badge.text {
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .controls
+  > .badges.control
+  > .badges
+  > .hidden.badge.text {
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .controls
+  > .context.control {
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .header
+  > .controls
+  > .context.control
+  > .context-menu.link {
+}
+
+.service.context.dropdown {
+}
+
+/* TODO: .service.context.dropdown > .edit.dropdown-item.link {
+} */
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges {
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .unhealthy.badge.text {
+}
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .unhealthy.badge.text[data-total] {
+  /* number of total uptime statuses related to this service if any */
+}
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .unhealthy.badge.text[data-count] {
+  /* number of unhealthy uptime statuses related to this service if any */
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .outdated.badge.text {
+}
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .outdated.badge.text[data-total] {
+  /* number of total versions related to this service if any */
+}
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .outdated.badge.text[data-count] {
+  /* number of outdated versions related to this service if any */
+}
+
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .vulnerable.badge.text {
+}
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .vulnerable.badge.text[data-total] {
+  /* number of total versions related to this service if any */
+}
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .vulnerable.badge.text[data-count] {
+  /* number of vulnerable versions related to this service if any */
+}
+.dashboard
+  > .service.page
+  > .sections
+  > .section
+  > .services
+  > .service
+  > .badges
+  > .vulnerable.badge.text[data-cves] {
+  /* number of CVEs related to this service if any */
 }
 
 /* Admin */

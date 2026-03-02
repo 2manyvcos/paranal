@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"slices"
-	"strconv"
 
 	"github.com/2manyvcos/paranal/server/helper"
 	"github.com/2manyvcos/paranal/server/schema"
@@ -49,9 +48,9 @@ func GetVersions(res http.ResponseWriter, req *http.Request) {
 	var serviceQuery schema.UserServiceQuery
 	var nameQuery *string
 	var currentVersionQuery *string
-	var currentCVEsQuery *int
+	var hasCurrentCVEsQuery *bool
 	var latestVersionQuery *string
-	var latestCVEsQuery *int
+	var hasLatestCVEsQuery *bool
 	var statusQuery *int
 	var outdatedQuery *bool
 	var vulnerableQuery *bool
@@ -59,32 +58,23 @@ func GetVersions(res http.ResponseWriter, req *http.Request) {
 	if v, ok := utils.LoadQueryValue(q, "serviceID"); ok {
 		serviceQuery.ID = &v
 	}
+	if v, ok := utils.LoadQueryBool(q, "service.config.hidden"); ok {
+		serviceQuery.Hidden = &v
+	}
 	if v, ok := utils.LoadQueryValue(q, "name"); ok {
 		nameQuery = &v
 	}
 	if v, ok := utils.LoadQueryValue(q, "currentVersion"); ok {
 		currentVersionQuery = &v
 	}
-	if v, ok := utils.LoadQueryValue(q, "currentCVEs"); ok {
-		i64, err := strconv.ParseInt(v, 10, 0)
-		if err != nil {
-			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		i := int(i64)
-		currentCVEsQuery = &i
+	if v, ok := utils.LoadQueryBool(q, "hasCurrentCVEs"); ok {
+		hasCurrentCVEsQuery = &v
 	}
 	if v, ok := utils.LoadQueryValue(q, "latestVersion"); ok {
 		latestVersionQuery = &v
 	}
-	if v, ok := utils.LoadQueryValue(q, "latestCVEs"); ok {
-		i64, err := strconv.ParseInt(v, 10, 0)
-		if err != nil {
-			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		i := int(i64)
-		latestCVEsQuery = &i
+	if v, ok := utils.LoadQueryBool(q, "hasLatestCVEs"); ok {
+		hasLatestCVEsQuery = &v
 	}
 	if v, ok := utils.LoadQueryValue(q, "status"); ok {
 		t, ok := schema.ServiceVersionStatusCodes[v]
@@ -119,13 +109,13 @@ func GetVersions(res http.ResponseWriter, req *http.Request) {
 			if currentVersionQuery != nil && version.CurrentVersion != *currentVersionQuery {
 				continue
 			}
-			if currentCVEsQuery != nil && version.CurrentCVEs != *currentCVEsQuery {
+			if hasCurrentCVEsQuery != nil && (version.CurrentCVEs > 0) != *hasCurrentCVEsQuery {
 				continue
 			}
 			if latestVersionQuery != nil && version.LatestVersion != *latestVersionQuery {
 				continue
 			}
-			if latestCVEsQuery != nil && version.LatestCVEs != *latestCVEsQuery {
+			if hasLatestCVEsQuery != nil && (version.LatestCVEs > 0) != *hasLatestCVEsQuery {
 				continue
 			}
 			if statusQuery != nil && version.Status != *statusQuery {
@@ -178,9 +168,9 @@ func GetServicesByIDVersions(res http.ResponseWriter, req *http.Request) {
 
 	var nameQuery *string
 	var currentVersionQuery *string
-	var currentCVEsQuery *int
+	var hasCurrentCVEsQuery *bool
 	var latestVersionQuery *string
-	var latestCVEsQuery *int
+	var hasLatestCVEsQuery *bool
 	var statusQuery *int
 	var outdatedQuery *bool
 	var vulnerableQuery *bool
@@ -191,26 +181,14 @@ func GetServicesByIDVersions(res http.ResponseWriter, req *http.Request) {
 	if v, ok := utils.LoadQueryValue(q, "currentVersion"); ok {
 		currentVersionQuery = &v
 	}
-	if v, ok := utils.LoadQueryValue(q, "currentCVEs"); ok {
-		i64, err := strconv.ParseInt(v, 10, 0)
-		if err != nil {
-			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		i := int(i64)
-		currentCVEsQuery = &i
+	if v, ok := utils.LoadQueryBool(q, "hasCurrentCVEs"); ok {
+		hasCurrentCVEsQuery = &v
 	}
 	if v, ok := utils.LoadQueryValue(q, "latestVersion"); ok {
 		latestVersionQuery = &v
 	}
-	if v, ok := utils.LoadQueryValue(q, "latestCVEs"); ok {
-		i64, err := strconv.ParseInt(v, 10, 0)
-		if err != nil {
-			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
-			return
-		}
-		i := int(i64)
-		latestCVEsQuery = &i
+	if v, ok := utils.LoadQueryBool(q, "hasLatestCVEs"); ok {
+		hasLatestCVEsQuery = &v
 	}
 	if v, ok := utils.LoadQueryValue(q, "status"); ok {
 		t, ok := schema.ServiceVersionStatusCodes[v]
@@ -236,13 +214,13 @@ func GetServicesByIDVersions(res http.ResponseWriter, req *http.Request) {
 		if currentVersionQuery != nil && version.CurrentVersion != *currentVersionQuery {
 			continue
 		}
-		if currentCVEsQuery != nil && version.CurrentCVEs != *currentCVEsQuery {
+		if hasCurrentCVEsQuery != nil && (version.CurrentCVEs > 0) != *hasCurrentCVEsQuery {
 			continue
 		}
 		if latestVersionQuery != nil && version.LatestVersion != *latestVersionQuery {
 			continue
 		}
-		if latestCVEsQuery != nil && version.LatestCVEs != *latestCVEsQuery {
+		if hasLatestCVEsQuery != nil && (version.LatestCVEs > 0) != *hasLatestCVEsQuery {
 			continue
 		}
 		if statusQuery != nil && version.Status != *statusQuery {
