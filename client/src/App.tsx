@@ -6,8 +6,10 @@ import { ApplicationContext, useApplicationContextState } from './application';
 import AuthScreen from './auth/AuthScreen';
 import LoginPage from './auth/LoginPage';
 import DashboardScreen from './dashboard/DashboardScreen';
+import HealthStatusesPage from './dashboard/HealthStatusesPage';
 import HomePage from './dashboard/HomePage';
 import ServicePage from './dashboard/ServicePage';
+import VersionsPage from './dashboard/VersionsPage';
 import { useUser } from './data/data-user';
 import { useBooleanDataAttribute, useDataAttribute } from './dataAttributes';
 import ErrorScreen from './error/ErrorScreen';
@@ -68,6 +70,8 @@ function App() {
 
             <Route path="/" element={<DashboardScreen />}>
               <Route index element={<HomePage />} />
+              <Route path="healthstatuses" element={<HealthStatusesPage />} />
+              <Route path="versions" element={<VersionsPage />} />
 
               {layout?.pages?.map((page) =>
                 !page.name ? null : (

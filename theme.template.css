@@ -467,6 +467,16 @@
 .dashboard > .service.page > .sections > .section > .services > .service.card {
 }
 
+/* Health Statuses */
+
+.dashboard > .health-statuses.page {
+}
+
+/* Versions */
+
+.dashboard > .versions.page {
+}
+
 /* Service Card */
 
 .service.card {
