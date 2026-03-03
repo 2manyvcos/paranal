@@ -7,7 +7,7 @@ type UserAlertChannelQuery struct {
 	UserName      *string
 	HasURL        *bool
 	ErrorAlerts   *bool
-	UptimeAlerts  *bool
+	HealthAlerts  *bool
 	VersionAlerts *bool
 }
 
@@ -16,7 +16,7 @@ type UserAlertChannel struct {
 	UserName      string
 	URL           string
 	ErrorAlerts   bool
-	UptimeAlerts  bool
+	HealthAlerts  bool
 	VersionAlerts bool
 }
 

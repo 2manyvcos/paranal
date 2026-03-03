@@ -57,14 +57,14 @@ func alertScriptError(app *application.App, service *schema.Service, script sche
 	}
 }
 
-func alertUnhealthyUptimeStatuses(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceUptimeStatus) {
+func alertUnhealthyHealthStatuses(app *application.App, service schema.Service, script schema.ServiceScript, _ []ServiceHealthStatus) {
 	t := true
 	f := false
 	channels, err := app.ListServiceAlertChannels(
 		script.ServiceID,
 		&schema.ServiceAlertChannelQuery{
 			ServiceConfigQuery: schema.ServiceConfigQuery{Hidden: &f},
-			UptimeAlerts:       &t,
+			HealthAlerts:       &t,
 		},
 	)
 	if err != nil {

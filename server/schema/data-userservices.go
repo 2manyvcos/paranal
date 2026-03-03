@@ -11,6 +11,6 @@ type UserService struct {
 	Service
 	Favorite      bool
 	Hidden        bool
-	UptimeAlerts  bool
+	HealthAlerts  bool
 	VersionAlerts bool
 }

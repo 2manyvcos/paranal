@@ -1,7 +1,7 @@
 import type { FetchProviderType } from '@civet/common';
 import { useResource } from '@civet/core';
 
-export type UptimeStatusQuery = {
+export type HealthStatusQuery = {
   disabled?: boolean;
   name?: string;
   serviceID?: string;
@@ -14,14 +14,14 @@ export type UptimeStatusQuery = {
   };
 };
 
-export type UptimeStatus = {
+export type HealthStatus = {
   name: string;
   serviceID: string;
   status: string;
   unhealthy: boolean;
 };
 
-function uptimeStatusQuery(query?: UptimeStatusQuery): string {
+function healthStatusQuery(query?: HealthStatusQuery): string {
   const search = new URLSearchParams();
   if (query?.name != null) search.set('name', query.name);
   if (query?.serviceID != null) search.set('serviceID', query.serviceID);
@@ -33,10 +33,10 @@ function uptimeStatusQuery(query?: UptimeStatusQuery): string {
   return search.toString();
 }
 
-export function useUptimeStatuses(query?: UptimeStatusQuery) {
-  return useResource<FetchProviderType, UptimeStatus[] | undefined>({
-    name: 'v1/uptimestatuses',
-    query: { search: uptimeStatusQuery(query) },
+export function useHealthStatuses(query?: HealthStatusQuery) {
+  return useResource<FetchProviderType, HealthStatus[] | undefined>({
+    name: 'v1/healthstatuses',
+    query: { search: healthStatusQuery(query) },
     events: true,
     disabled: query?.disabled,
   });

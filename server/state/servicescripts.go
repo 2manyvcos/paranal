@@ -202,7 +202,7 @@ func (s *State) GetServiceAction(serviceID string, actionName string) *schema.Se
 	return &result
 }
 
-func (s *State) ListServiceUptimeStatuses(serviceID string) []schema.ServiceUptimeStatus {
+func (s *State) ListServiceHealthStatuses(serviceID string) []schema.ServiceHealthStatus {
 	s.servicesLock.RLock()
 	defer s.servicesLock.RUnlock()
 	service, ok := s.services[serviceID]
@@ -211,12 +211,12 @@ func (s *State) ListServiceUptimeStatuses(serviceID string) []schema.ServiceUpti
 	}
 	service.lock.RLock()
 	defer service.lock.RUnlock()
-	result := make([]schema.ServiceUptimeStatus, len(service.uptimeStatusesSorted))
-	for i, uptimeStatus := range service.uptimeStatusesSorted {
-		result[i] = schema.ServiceUptimeStatus{
-			Name:      uptimeStatus.Name,
-			Status:    uptimeStatus.Status,
-			Unhealthy: uptimeStatus.Unhealthy(),
+	result := make([]schema.ServiceHealthStatus, len(service.healthStatusesSorted))
+	for i, healthStatus := range service.healthStatusesSorted {
+		result[i] = schema.ServiceHealthStatus{
+			Name:      healthStatus.Name,
+			Status:    healthStatus.Status,
+			Unhealthy: healthStatus.Unhealthy(),
 		}
 	}
 	return result

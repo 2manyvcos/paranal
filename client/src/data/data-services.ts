@@ -11,7 +11,7 @@ export type ServiceQuery = {
   config?: {
     favorite?: boolean;
     hidden?: boolean;
-    uptimeAlerts?: boolean;
+    healthAlerts?: boolean;
     versionAlerts?: boolean;
   };
 };
@@ -25,7 +25,7 @@ export type Service = {
   config: {
     favorite: boolean;
     hidden: boolean;
-    uptimeAlerts: boolean;
+    healthAlerts: boolean;
     versionAlerts: boolean;
   };
 };
@@ -41,8 +41,8 @@ function serviceQuery(query?: ServiceQuery): string {
     search.set('config.favorite', query.config.favorite.toString());
   if (query?.config?.hidden != null)
     search.set('config.hidden', query.config.hidden.toString());
-  if (query?.config?.uptimeAlerts != null)
-    search.set('config.uptimeAlerts', query.config.uptimeAlerts.toString());
+  if (query?.config?.healthAlerts != null)
+    search.set('config.healthAlerts', query.config.healthAlerts.toString());
   if (query?.config?.versionAlerts != null)
     search.set('config.versionAlerts', query.config.versionAlerts.toString());
   return search.toString();

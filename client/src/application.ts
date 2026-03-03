@@ -2,9 +2,9 @@ import { createContext, useContext, useMemo } from 'react';
 import { useLayout, type Layout } from './data/data-layout';
 import { useServices, type Service } from './data/data-services';
 import {
-  useUptimeStatuses,
-  type UptimeStatus,
-} from './data/data-uptimestatuses';
+  useHealthStatuses,
+  type HealthStatus,
+} from './data/data-healthstatuses';
 import type { User } from './data/data-user';
 import { useVersions, type Version } from './data/data-versions';
 import { useErrorNotification } from './data/errors';
@@ -26,9 +26,9 @@ export type Application = {
   services: Service[];
   servicesByID: Partial<{ [serviceID: string]: Service }>;
   servicesWithFavorite: Service[];
-  uptimeStatuses: UptimeStatus[];
-  uptimeStatusesByServiceID: Partial<{
-    [serviceID: string]: UptimeStatus[];
+  healthStatuses: HealthStatus[];
+  healthStatusesByServiceID: Partial<{
+    [serviceID: string]: HealthStatus[];
   }>;
   versions: Version[];
   versionsByServiceID: Partial<{ [serviceID: string]: Version[] }>;
@@ -58,18 +58,18 @@ export function useApplicationContextState(
     [services.data],
   );
 
-  const uptimeStatuses = useUptimeStatuses({
+  const healthStatuses = useHealthStatuses({
     disabled: !authorized,
     service: { config: { hidden: unhide ? undefined : false } },
   });
-  useErrorNotification(uptimeStatuses);
-  const uptimeStatusesByServiceID = useMemo(
+  useErrorNotification(healthStatuses);
+  const healthStatusesByServiceID = useMemo(
     () =>
       Object.groupBy(
-        uptimeStatuses.data ?? [],
-        (uptimeStatus) => uptimeStatus.serviceID,
+        healthStatuses.data ?? [],
+        (healthStatus) => healthStatus.serviceID,
       ),
-    [uptimeStatuses.data],
+    [healthStatuses.data],
   );
 
   const versions = useVersions({
@@ -101,8 +101,8 @@ export function useApplicationContextState(
       servicesByID,
       servicesWithFavorite:
         services.data?.filter((service) => service.config.favorite) ?? [],
-      uptimeStatuses: uptimeStatuses.data ?? [],
-      uptimeStatusesByServiceID,
+      healthStatuses: healthStatuses.data ?? [],
+      healthStatusesByServiceID,
       versions: versions.data ?? [],
       versionsByServiceID,
     }),
@@ -114,8 +114,8 @@ export function useApplicationContextState(
       layout.data,
       services.data,
       servicesByID,
-      uptimeStatuses,
-      uptimeStatusesByServiceID,
+      healthStatuses,
+      healthStatusesByServiceID,
       versions,
       versionsByServiceID,
     ],

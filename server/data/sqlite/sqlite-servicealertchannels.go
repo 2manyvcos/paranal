@@ -28,11 +28,11 @@ func ServiceAlertChannelQuery(query *schema.ServiceAlertChannelQuery) (clause st
 			conditions = append(conditions, "(IFNULL(useralertchannels.errorAlerts, FALSE) = FALSE OR IFNULL(users.errorAlerts, FALSE) = FALSE)")
 		}
 	}
-	if query.UptimeAlerts != nil {
-		if *query.UptimeAlerts {
-			conditions = append(conditions, "IFNULL(useralertchannels.uptimeAlerts, FALSE) = TRUE AND (IFNULL(users.uptimeAlerts, FALSE) = TRUE OR IFNULL(serviceconfigs.uptimeAlerts, FALSE) = TRUE)")
+	if query.HealthAlerts != nil {
+		if *query.HealthAlerts {
+			conditions = append(conditions, "IFNULL(useralertchannels.healthAlerts, FALSE) = TRUE AND (IFNULL(users.healthAlerts, FALSE) = TRUE OR IFNULL(serviceconfigs.healthAlerts, FALSE) = TRUE)")
 		} else {
-			conditions = append(conditions, "(IFNULL(useralertchannels.uptimeAlerts, FALSE) = FALSE OR (IFNULL(users.uptimeAlerts, FALSE) = FALSE AND IFNULL(serviceconfigs.uptimeAlerts, FALSE) = FALSE))")
+			conditions = append(conditions, "(IFNULL(useralertchannels.healthAlerts, FALSE) = FALSE OR (IFNULL(users.healthAlerts, FALSE) = FALSE AND IFNULL(serviceconfigs.healthAlerts, FALSE) = FALSE))")
 		}
 	}
 	if query.VersionAlerts != nil {
@@ -53,7 +53,7 @@ func (i *impl) ListServiceAlertChannels(serviceID string, query *schema.ServiceA
 	where, wherePlaceholders := ServiceAlertChannelQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url, useralertchannels.errorAlerts, useralertchannels.uptimeAlerts, useralertchannels.versionAlerts
+      SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url, useralertchannels.errorAlerts, useralertchannels.healthAlerts, useralertchannels.versionAlerts
       FROM useralertchannels
       INNER JOIN users
       ON useralertchannels.userName = users.name
@@ -73,7 +73,7 @@ func (i *impl) ListServiceAlertChannels(serviceID string, query *schema.ServiceA
 	var records []schema.ServiceAlertChannel
 	for rows.Next() {
 		var record schema.ServiceAlertChannel
-		if err := rows.Scan(&record.ID, &record.UserName, &record.URL, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts); err != nil {
+		if err := rows.Scan(&record.ID, &record.UserName, &record.URL, &record.ErrorAlerts, &record.HealthAlerts, &record.VersionAlerts); err != nil {
 			return nil, err
 		}
 		records = append(records, record)

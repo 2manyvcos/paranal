@@ -11,7 +11,7 @@ type UserQuery struct {
 	DisplayName   *string
 	StartPage     *string
 	ErrorAlerts   *bool
-	UptimeAlerts  *bool
+	HealthAlerts  *bool
 	VersionAlerts *bool
 }
 
@@ -22,7 +22,7 @@ type User struct {
 	DisplayName   string
 	StartPage     string
 	ErrorAlerts   bool
-	UptimeAlerts  bool
+	HealthAlerts  bool
 	VersionAlerts bool
 }
 

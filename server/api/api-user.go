@@ -29,7 +29,7 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 		DisplayName   string `json:"displayName"`
 		StartPage     string `json:"startPage"`
 		ErrorAlerts   bool   `json:"errorAlerts"`
-		UptimeAlerts  bool   `json:"uptimeAlerts"`
+		HealthAlerts  bool   `json:"healthAlerts"`
 		VersionAlerts bool   `json:"versionAlerts"`
 	}{
 		Name:          authorizedUser.Name,
@@ -38,7 +38,7 @@ func GetUser(res http.ResponseWriter, req *http.Request) {
 		DisplayName:   authorizedUser.DisplayName,
 		StartPage:     authorizedUser.StartPage,
 		ErrorAlerts:   authorizedUser.ErrorAlerts,
-		UptimeAlerts:  authorizedUser.UptimeAlerts,
+		HealthAlerts:  authorizedUser.HealthAlerts,
 		VersionAlerts: authorizedUser.VersionAlerts,
 	})
 	if err != nil {
@@ -63,7 +63,7 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 		DisplayName   utils.Optional[string] `json:"displayName"`
 		StartPage     utils.Optional[string] `json:"startPage"`
 		ErrorAlerts   utils.Optional[bool]   `json:"errorAlerts"`
-		UptimeAlerts  utils.Optional[bool]   `json:"uptimeAlerts"`
+		HealthAlerts  utils.Optional[bool]   `json:"healthAlerts"`
 		VersionAlerts utils.Optional[bool]   `json:"versionAlerts"`
 	}
 	decoder := json.NewDecoder(req.Body)
@@ -78,7 +78,7 @@ func PatchUser(res http.ResponseWriter, req *http.Request) {
 	requestPayload.DisplayName.ApplyIfDefined(&updatedRecord.DisplayName)
 	requestPayload.StartPage.ApplyIfDefined(&updatedRecord.StartPage)
 	requestPayload.ErrorAlerts.ApplyIfDefined(&updatedRecord.ErrorAlerts)
-	requestPayload.UptimeAlerts.ApplyIfDefined(&updatedRecord.UptimeAlerts)
+	requestPayload.HealthAlerts.ApplyIfDefined(&updatedRecord.HealthAlerts)
 	requestPayload.VersionAlerts.ApplyIfDefined(&updatedRecord.VersionAlerts)
 	err = app.UpdateUsers(schema.UserQuery{Name: &authorizedUser.Name}, updatedRecord)
 	if err != nil {

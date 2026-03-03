@@ -44,8 +44,8 @@ type State struct {
 type serviceState struct {
 	lock                 sync.RWMutex
 	scripts              map[string]*serviceScriptState
-	uptimeStatuses       map[string]ServiceUptimeStatus
-	uptimeStatusesSorted []ServiceUptimeStatus
+	healthStatuses       map[string]ServiceHealthStatus
+	healthStatusesSorted []ServiceHealthStatus
 	versions             map[string]ServiceVersion
 	versionsSorted       []ServiceVersion
 	actionGroups         map[string]ServiceActionGroup
@@ -59,21 +59,21 @@ type serviceScriptState struct {
 	job            gocron.Job
 	running        bool
 	error          error
-	uptimeStatuses map[string]ServiceUptimeStatus
+	healthStatuses map[string]ServiceHealthStatus
 	versions       map[string]ServiceVersion
 	actionGroups   map[string]ServiceActionGroup
 	actions        map[string]ServiceAction
 }
 
-type ServiceUptimeStatus struct {
+type ServiceHealthStatus struct {
 	Name   string `mapstructure:"name"`
 	Time   time.Time
 	Order  string `mapstructure:"order"`
 	Status int
 }
 
-func (s ServiceUptimeStatus) Unhealthy() bool {
-	return s.Status != schema.ServiceUptimeStatusUp
+func (s ServiceHealthStatus) Unhealthy() bool {
+	return s.Status != schema.ServiceHealthStatusUp
 }
 
 type ServiceVersion struct {
@@ -127,9 +127,9 @@ type GenericInstruction struct {
 	Type string `mapstructure:"type"`
 }
 
-type UptimeStatusInstruction struct {
+type HealthStatusInstruction struct {
 	Type string `mapstructure:"type"`
-	ServiceUptimeStatus
+	ServiceHealthStatus
 	Time   any    `mapstructure:"time"`
 	Status string `mapstructure:"status"`
 }

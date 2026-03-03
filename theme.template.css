@@ -251,14 +251,14 @@
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .uptimestatuses.menu-item {
+  > .healthstatuses.menu-item {
 }
 .dashboard
   > .navigation
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .uptimestatuses.menu-item
+  > .healthstatuses.menu-item
   > .nav-item.link {
 }
 .dashboard
@@ -266,7 +266,7 @@
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .uptimestatuses.menu-item
+  > .healthstatuses.menu-item
   > .nav-item.link[data-active] {
   /* used for when the link refers to the active page */
 }
@@ -275,27 +275,27 @@
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .uptimestatuses.menu-item
+  > .healthstatuses.menu-item
   > .nav-item.link[data-total] {
-  /* number of total uptime statuses if any */
+  /* number of total health statuses if any */
 }
 .dashboard
   > .navigation
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .uptimestatuses.menu-item
+  > .healthstatuses.menu-item
   > .nav-item.link[data-combined] {
-  /* number of uptime statuses that need attention if any */
+  /* number of health statuses that need attention if any */
 }
 .dashboard
   > .navigation
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .uptimestatuses.menu-item
+  > .healthstatuses.menu-item
   > .nav-item.link[data-unhealthy] {
-  /* number of unhealthy uptime statuses if any */
+  /* number of unhealthy health statuses if any */
 }
 
 .dashboard
@@ -598,7 +598,7 @@
   > .service
   > .badges
   > .unhealthy.badge.link[data-total] {
-  /* number of total uptime statuses related to this service if any */
+  /* number of total health statuses related to this service if any */
 }
 .dashboard
   > .service.page
@@ -608,7 +608,7 @@
   > .service
   > .badges
   > .unhealthy.badge.link[data-count] {
-  /* number of unhealthy uptime statuses related to this service if any */
+  /* number of unhealthy health statuses related to this service if any */
 }
 
 .dashboard

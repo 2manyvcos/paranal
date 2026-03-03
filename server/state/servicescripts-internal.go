@@ -73,7 +73,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		scriptState.running = false
 		scriptState.error = err
 		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(script.ServiceID) + "/scripts/" + url.PathEscape(script.ID)))
-		scriptState.uptimeStatuses = nil
+		scriptState.healthStatuses = nil
 		scriptState.versions = nil
 		scriptState.actionGroups = nil
 		scriptState.actions = nil
@@ -101,7 +101,7 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 			return
 		}
 
-		var uptimeStatuses []ServiceUptimeStatus
+		var healthStatuses []ServiceHealthStatus
 		var versions []ServiceVersion
 		var actionGroups []ServiceActionGroup
 		var actions []ServiceAction
@@ -115,30 +115,30 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 			}
 
 			switch i.Type {
-			case "uptimeStatus":
-				var i UptimeStatusInstruction
+			case "healthStatus":
+				var i HealthStatusInstruction
 				if err = decodeServiceInstruction(result, &i); err != nil {
 					handleErr(&service, fmt.Errorf("invalid instruction - %s", err))
 					return
 				}
-				uptimeStatus := i.ServiceUptimeStatus
-				if uptimeStatus.Name == "" {
-					uptimeStatus.Name = service.Name
+				healthStatus := i.ServiceHealthStatus
+				if healthStatus.Name == "" {
+					healthStatus.Name = service.Name
 				}
-				if uptimeStatus.Time, err = decodeTime(i.Time); err != nil {
+				if healthStatus.Time, err = decodeTime(i.Time); err != nil {
 					handleErr(&service, err)
 					return
 				}
-				if uptimeStatus.Order == "" {
-					uptimeStatus.Order = uptimeStatus.Name
+				if healthStatus.Order == "" {
+					healthStatus.Order = healthStatus.Name
 				}
-				if status, ok := schema.ServiceUptimeStatusCodes[i.Status]; ok {
-					uptimeStatus.Status = status
+				if status, ok := schema.ServiceHealthStatusCodes[i.Status]; ok {
+					healthStatus.Status = status
 				} else {
 					handleErr(&service, fmt.Errorf("invalid status"))
 					return
 				}
-				uptimeStatuses = append(uptimeStatuses, uptimeStatus)
+				healthStatuses = append(healthStatuses, healthStatus)
 
 			case "version":
 				var i VersionInstruction
@@ -260,11 +260,11 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		scriptState.running = false
 		scriptState.error = nil
 		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(script.ServiceID) + "/scripts/" + url.PathEscape(script.ID)))
-		// current uptime statuses
-		scriptState.uptimeStatuses = make(map[string]ServiceUptimeStatus, len(scriptState.uptimeStatuses))
-		for _, uptimeStatus := range uptimeStatuses {
-			if existing, ok := scriptState.uptimeStatuses[uptimeStatus.Name]; !ok || existing.Time.Before(uptimeStatus.Time) {
-				scriptState.uptimeStatuses[uptimeStatus.Name] = uptimeStatus
+		// current health statuses
+		scriptState.healthStatuses = make(map[string]ServiceHealthStatus, len(scriptState.healthStatuses))
+		for _, healthStatus := range healthStatuses {
+			if existing, ok := scriptState.healthStatuses[healthStatus.Name]; !ok || existing.Time.Before(healthStatus.Time) {
+				scriptState.healthStatuses[healthStatus.Name] = healthStatus
 			}
 		}
 		// current versions
@@ -288,23 +288,23 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 				scriptState.actions[action.Name] = action
 			}
 		}
-		// uptime statuses to be alerted
-		previousUptimeStatuses := make(map[string]ServiceUptimeStatus, len(scriptState.uptimeStatuses))
-		for name := range scriptState.uptimeStatuses {
-			if existing, ok := serviceState.uptimeStatuses[name]; ok {
-				previousUptimeStatuses[name] = existing
+		// health statuses to be alerted
+		previousHealthStatuses := make(map[string]ServiceHealthStatus, len(scriptState.healthStatuses))
+		for name := range scriptState.healthStatuses {
+			if existing, ok := serviceState.healthStatuses[name]; ok {
+				previousHealthStatuses[name] = existing
 			}
 		}
-		for _, uptimeStatus := range uptimeStatuses {
-			latest := scriptState.uptimeStatuses[uptimeStatus.Name]
-			if existing, ok := previousUptimeStatuses[uptimeStatus.Name]; (!ok || existing.Time.Before(uptimeStatus.Time)) && latest.Time.After(uptimeStatus.Time) {
-				previousUptimeStatuses[uptimeStatus.Name] = uptimeStatus
+		for _, healthStatus := range healthStatuses {
+			latest := scriptState.healthStatuses[healthStatus.Name]
+			if existing, ok := previousHealthStatuses[healthStatus.Name]; (!ok || existing.Time.Before(healthStatus.Time)) && latest.Time.After(healthStatus.Time) {
+				previousHealthStatuses[healthStatus.Name] = healthStatus
 			}
 		}
-		newlyUnhealthyUptimeStatuses := make([]ServiceUptimeStatus, 0, len(scriptState.uptimeStatuses))
-		for name, uptimeStatus := range scriptState.uptimeStatuses {
-			if existing, ok := previousUptimeStatuses[name]; uptimeStatus.Unhealthy() && (!ok || (existing.Time.Before(uptimeStatus.Time) && !existing.Unhealthy())) {
-				newlyUnhealthyUptimeStatuses = append(newlyUnhealthyUptimeStatuses, uptimeStatus)
+		newlyUnhealthyHealthStatuses := make([]ServiceHealthStatus, 0, len(scriptState.healthStatuses))
+		for name, healthStatus := range scriptState.healthStatuses {
+			if existing, ok := previousHealthStatuses[name]; healthStatus.Unhealthy() && (!ok || (existing.Time.Before(healthStatus.Time) && !existing.Unhealthy())) {
+				newlyUnhealthyHealthStatuses = append(newlyUnhealthyHealthStatuses, healthStatus)
 			}
 		}
 		// versions to be alerted
@@ -334,8 +334,8 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 		updateServiceState(s, serviceState, script.ServiceID)
 		serviceState.lock.Unlock()
 
-		if len(newlyUnhealthyUptimeStatuses) > 0 {
-			alertUnhealthyUptimeStatuses(s.app, service, script, newlyUnhealthyUptimeStatuses)
+		if len(newlyUnhealthyHealthStatuses) > 0 {
+			alertUnhealthyHealthStatuses(s.app, service, script, newlyUnhealthyHealthStatuses)
 		}
 		if len(newlyOutdatedVersions) > 0 {
 			alertOutdatedVersions(s.app, service, script, newlyOutdatedVersions)
@@ -348,18 +348,18 @@ func newServiceScriptRunner(s *State, serviceState *serviceState, scriptState *s
 
 func updateServiceState(s *State, serviceState *serviceState, serviceID string) {
 	previousVersions := serviceState.versions
-	previousUptimeStatusesSorted := serviceState.uptimeStatusesSorted
+	previousHealthStatusesSorted := serviceState.healthStatusesSorted
 	previousVersionsSorted := serviceState.versionsSorted
 	previousActionGroupsSorted := serviceState.actionGroupsSorted
 	previousActionsSorted := serviceState.actionsSorted
-	serviceState.uptimeStatuses = make(map[string]ServiceUptimeStatus, len(serviceState.uptimeStatuses))
+	serviceState.healthStatuses = make(map[string]ServiceHealthStatus, len(serviceState.healthStatuses))
 	serviceState.versions = make(map[string]ServiceVersion, len(serviceState.versions))
 	serviceState.actionGroups = make(map[string]ServiceActionGroup, len(serviceState.actionGroups))
 	serviceState.actions = make(map[string]ServiceAction, len(serviceState.actions))
 	for _, scriptState := range serviceState.scripts {
-		for name, uptimeStatus := range scriptState.uptimeStatuses {
-			if existing, ok := serviceState.uptimeStatuses[name]; !ok || existing.Time.Before(uptimeStatus.Time) {
-				serviceState.uptimeStatuses[name] = uptimeStatus
+		for name, healthStatus := range scriptState.healthStatuses {
+			if existing, ok := serviceState.healthStatuses[name]; !ok || existing.Time.Before(healthStatus.Time) {
+				serviceState.healthStatuses[name] = healthStatus
 			}
 		}
 		for name, version := range scriptState.versions {
@@ -385,11 +385,11 @@ func updateServiceState(s *State, serviceState *serviceState, serviceID string) 
 			}
 		}
 	}
-	serviceState.uptimeStatusesSorted = make([]ServiceUptimeStatus, 0, len(serviceState.uptimeStatuses))
-	for _, uptimeStatus := range serviceState.uptimeStatuses {
-		serviceState.uptimeStatusesSorted = append(serviceState.uptimeStatusesSorted, uptimeStatus)
+	serviceState.healthStatusesSorted = make([]ServiceHealthStatus, 0, len(serviceState.healthStatuses))
+	for _, healthStatus := range serviceState.healthStatuses {
+		serviceState.healthStatusesSorted = append(serviceState.healthStatusesSorted, healthStatus)
 	}
-	sort.Sort(ByUptimeStatusOrder(serviceState.uptimeStatusesSorted))
+	sort.Sort(ByHealthStatusOrder(serviceState.healthStatusesSorted))
 	serviceState.versionsSorted = make([]ServiceVersion, 0, len(serviceState.versions))
 	for _, version := range serviceState.versions {
 		serviceState.versionsSorted = append(serviceState.versionsSorted, version)
@@ -406,9 +406,9 @@ func updateServiceState(s *State, serviceState *serviceState, serviceID string) 
 	}
 	sort.Sort(ByActionOrder(serviceState.actionsSorted))
 	escapedServiceID := url.PathEscape(serviceID)
-	if objectHash(previousUptimeStatusesSorted) != objectHash(serviceState.uptimeStatusesSorted) {
-		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/uptimestatuses"))
-		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/uptimestatuses"))
+	if objectHash(previousHealthStatusesSorted) != objectHash(serviceState.healthStatusesSorted) {
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/healthstatuses"))
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/healthstatuses"))
 	}
 	if objectHash(previousVersionsSorted) != objectHash(serviceState.versionsSorted) {
 		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/versions"))

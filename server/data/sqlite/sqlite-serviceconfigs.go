@@ -15,7 +15,7 @@ func init() {
         serviceID TEXT NOT NULL,
         favorite BOOLEAN NOT NULL,
         hidden BOOLEAN NOT NULL,
-        uptimeAlerts BOOLEAN NOT NULL,
+        healthAlerts BOOLEAN NOT NULL,
         versionAlerts BOOLEAN NOT NULL,
         PRIMARY KEY (userName, serviceID)
       )
@@ -64,9 +64,9 @@ func ServiceConfigQuery(query *schema.ServiceConfigQuery) (clause string, placeh
 		conditions = append(conditions, "IFNULL(serviceconfigs.hidden, FALSE) = ?")
 		placeholders = append(placeholders, *query.Hidden)
 	}
-	if query.UptimeAlerts != nil {
-		conditions = append(conditions, "IFNULL(serviceconfigs.uptimeAlerts, FALSE) = ?")
-		placeholders = append(placeholders, *query.UptimeAlerts)
+	if query.HealthAlerts != nil {
+		conditions = append(conditions, "IFNULL(serviceconfigs.healthAlerts, FALSE) = ?")
+		placeholders = append(placeholders, *query.HealthAlerts)
 	}
 	if query.VersionAlerts != nil {
 		conditions = append(conditions, "IFNULL(serviceconfigs.versionAlerts, FALSE) = ?")
@@ -85,17 +85,17 @@ func (i *impl) CreateOrUpdateServiceConfig(record schema.ServiceConfig) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO serviceconfigs (userName, serviceID, favorite, hidden, uptimeAlerts, versionAlerts)
+      INSERT INTO serviceconfigs (userName, serviceID, favorite, hidden, healthAlerts, versionAlerts)
       VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT (userName, serviceID)
       DO UPDATE
       SET
         favorite = excluded.favorite,
         hidden = excluded.hidden,
-        uptimeAlerts = excluded.uptimeAlerts,
+        healthAlerts = excluded.healthAlerts,
         versionAlerts = excluded.versionAlerts
     `,
-		&record.UserName, &record.ServiceID, &record.Favorite, &record.Hidden, &record.UptimeAlerts, &record.VersionAlerts,
+		&record.UserName, &record.ServiceID, &record.Favorite, &record.Hidden, &record.HealthAlerts, &record.VersionAlerts,
 	)
 	return err
 }

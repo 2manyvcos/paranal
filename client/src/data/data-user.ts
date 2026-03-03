@@ -9,7 +9,7 @@ export type User = {
   displayName: string;
   startPage: string;
   errorAlerts: boolean;
-  uptimeAlerts: boolean;
+  healthAlerts: boolean;
   versionAlerts: boolean;
 };
 

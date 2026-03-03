@@ -19,7 +19,7 @@ export default function Navigation() {
     userName,
     layout,
     logoutRedirectURL,
-    uptimeStatuses,
+    healthStatuses,
     versions,
   } = useApplication();
 
@@ -73,19 +73,19 @@ export default function Navigation() {
 
         <li className="end menu-item">
           <ul className="sub menu">
-            <li className="uptimestatuses menu-item">
+            <li className="healthstatuses menu-item">
               <NavItemLink
-                to="/uptimestatuses"
-                text="Uptime"
-                data-total={uptimeStatuses.length || undefined}
+                to="/healthstatuses"
+                text="Health"
+                data-total={healthStatuses.length || undefined}
                 data-combined={
-                  uptimeStatuses.filter(
-                    (uptimeStatus) => uptimeStatus.unhealthy,
+                  healthStatuses.filter(
+                    (healthStatus) => healthStatus.unhealthy,
                   ).length || undefined
                 }
                 data-unhealthy={
-                  uptimeStatuses.filter(
-                    (uptimeStatus) => uptimeStatus.unhealthy,
+                  healthStatuses.filter(
+                    (healthStatus) => healthStatus.unhealthy,
                   ).length || undefined
                 }
               />

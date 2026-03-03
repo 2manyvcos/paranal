@@ -20,7 +20,7 @@ func init() {
         displayName TEXT NOT NULL,
         startPage TEXT NOT NULL,
         errorAlerts BOOLEAN NOT NULL,
-        uptimeAlerts BOOLEAN NOT NULL,
+        healthAlerts BOOLEAN NOT NULL,
         versionAlerts BOOLEAN NOT NULL
       )
     `)
@@ -63,9 +63,9 @@ func UserQuery(query *schema.UserQuery) (clause string, placeholders []any) {
 		conditions = append(conditions, "IFNULL(users.errorAlerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.ErrorAlerts)
 	}
-	if query.UptimeAlerts != nil {
-		conditions = append(conditions, "IFNULL(users.uptimeAlerts, FALSE) = ?")
-		placeholders = append(placeholders, *query.UptimeAlerts)
+	if query.HealthAlerts != nil {
+		conditions = append(conditions, "IFNULL(users.healthAlerts, FALSE) = ?")
+		placeholders = append(placeholders, *query.HealthAlerts)
 	}
 	if query.VersionAlerts != nil {
 		conditions = append(conditions, "IFNULL(users.versionAlerts, FALSE) = ?")
@@ -82,7 +82,7 @@ func (i *impl) ListUsers(query *schema.UserQuery) ([]schema.User, error) {
 	where, wherePlaceholders := UserQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT name, role, passwordHash, displayName, startPage, errorAlerts, uptimeAlerts, versionAlerts
+      SELECT name, role, passwordHash, displayName, startPage, errorAlerts, healthAlerts, versionAlerts
       FROM users
       WHERE `+where+`
       ORDER BY name
@@ -96,7 +96,7 @@ func (i *impl) ListUsers(query *schema.UserQuery) ([]schema.User, error) {
 	var records []schema.User
 	for rows.Next() {
 		var record schema.User
-		if err := rows.Scan(&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts); err != nil {
+		if err := rows.Scan(&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.HealthAlerts, &record.VersionAlerts); err != nil {
 			return nil, err
 		}
 		records = append(records, record)
@@ -112,12 +112,12 @@ func (i *impl) GetUser(query schema.UserQuery) (schema.User, error) {
 	var record schema.User
 	err := i.QueryRow(
 		`
-      SELECT name, role, passwordHash, displayName, startPage, errorAlerts, uptimeAlerts, versionAlerts
+      SELECT name, role, passwordHash, displayName, startPage, errorAlerts, healthAlerts, versionAlerts
       FROM users
       WHERE `+where+`
     `,
 		wherePlaceholders...,
-	).Scan(&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts)
+	).Scan(&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.HealthAlerts, &record.VersionAlerts)
 	if errors.Is(err, sql.ErrNoRows) {
 		return schema.User{}, schema.ErrNotFound
 	}
@@ -130,10 +130,10 @@ func (i *impl) CreateUser(record schema.User) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO users (name, role, passwordHash, displayName, startPage, errorAlerts, uptimeAlerts, versionAlerts)
+      INSERT INTO users (name, role, passwordHash, displayName, startPage, errorAlerts, healthAlerts, versionAlerts)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `,
-		&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts,
+		&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.HealthAlerts, &record.VersionAlerts,
 	)
 	return requireNoConflict(err)
 }
@@ -144,7 +144,7 @@ func (i *impl) CreateOrUpdateUser(record schema.User) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO users (name, role, passwordHash, displayName, startPage, errorAlerts, uptimeAlerts, versionAlerts)
+      INSERT INTO users (name, role, passwordHash, displayName, startPage, errorAlerts, healthAlerts, versionAlerts)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT (name)
       DO UPDATE
@@ -154,10 +154,10 @@ func (i *impl) CreateOrUpdateUser(record schema.User) error {
         displayName = excluded.displayName,
         startPage = excluded.startPage,
         errorAlerts = excluded.errorAlerts,
-        uptimeAlerts = excluded.uptimeAlerts,
+        healthAlerts = excluded.healthAlerts,
         versionAlerts = excluded.versionAlerts
     `,
-		&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts,
+		&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.HealthAlerts, &record.VersionAlerts,
 	)
 	return err
 }
@@ -177,12 +177,12 @@ func (i *impl) UpdateUsers(query schema.UserQuery, record schema.User) error {
         displayName = ?,
         startPage = ?,
         errorAlerts = ?,
-        uptimeAlerts = ?,
+        healthAlerts = ?,
         versionAlerts = ?
       WHERE `+where+`
     `,
 		slices.Concat(
-			[]any{&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.UptimeAlerts, &record.VersionAlerts},
+			[]any{&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.HealthAlerts, &record.VersionAlerts},
 			wherePlaceholders,
 		)...,
 	)

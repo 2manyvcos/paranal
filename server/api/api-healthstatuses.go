@@ -11,14 +11,14 @@ import (
 	"github.com/2manyvcos/paranal/utils"
 )
 
-type UptimeStatus struct {
+type HealthStatus struct {
 	Name      string `json:"name"`
 	ServiceID string `json:"serviceID"`
 	Status    string `json:"status"`
 	Unhealthy bool   `json:"unhealthy"`
 }
 
-func GetUptimeStatuses(res http.ResponseWriter, req *http.Request) {
+func GetHealthStatuses(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
@@ -42,7 +42,7 @@ func GetUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 		nameQuery = &v
 	}
 	if v, ok := utils.LoadQueryValue(q, "status"); ok {
-		t, ok := schema.ServiceUptimeStatusCodes[v]
+		t, ok := schema.ServiceHealthStatusCodes[v]
 		if !ok {
 			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
@@ -60,31 +60,31 @@ func GetUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	uptimeStatuses := make([][]UptimeStatus, len(services))
+	healthStatuses := make([][]HealthStatus, len(services))
 	for i, service := range services {
-		records := app.ListServiceUptimeStatuses(service.ID)
-		uptimeStatuses[i] = make([]UptimeStatus, 0, len(records))
-		for _, uptimeStatus := range records {
-			if nameQuery != nil && uptimeStatus.Name != *nameQuery {
+		records := app.ListServiceHealthStatuses(service.ID)
+		healthStatuses[i] = make([]HealthStatus, 0, len(records))
+		for _, healthStatus := range records {
+			if nameQuery != nil && healthStatus.Name != *nameQuery {
 				continue
 			}
-			if statusQuery != nil && uptimeStatus.Status != *statusQuery {
+			if statusQuery != nil && healthStatus.Status != *statusQuery {
 				continue
 			}
-			if unhealthyQuery != nil && uptimeStatus.Unhealthy != *unhealthyQuery {
+			if unhealthyQuery != nil && healthStatus.Unhealthy != *unhealthyQuery {
 				continue
 			}
-			uptimeStatuses[i] = append(uptimeStatuses[i], UptimeStatus{
-				Name:      uptimeStatus.Name,
+			healthStatuses[i] = append(healthStatuses[i], HealthStatus{
+				Name:      healthStatus.Name,
 				ServiceID: service.ID,
-				Status:    schema.ServiceUptimeStatusNames[uptimeStatus.Status],
-				Unhealthy: uptimeStatus.Unhealthy,
+				Status:    schema.ServiceHealthStatusNames[healthStatus.Status],
+				Unhealthy: healthStatus.Unhealthy,
 			})
 		}
 	}
-	responsePayload := slices.Concat(uptimeStatuses...)
+	responsePayload := slices.Concat(healthStatuses...)
 	if responsePayload == nil {
-		responsePayload = []UptimeStatus{}
+		responsePayload = []HealthStatus{}
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(responsePayload)
@@ -93,7 +93,7 @@ func GetUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func GetServicesByIDUptimeStatuses(res http.ResponseWriter, req *http.Request) {
+func GetServicesByIDHealthStatuses(res http.ResponseWriter, req *http.Request) {
 	app := helper.GetApp(req)
 	authorizedUser := helper.GetAuthorizedUser(req)
 
@@ -116,7 +116,7 @@ func GetServicesByIDUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 		nameQuery = &v
 	}
 	if v, ok := utils.LoadQueryValue(q, "status"); ok {
-		t, ok := schema.ServiceUptimeStatusCodes[v]
+		t, ok := schema.ServiceHealthStatusCodes[v]
 		if !ok {
 			http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 			return
@@ -127,23 +127,23 @@ func GetServicesByIDUptimeStatuses(res http.ResponseWriter, req *http.Request) {
 		unhealthyQuery = &v
 	}
 
-	records := app.ListServiceUptimeStatuses(serviceID)
-	responsePayload := make([]UptimeStatus, 0, len(records))
-	for _, uptimeStatus := range records {
-		if nameQuery != nil && uptimeStatus.Name != *nameQuery {
+	records := app.ListServiceHealthStatuses(serviceID)
+	responsePayload := make([]HealthStatus, 0, len(records))
+	for _, healthStatus := range records {
+		if nameQuery != nil && healthStatus.Name != *nameQuery {
 			continue
 		}
-		if statusQuery != nil && uptimeStatus.Status != *statusQuery {
+		if statusQuery != nil && healthStatus.Status != *statusQuery {
 			continue
 		}
-		if unhealthyQuery != nil && uptimeStatus.Unhealthy != *unhealthyQuery {
+		if unhealthyQuery != nil && healthStatus.Unhealthy != *unhealthyQuery {
 			continue
 		}
-		responsePayload = append(responsePayload, UptimeStatus{
-			Name:      uptimeStatus.Name,
+		responsePayload = append(responsePayload, HealthStatus{
+			Name:      healthStatus.Name,
 			ServiceID: serviceID,
-			Status:    schema.ServiceUptimeStatusNames[uptimeStatus.Status],
-			Unhealthy: uptimeStatus.Unhealthy,
+			Status:    schema.ServiceHealthStatusNames[healthStatus.Status],
+			Unhealthy: healthStatus.Unhealthy,
 		})
 	}
 	res.Header().Set("Content-Type", "application/json")

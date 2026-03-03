@@ -73,8 +73,8 @@ func New() http.Handler {
 	api.Handle("GET /v1/services/{serviceID}/actions", helper.WithAuth(http.HandlerFunc(GetServicesByIDActions)))
 	api.Handle("POST /v1/services/{serviceID}/actions/{actionName}/run", helper.WithAuth(http.HandlerFunc(PostServicesByIDActionsByNameRun)))
 
-	api.Handle("GET /v1/uptimestatuses", helper.WithAuth(http.HandlerFunc(GetUptimeStatuses)))
-	api.Handle("GET /v1/services/{serviceID}/uptimestatuses", helper.WithAuth(http.HandlerFunc(GetServicesByIDUptimeStatuses)))
+	api.Handle("GET /v1/healthstatuses", helper.WithAuth(http.HandlerFunc(GetHealthStatuses)))
+	api.Handle("GET /v1/services/{serviceID}/healthstatuses", helper.WithAuth(http.HandlerFunc(GetServicesByIDHealthStatuses)))
 
 	api.Handle("GET /v1/versions", helper.WithAuth(http.HandlerFunc(GetVersions)))
 	api.Handle("GET /v1/services/{serviceID}/versions", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersions)))

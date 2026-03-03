@@ -20,7 +20,7 @@ type State interface {
 	ListServiceActionGroups(serviceID string) []ServiceActionGroup
 	ListServiceActions(serviceID string) []ServiceAction
 	GetServiceAction(serviceID string, actionName string) *ServiceAction
-	ListServiceUptimeStatuses(serviceID string) []ServiceUptimeStatus
+	ListServiceHealthStatuses(serviceID string) []ServiceHealthStatus
 	ListServiceVersions(serviceID string) []ServiceVersion
 	GetServiceVersionDetails(serviceID string, versionName string) *ServiceVersionDetails
 	OnServiceDeleted(serviceID string)
@@ -57,29 +57,29 @@ type ServiceAction struct {
 	RestrictToAdmins bool
 }
 
-type ServiceUptimeStatus struct {
+type ServiceHealthStatus struct {
 	Name      string
 	Status    int
 	Unhealthy bool
 }
 
 const (
-	ServiceUptimeStatusDown = iota + 1
-	ServiceUptimeStatusUp
+	ServiceHealthStatusDown = iota + 1
+	ServiceHealthStatusUp
 )
 
 var (
-	ServiceUptimeStatusNames = map[int]string{
-		ServiceUptimeStatusDown: "down",
-		ServiceUptimeStatusUp:   "up",
+	ServiceHealthStatusNames = map[int]string{
+		ServiceHealthStatusDown: "down",
+		ServiceHealthStatusUp:   "up",
 	}
-	ServiceUptimeStatusCodes map[string]int
+	ServiceHealthStatusCodes map[string]int
 )
 
 func init() {
-	ServiceUptimeStatusCodes = make(map[string]int, len(ServiceUptimeStatusNames))
-	for code, name := range ServiceUptimeStatusNames {
-		ServiceUptimeStatusCodes[name] = code
+	ServiceHealthStatusCodes = make(map[string]int, len(ServiceHealthStatusNames))
+	for code, name := range ServiceHealthStatusNames {
+		ServiceHealthStatusCodes[name] = code
 	}
 }
 

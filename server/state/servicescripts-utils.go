@@ -9,11 +9,11 @@ import (
 	"github.com/go-viper/mapstructure/v2"
 )
 
-type ByUptimeStatusOrder []ServiceUptimeStatus
+type ByHealthStatusOrder []ServiceHealthStatus
 
-func (a ByUptimeStatusOrder) Len() int      { return len(a) }
-func (a ByUptimeStatusOrder) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a ByUptimeStatusOrder) Less(i, j int) bool {
+func (a ByHealthStatusOrder) Len() int      { return len(a) }
+func (a ByHealthStatusOrder) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByHealthStatusOrder) Less(i, j int) bool {
 	return a[i].Order < a[j].Order
 }
 

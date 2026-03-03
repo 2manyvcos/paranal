@@ -10,7 +10,7 @@ export default function ServicePage({ page }: { page: Page }) {
   const {
     appName,
     servicesByID,
-    uptimeStatusesByServiceID,
+    healthStatusesByServiceID,
     versionsByServiceID,
   } = useApplication();
 
@@ -40,10 +40,10 @@ export default function ServicePage({ page }: { page: Page }) {
                 {section.serviceIDs?.map((serviceID) => {
                   const service = servicesByID[serviceID];
                   if (!service) return null;
-                  const uptimeStatuses =
-                    uptimeStatusesByServiceID[serviceID] ?? [];
-                  const unhealthyUptimeStatuses = uptimeStatuses.filter(
-                    (uptimeStatus) => uptimeStatus.unhealthy,
+                  const healthStatuses =
+                    healthStatusesByServiceID[serviceID] ?? [];
+                  const unhealthyHealthStatuses = healthStatuses.filter(
+                    (healthStatus) => healthStatus.unhealthy,
                   );
                   const versions = versionsByServiceID[serviceID] ?? [];
                   const outdatedVersions = versions.filter(
@@ -133,7 +133,7 @@ export default function ServicePage({ page }: { page: Page }) {
                         <Link
                           className="unhealthy badge"
                           to={{
-                            pathname: '/uptimestatuses',
+                            pathname: '/healthstatuses',
                             search: new URLSearchParams({
                               serviceID,
                               unhealthy: 'true',
@@ -141,15 +141,15 @@ export default function ServicePage({ page }: { page: Page }) {
                             hash: `service:${serviceID}`,
                           }}
                           text={
-                            uptimeStatuses.length
-                              ? unhealthyUptimeStatuses.length
+                            healthStatuses.length
+                              ? unhealthyHealthStatuses.length
                                 ? 'unhealthy'
                                 : 'healthy'
                               : undefined
                           }
-                          data-total={uptimeStatuses.length || undefined}
+                          data-total={healthStatuses.length || undefined}
                           data-count={
-                            unhealthyUptimeStatuses.length || undefined
+                            unhealthyHealthStatuses.length || undefined
                           }
                         />
 

@@ -45,8 +45,8 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 	if v, ok := utils.LoadQueryBool(q, "config.hidden"); ok {
 		query.Hidden = &v
 	}
-	if v, ok := utils.LoadQueryBool(q, "config.uptimeAlerts"); ok {
-		query.UptimeAlerts = &v
+	if v, ok := utils.LoadQueryBool(q, "config.healthAlerts"); ok {
+		query.HealthAlerts = &v
 	}
 	if v, ok := utils.LoadQueryBool(q, "config.versionAlerts"); ok {
 		query.VersionAlerts = &v
@@ -68,7 +68,7 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		Config      struct {
 			Favorite      bool `json:"favorite"`
 			Hidden        bool `json:"hidden"`
-			UptimeAlerts  bool `json:"uptimeAlerts"`
+			HealthAlerts  bool `json:"healthAlerts"`
 			VersionAlerts bool `json:"versionAlerts"`
 		} `json:"config"`
 	}, len(records))
@@ -80,7 +80,7 @@ func GetServices(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].URL = record.URL
 		responsePayload[i].Config.Favorite = record.Favorite
 		responsePayload[i].Config.Hidden = record.Hidden
-		responsePayload[i].Config.UptimeAlerts = record.UptimeAlerts
+		responsePayload[i].Config.HealthAlerts = record.HealthAlerts
 		responsePayload[i].Config.VersionAlerts = record.VersionAlerts
 	}
 	res.Header().Set("Content-Type", "application/json")
@@ -178,7 +178,7 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		Config      struct {
 			Favorite      bool `json:"favorite"`
 			Hidden        bool `json:"hidden"`
-			UptimeAlerts  bool `json:"uptimeAlerts"`
+			HealthAlerts  bool `json:"healthAlerts"`
 			VersionAlerts bool `json:"versionAlerts"`
 		} `json:"config"`
 	}{
@@ -190,12 +190,12 @@ func GetServicesByID(res http.ResponseWriter, req *http.Request) {
 		Config: struct {
 			Favorite      bool `json:"favorite"`
 			Hidden        bool `json:"hidden"`
-			UptimeAlerts  bool `json:"uptimeAlerts"`
+			HealthAlerts  bool `json:"healthAlerts"`
 			VersionAlerts bool `json:"versionAlerts"`
 		}{
 			Favorite:      record.Favorite,
 			Hidden:        record.Hidden,
-			UptimeAlerts:  record.UptimeAlerts,
+			HealthAlerts:  record.HealthAlerts,
 			VersionAlerts: record.VersionAlerts,
 		},
 	})
@@ -322,7 +322,7 @@ func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 	var requestPayload struct {
 		Favorite      utils.Optional[bool] `json:"favorite"`
 		Hidden        utils.Optional[bool] `json:"hidden"`
-		UptimeAlerts  utils.Optional[bool] `json:"uptimeAlerts"`
+		HealthAlerts  utils.Optional[bool] `json:"healthAlerts"`
 		VersionAlerts utils.Optional[bool] `json:"versionAlerts"`
 	}
 	decoder := json.NewDecoder(req.Body)
@@ -338,12 +338,12 @@ func PatchServicesByIDConfig(res http.ResponseWriter, req *http.Request) {
 		ServiceID:     serviceID,
 		Favorite:      record.Favorite,
 		Hidden:        record.Hidden,
-		UptimeAlerts:  record.UptimeAlerts,
+		HealthAlerts:  record.HealthAlerts,
 		VersionAlerts: record.VersionAlerts,
 	}
 	requestPayload.Favorite.ApplyIfDefined(&updatedRecord.Favorite)
 	requestPayload.Hidden.ApplyIfDefined(&updatedRecord.Hidden)
-	requestPayload.UptimeAlerts.ApplyIfDefined(&updatedRecord.UptimeAlerts)
+	requestPayload.HealthAlerts.ApplyIfDefined(&updatedRecord.HealthAlerts)
 	requestPayload.VersionAlerts.ApplyIfDefined(&updatedRecord.VersionAlerts)
 	if err := updatedRecord.Valid(); err != nil {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)

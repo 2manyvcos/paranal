@@ -7,7 +7,7 @@ type ServiceAlertChannelQuery struct {
 	UserQuery
 	ServiceConfigQuery
 	ErrorAlerts   *bool
-	UptimeAlerts  *bool
+	HealthAlerts  *bool
 	VersionAlerts *bool
 }
 

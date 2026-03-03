@@ -7,7 +7,7 @@ type ServiceConfigQuery struct {
 	ServiceID     *string
 	Favorite      *bool
 	Hidden        *bool
-	UptimeAlerts  *bool
+	HealthAlerts  *bool
 	VersionAlerts *bool
 }
 
@@ -16,7 +16,7 @@ type ServiceConfig struct {
 	ServiceID     string
 	Favorite      bool
 	Hidden        bool
-	UptimeAlerts  bool
+	HealthAlerts  bool
 	VersionAlerts bool
 }
 
