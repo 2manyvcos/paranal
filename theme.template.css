@@ -251,6 +251,120 @@
   > .menu
   > .end.menu-item
   > .sub.menu
+  > .uptimestatuses.menu-item {
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .uptimestatuses.menu-item
+  > .nav-item.link {
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .uptimestatuses.menu-item
+  > .nav-item.link[data-active] {
+  /* used for when the link refers to the active page */
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .uptimestatuses.menu-item
+  > .nav-item.link[data-total] {
+  /* number of total uptime statuses if any */
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .uptimestatuses.menu-item
+  > .nav-item.link[data-combined] {
+  /* number of uptime statuses that need attention if any */
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .uptimestatuses.menu-item
+  > .nav-item.link[data-unhealthy] {
+  /* number of unhealthy uptime statuses if any */
+}
+
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .versions.menu-item {
+}
+
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .versions.menu-item
+  > .nav-item.link {
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .versions.menu-item
+  > .nav-item.link[data-active] {
+  /* used for when the link refers to the active page */
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .versions.menu-item
+  > .nav-item.link[data-total] {
+  /* number of total versions if any */
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .versions.menu-item
+  > .nav-item.link[data-combined] {
+  /* number of versions that need attention if any */
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .versions.menu-item
+  > .nav-item.link[data-outdated] {
+  /* number of outdated versions if any */
+}
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .versions.menu-item
+  > .nav-item.link[data-vulnerable] {
+  /* number of vulnerable versions if any */
+}
+
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
   > .user.menu-item {
 }
 
@@ -474,7 +588,7 @@
   > .services
   > .service
   > .badges
-  > .unhealthy.badge.text {
+  > .unhealthy.badge.link {
 }
 .dashboard
   > .service.page
@@ -483,7 +597,7 @@
   > .services
   > .service
   > .badges
-  > .unhealthy.badge.text[data-total] {
+  > .unhealthy.badge.link[data-total] {
   /* number of total uptime statuses related to this service if any */
 }
 .dashboard
@@ -493,7 +607,7 @@
   > .services
   > .service
   > .badges
-  > .unhealthy.badge.text[data-count] {
+  > .unhealthy.badge.link[data-count] {
   /* number of unhealthy uptime statuses related to this service if any */
 }
 
@@ -504,7 +618,7 @@
   > .services
   > .service
   > .badges
-  > .outdated.badge.text {
+  > .outdated.badge.link {
 }
 .dashboard
   > .service.page
@@ -513,7 +627,7 @@
   > .services
   > .service
   > .badges
-  > .outdated.badge.text[data-total] {
+  > .outdated.badge.link[data-total] {
   /* number of total versions related to this service if any */
 }
 .dashboard
@@ -523,7 +637,7 @@
   > .services
   > .service
   > .badges
-  > .outdated.badge.text[data-count] {
+  > .outdated.badge.link[data-count] {
   /* number of outdated versions related to this service if any */
 }
 
@@ -534,7 +648,7 @@
   > .services
   > .service
   > .badges
-  > .vulnerable.badge.text {
+  > .vulnerable.badge.link {
 }
 .dashboard
   > .service.page
@@ -543,7 +657,7 @@
   > .services
   > .service
   > .badges
-  > .vulnerable.badge.text[data-total] {
+  > .vulnerable.badge.link[data-total] {
   /* number of total versions related to this service if any */
 }
 .dashboard
@@ -553,7 +667,7 @@
   > .services
   > .service
   > .badges
-  > .vulnerable.badge.text[data-count] {
+  > .vulnerable.badge.link[data-count] {
   /* number of vulnerable versions related to this service if any */
 }
 .dashboard
@@ -563,7 +677,7 @@
   > .services
   > .service
   > .badges
-  > .vulnerable.badge.text[data-cves] {
+  > .vulnerable.badge.link[data-cves] {
   /* number of CVEs related to this service if any */
 }
 

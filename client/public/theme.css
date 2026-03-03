@@ -70,3 +70,12 @@ a[role='button'] {
 .footer.markdown > .content {
   text-align: center;
 }
+
+.badges {
+  display: flex;
+  gap: 1em;
+}
+
+.badge:not([data-text]) {
+  display: none;
+}

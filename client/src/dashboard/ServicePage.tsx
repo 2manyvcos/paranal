@@ -1,6 +1,7 @@
 import { Menu, MenuButton, MenuItems } from '@headlessui/react';
 import { useApplication } from '@/application';
 import Image from '@/components/Image';
+import Link from '@/components/Link';
 import Markdown from '@/components/Markdown';
 import Text from '@/components/Text';
 import type { Page } from '@/data/data-layout';
@@ -52,7 +53,11 @@ export default function ServicePage({ page }: { page: Page }) {
                     (version) => version.vulnerable,
                   );
                   return (
-                    <article key={serviceID} className="service">
+                    <article
+                      key={serviceID}
+                      className="service"
+                      id={`service:${serviceID}`}
+                    >
                       <header className="header">
                         <a
                           className="header-link"
@@ -125,8 +130,16 @@ export default function ServicePage({ page }: { page: Page }) {
                       </header>
 
                       <div className="badges">
-                        <Text
+                        <Link
                           className="unhealthy badge"
+                          to={{
+                            pathname: '/uptimestatuses',
+                            search: new URLSearchParams({
+                              serviceID,
+                              unhealthy: 'true',
+                            }).toString(),
+                            hash: `service:${serviceID}`,
+                          }}
                           text={
                             uptimeStatuses.length
                               ? unhealthyUptimeStatuses.length
@@ -140,8 +153,16 @@ export default function ServicePage({ page }: { page: Page }) {
                           }
                         />
 
-                        <Text
+                        <Link
                           className="outdated badge"
+                          to={{
+                            pathname: '/versions',
+                            search: new URLSearchParams({
+                              serviceID,
+                              outdated: 'true',
+                            }).toString(),
+                            hash: `service:${serviceID}`,
+                          }}
                           text={
                             versions.length
                               ? outdatedVersions.length
@@ -153,8 +174,16 @@ export default function ServicePage({ page }: { page: Page }) {
                           data-count={outdatedVersions.length || undefined}
                         />
 
-                        <Text
+                        <Link
                           className="vulnerable badge"
+                          to={{
+                            pathname: '/versions',
+                            search: new URLSearchParams({
+                              serviceID,
+                              vulnerable: 'true',
+                            }).toString(),
+                            hash: `service:${serviceID}`,
+                          }}
                           text={
                             vulnerableVersions.length ? 'vulnerable' : undefined
                           }

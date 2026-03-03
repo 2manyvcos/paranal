@@ -1,8 +1,14 @@
 import clsx from 'clsx';
-import type { ComponentProps } from 'react';
+import type React from 'react';
+import type { ComponentProps, JSXElementConstructor } from 'react';
 import { Link as RouterLink } from 'react-router';
 
-export default function Link<As extends 'a' | typeof RouterLink>({
+export default function Link<
+  As extends
+    | keyof React.JSX.IntrinsicElements
+    | JSXElementConstructor<unknown>
+    | typeof RouterLink = typeof RouterLink,
+>({
   as: Component = RouterLink as As,
   className,
   text,

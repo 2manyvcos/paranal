@@ -12,8 +12,16 @@ import { unsetAccessToken } from '@/data/accessTokens';
 
 export default function Navigation() {
   const { dataProvider } = useConfigContext<FetchProviderType>();
-  const { appName, tagline, logo, userName, layout, logoutRedirectURL } =
-    useApplication();
+  const {
+    appName,
+    tagline,
+    logo,
+    userName,
+    layout,
+    logoutRedirectURL,
+    uptimeStatuses,
+    versions,
+  } = useApplication();
 
   const [active, setActive] = useState(false);
 
@@ -65,6 +73,45 @@ export default function Navigation() {
 
         <li className="end menu-item">
           <ul className="sub menu">
+            <li className="uptimestatuses menu-item">
+              <NavItemLink
+                to="/uptimestatuses"
+                text="Uptime"
+                data-total={uptimeStatuses.length || undefined}
+                data-combined={
+                  uptimeStatuses.filter(
+                    (uptimeStatus) => uptimeStatus.unhealthy,
+                  ).length || undefined
+                }
+                data-unhealthy={
+                  uptimeStatuses.filter(
+                    (uptimeStatus) => uptimeStatus.unhealthy,
+                  ).length || undefined
+                }
+              />
+            </li>
+
+            <li className="versions menu-item">
+              <NavItemLink
+                to="/versions"
+                text="Versions"
+                data-total={versions.length || undefined}
+                data-combined={
+                  versions.filter(
+                    (version) => version.outdated || version.vulnerable,
+                  ).length || undefined
+                }
+                data-outdated={
+                  versions.filter((version) => version.outdated).length ||
+                  undefined
+                }
+                data-vulnerable={
+                  versions.filter((version) => version.vulnerable).length ||
+                  undefined
+                }
+              />
+            </li>
+
             <li className="user menu-item">
               <Menu>
                 <MenuButton
