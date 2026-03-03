@@ -380,6 +380,9 @@
 .user.dropdown {
 }
 
+.user.dropdown > .separator {
+}
+
 .user.dropdown > .unhide.dropdown-item.link {
 }
 .user.dropdown > .unhide.dropdown-item.link[data-active] {

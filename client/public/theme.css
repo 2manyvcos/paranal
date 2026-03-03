@@ -81,17 +81,17 @@ a[role='button'] {
   flex-direction: column;
 }
 
+.dropdown > .separator {
+  height: 1px;
+  background-color: currentColor;
+}
+
 .dropdown-item {
   white-space: nowrap;
 }
 
 .dropdown-item[data-focus] {
   text-decoration: underline dashed;
-}
-
-.dropdown-separator {
-  height: 1px;
-  background-color: currentColor;
 }
 
 .footer.markdown > .content {

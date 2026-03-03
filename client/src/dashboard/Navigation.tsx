@@ -145,7 +145,7 @@ export default function Navigation() {
                     />
                   </MenuItem>
 
-                  <div className="dropdown-separator" />
+                  <div className="separator" />
 
                   <MenuItem>
                     <Link
