@@ -1,11 +1,19 @@
 import { Menu, MenuButton, MenuItems } from '@headlessui/react';
+import { useLocation } from 'react-router';
 import { useApplication } from '@/application';
 import Image from '@/components/Image';
 import Link from '@/components/Link';
 import Text from '@/components/Text';
 import type { Service } from '@/data/dataServices';
 
-export default function ServiceCard({ service }: { service: Service }) {
+export default function ServiceCard({
+  service,
+  anchor = true,
+}: {
+  service: Service;
+  anchor?: boolean;
+}) {
+  const { hash } = useLocation();
   const { healthStatusesByServiceID, versionsByServiceID } = useApplication();
 
   const healthStatuses = healthStatusesByServiceID[service.id] ?? [];
@@ -17,7 +25,11 @@ export default function ServiceCard({ service }: { service: Service }) {
   const vulnerableVersions = versions.filter((version) => version.vulnerable);
 
   return (
-    <article className="service card" id={`service:${service.id}`}>
+    <article
+      className="service card"
+      id={anchor ? `service:${service.id}` : undefined}
+      data-active={anchor && hash === `#service:${service.id}` ? '' : undefined}
+    >
       <header className="header">
         <a className="header-link" href={service.url || undefined}>
           <Image className="logo" image={service.logo} />

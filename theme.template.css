@@ -554,6 +554,9 @@
 
 .service.card {
 }
+.service.card[data-active] {
+  /* used for when the service is targeted by the active page hash */
+}
 
 .service.card > .header {
 }

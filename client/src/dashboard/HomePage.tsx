@@ -41,7 +41,11 @@ export default function HomePage() {
           <div className="services">
             {services.map((service) =>
               !service.config.favorite ? null : (
-                <ServiceCard key={service.id} service={service} />
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  anchor={false}
+                />
               ),
             )}
           </div>
