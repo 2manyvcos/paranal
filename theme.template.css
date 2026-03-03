@@ -386,8 +386,44 @@
 .dashboard > .footer.markdown {
 }
 
+/* Home */
+
 .dashboard > .home.page {
 }
+
+.dashboard > .home.page > .sections {
+}
+
+.dashboard > .home.page > .sections > .favorites.section {
+}
+
+.dashboard > .home.page > .sections > .favorites.section > .header {
+}
+
+.dashboard > .home.page > .sections > .favorites.section > .header > .title {
+}
+
+.dashboard
+  > .home.page
+  > .sections
+  > .favorites.section
+  > .header
+  > .title
+  > .name.text {
+}
+
+.dashboard > .home.page > .sections > .favorites.section > .services {
+}
+
+.dashboard
+  > .home.page
+  > .sections
+  > .favorites.section
+  > .services
+  > .service.card {
+}
+
+/* Services */
 
 .dashboard > .service.page {
 }
@@ -428,101 +464,38 @@
 .dashboard > .service.page > .sections > .section > .services {
 }
 
-.dashboard > .service.page > .sections > .section > .services > .service {
+.dashboard > .service.page > .sections > .section > .services > .service.card {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header {
-}
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header
-  > .header-link {
+/* Service Card */
+
+.service.card {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header
-  > .header-link
-  > .logo.image {
+.service.card > .header {
+}
+.service.card > .header > .header-link {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header
-  > .header-link
-  > .title
-  > .name.text {
+.service.card > .header > .header-link > .logo.image {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header
-  > .header-link
-  > .title
-  > .description.text {
+.service.card > .header > .header-link > .title > .name.text {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header
-  > .controls {
+.service.card > .header > .header-link > .title > .description.text {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header
-  > .controls
-  > .badges.control {
+.service.card > .header > .controls {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header
-  > .controls
-  > .badges.control
-  > .badges {
+.service.card > .header > .controls > .badges.control {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
+.service.card > .header > .controls > .badges.control > .badges {
+}
+
+.service.card
   > .header
   > .controls
   > .badges.control
@@ -530,12 +503,7 @@
   > .favorite.badge.text {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
+.service.card
   > .header
   > .controls
   > .badges.control
@@ -543,27 +511,10 @@
   > .hidden.badge.text {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header
-  > .controls
-  > .context.control {
+.service.card > .header > .controls > .context.control {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .header
-  > .controls
-  > .context.control
-  > .context-menu.link {
+.service.card > .header > .controls > .context.control > .context-menu.link {
 }
 
 .service.context.dropdown {
@@ -572,112 +523,36 @@
 /* TODO: .service.context.dropdown > .edit.dropdown-item.link {
 } */
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges {
+.service.card > .badges {
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .unhealthy.badge.link {
+.service.card > .badges > .unhealthy.badge.link {
 }
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .unhealthy.badge.link[data-total] {
+.service.card > .badges > .unhealthy.badge.link[data-total] {
   /* number of total health statuses related to this service if any */
 }
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .unhealthy.badge.link[data-count] {
+.service.card > .badges > .unhealthy.badge.link[data-count] {
   /* number of unhealthy health statuses related to this service if any */
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .outdated.badge.link {
+.service.card > .badges > .outdated.badge.link {
 }
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .outdated.badge.link[data-total] {
+.service.card > .badges > .outdated.badge.link[data-total] {
   /* number of total versions related to this service if any */
 }
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .outdated.badge.link[data-count] {
+.service.card > .badges > .outdated.badge.link[data-count] {
   /* number of outdated versions related to this service if any */
 }
 
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .vulnerable.badge.link {
+.service.card > .badges > .vulnerable.badge.link {
 }
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .vulnerable.badge.link[data-total] {
+.service.card > .badges > .vulnerable.badge.link[data-total] {
   /* number of total versions related to this service if any */
 }
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .vulnerable.badge.link[data-count] {
+.service.card > .badges > .vulnerable.badge.link[data-count] {
   /* number of vulnerable versions related to this service if any */
 }
-.dashboard
-  > .service.page
-  > .sections
-  > .section
-  > .services
-  > .service
-  > .badges
-  > .vulnerable.badge.link[data-cves] {
+.service.card > .badges > .vulnerable.badge.link[data-cves] {
   /* number of CVEs related to this service if any */
 }
 
