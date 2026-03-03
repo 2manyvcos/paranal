@@ -380,6 +380,12 @@
 .user.dropdown {
 }
 
+.user.dropdown > .unhide.dropdown-item.link {
+}
+.user.dropdown > .unhide.dropdown-item.link[data-active] {
+  /* used for when showing hidden services is enabled */
+}
+
 .user.dropdown > .logout.dropdown-item.link {
 }
 

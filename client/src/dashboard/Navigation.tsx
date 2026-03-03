@@ -17,6 +17,8 @@ export default function Navigation() {
     tagline,
     logo,
     userName,
+    unhide,
+    setUnhide,
     layout,
     logoutRedirectURL,
     healthStatuses,
@@ -118,6 +120,7 @@ export default function Navigation() {
                   className="nav-item link"
                   as="a"
                   role="button"
+                  tabIndex={0}
                   data-text={userName || undefined}
                 >
                   <span className="content">{userName || undefined}</span>
@@ -126,8 +129,31 @@ export default function Navigation() {
                 <MenuItems className="user dropdown" anchor="bottom">
                   <MenuItem>
                     <Link
+                      className="unhide dropdown-item"
+                      as="a"
+                      tabIndex={0}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setUnhide((prev) => !prev);
+                      }}
+                      onMouseUpCapture={(e) => {
+                        e.stopPropagation();
+                      }}
+                      text={
+                        unhide
+                          ? 'Stop showing hidden services'
+                          : 'Show hidden services'
+                      }
+                      data-active={unhide ? '' : undefined}
+                    />
+                  </MenuItem>
+
+                  <MenuItem>
+                    <Link
                       className="logout dropdown-item"
                       as="a"
+                      tabIndex={0}
                       href={logoutRedirectURL || undefined}
                       onClick={() => {
                         unsetAccessToken();

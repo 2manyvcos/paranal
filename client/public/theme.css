@@ -75,6 +75,15 @@ a[role='button'] {
   content: ' (' attr(data-combined) ')';
 }
 
+.dropdown {
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  white-space: nowrap;
+}
+
 .footer.markdown > .content {
   text-align: center;
 }

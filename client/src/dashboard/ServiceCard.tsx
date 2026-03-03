@@ -50,6 +50,7 @@ export default function ServiceCard({ service }: { service: Service }) {
                 className="context-menu link"
                 as="a"
                 role="button"
+                tabIndex={0}
                 data-text={'\u22ee;'}
               >
                 <span className="content">&#x22ee;</span>
@@ -60,6 +61,7 @@ export default function ServiceCard({ service }: { service: Service }) {
                   <Link
                     className="edit dropdown-item"
                     as="a"
+                    tabIndex={0}
                     onClick={() => {}}
                     text="Edit"
                   />

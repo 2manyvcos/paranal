@@ -1,4 +1,11 @@
-import { createContext, useContext, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type Dispatch,
+  type SetStateAction,
+} from 'react';
 import {
   useHealthStatuses,
   type HealthStatus,
@@ -22,6 +29,7 @@ export type Application = {
   admin: boolean;
 
   unhide: boolean;
+  setUnhide: Dispatch<SetStateAction<boolean>>;
   layout?: Layout;
   services: Service[];
   servicesByID: Partial<{ [serviceID: string]: Service }>;
@@ -40,7 +48,7 @@ export function useApplicationContextState(
   const authorized = user != null;
   const admin = user?.role === 'admin';
 
-  const unhide = true;
+  const [unhide, setUnhide] = useState(false);
 
   const layout = useLayout({ disabled: !authorized });
   useErrorNotification(layout);
@@ -96,6 +104,7 @@ export function useApplicationContextState(
       admin,
 
       unhide,
+      setUnhide,
       layout: layout.data,
       services: services.data ?? [],
       servicesByID,
@@ -111,6 +120,7 @@ export function useApplicationContextState(
       user,
       admin,
       unhide,
+      setUnhide,
       layout.data,
       services.data,
       servicesByID,
