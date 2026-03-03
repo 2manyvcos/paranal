@@ -45,6 +45,7 @@ export default function Navigation() {
         <a
           className="button"
           role="button"
+          tabIndex={0}
           onClick={() => {
             setActive((prev) => !prev);
           }}
@@ -132,13 +133,8 @@ export default function Navigation() {
                       className="unhide dropdown-item"
                       as="a"
                       tabIndex={0}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
+                      onClick={() => {
                         setUnhide((prev) => !prev);
-                      }}
-                      onMouseUpCapture={(e) => {
-                        e.stopPropagation();
                       }}
                       text={
                         unhide
@@ -148,6 +144,8 @@ export default function Navigation() {
                       data-active={unhide ? '' : undefined}
                     />
                   </MenuItem>
+
+                  <div className="dropdown-separator" />
 
                   <MenuItem>
                     <Link
