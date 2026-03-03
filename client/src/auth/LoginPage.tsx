@@ -6,7 +6,7 @@ import { useApplication } from '@/application';
 import Button from '@/components/Button';
 import Text from '@/components/Text';
 import { setAccessToken } from '@/data/accessTokens';
-import type { Auth } from '@/data/dataAuth';
+import { postAuth } from '@/data/dataAuth';
 import { HTTP_UNAUTHORIZED, HTTPError } from '@/data/errors';
 import { notify } from '@/notifications/notification';
 
@@ -25,19 +25,10 @@ export default function LoginPage() {
 
       try {
         setLoading(true);
-        const { accessToken } = await dataProvider!.request<Auth>(
-          'v1/auth',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-          },
-          {
-            async handleError(_url, _request, response, _meta) {
-              throw new HTTPError(await response.text(), response.status);
-            },
-          },
-        );
+        const { accessToken } = await postAuth(dataProvider!, {
+          username,
+          password,
+        });
         setAccessToken(accessToken, rememberLogin);
         dataProvider!.notify('v1/user');
       } catch (error) {

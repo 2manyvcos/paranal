@@ -403,7 +403,7 @@
 .user.dropdown {
 }
 
-.user.dropdown > .separator {
+.user.dropdown > .dropdown-separator {
 }
 
 .user.dropdown > .user.dropdown-item.link {
@@ -588,6 +588,14 @@
   > .badges
   > .favorite.badge.text {
 }
+.service.card
+  > .header
+  > .controls
+  > .badges.control
+  > .badges
+  > .favorite.badge.text[data-enabled] {
+  /* used for when the related option is enabled */
+}
 
 .service.card
   > .header
@@ -596,6 +604,14 @@
   > .badges
   > .hidden.badge.text {
 }
+.service.card
+  > .header
+  > .controls
+  > .badges.control
+  > .badges
+  > .hidden.badge.text[data-enabled] {
+  /* used for when the related option is enabled */
+}
 
 .service.card > .header > .controls > .context.control {
 }
@@ -603,11 +619,32 @@
 .service.card > .header > .controls > .context.control > .context-menu.link {
 }
 
-.service.context.dropdown {
+.service.dropdown {
 }
 
-/* TODO: .service.context.dropdown > .edit.dropdown-item.link {
-} */
+.service.dropdown > .dropdown-separator {
+}
+
+.service.dropdown > .edit.dropdown-item.link {
+}
+
+.service.dropdown > .favorite.dropdown-item.link {
+}
+.service.dropdown > .favorite.dropdown-item.link[data-enabled] {
+  /* used for when the related option is enabled */
+}
+
+.service.dropdown > .hidden.dropdown-item.link {
+}
+.service.dropdown > .hidden.dropdown-item.link[data-enabled] {
+  /* used for when the related option is enabled */
+}
+
+.service.dropdown > .alerts.dropdown-item.link {
+}
+
+.service.dropdown > .scripts.dropdown-item.link {
+}
 
 .service.card > .badges {
 }

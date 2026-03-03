@@ -56,3 +56,25 @@ export function useServices(query?: ServiceQuery) {
     disabled: query?.disabled,
   });
 }
+
+export type PatchServicesByIDConfigRequest = {
+  favorite?: boolean;
+  hidden?: boolean;
+  healthAlerts?: boolean;
+  versionAlerts?: boolean;
+};
+
+export function patchServiceByIDConfig(
+  dataProvider: FetchProviderType,
+  serviceID: string,
+  request: PatchServicesByIDConfigRequest,
+): Promise<void> {
+  return dataProvider.request(
+    `v1/services/${encodeURIComponent(serviceID)}/config`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(request),
+    },
+  );
+}

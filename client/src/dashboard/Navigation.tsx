@@ -9,6 +9,7 @@ import {
   MenuButton,
   MenuItem,
   MenuItems,
+  MenuSeparator,
 } from '@headlessui/react';
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router';
@@ -229,13 +230,12 @@ export default function Navigation() {
                     </MenuItem>
                   )}
 
-                  <div className="separator" />
+                  <MenuSeparator className="dropdown-separator" />
 
                   <MenuItem>
                     <Link
                       className="unhide dropdown-item"
                       as="a"
-                      tabIndex={0}
                       onClick={() => {
                         setUnhide((prev) => !prev);
                       }}
@@ -248,13 +248,12 @@ export default function Navigation() {
                     />
                   </MenuItem>
 
-                  <div className="separator" />
+                  <MenuSeparator className="dropdown-separator" />
 
                   <MenuItem>
                     <Link
                       className="logout dropdown-item"
                       as="a"
-                      tabIndex={0}
                       href={logoutRedirectURL || undefined}
                       onClick={() => {
                         unsetAccessToken();

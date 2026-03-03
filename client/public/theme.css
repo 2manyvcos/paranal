@@ -81,7 +81,7 @@ a[role='button'] {
   flex-direction: column;
 }
 
-.dropdown > .separator {
+.dropdown-separator {
   height: 1px;
   background-color: currentColor;
 }

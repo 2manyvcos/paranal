@@ -22,27 +22,31 @@ export const HTTP_UNSUPPORTED_MEDIA_TYPE = 415;
 export const HTTP_NOT_FOUND = 404;
 export const HTTP_INTERNAL_SERVER_ERROR = 500;
 
+export function notifyError(error: unknown): void {
+  if (error instanceof HTTPError) {
+    switch (error.status) {
+      case HTTP_UNAUTHORIZED:
+      case HTTP_NOT_FOUND:
+        return;
+      case HTTP_BAD_REQUEST:
+      case HTTP_FORBIDDEN:
+      case HTTP_CONFLICT:
+        console.error(error);
+        notify(error.message);
+        return;
+    }
+  }
+
+  console.error(error);
+  notify('Something went wrong.');
+}
+
 export function useErrorNotification(
   resource: ResourceContextValue<FetchProviderType>,
 ): void {
   useEffect(() => {
     if (resource.error) {
-      if (resource.error instanceof HTTPError) {
-        switch (resource.error.status) {
-          case HTTP_UNAUTHORIZED:
-          case HTTP_NOT_FOUND:
-            return;
-          case HTTP_BAD_REQUEST:
-          case HTTP_FORBIDDEN:
-          case HTTP_CONFLICT:
-            console.error(resource.error);
-            notify(resource.error.message);
-            return;
-        }
-      }
-
-      console.error(resource.error);
-      notify('Something went wrong.');
+      notifyError(resource.error);
     }
   }, [resource.error]);
 }
