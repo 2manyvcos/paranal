@@ -85,6 +85,11 @@ a[role='button'] {
   height: 1px;
   background-color: currentColor;
 }
+.dropdown-separator:first-child,
+.dropdown-separator:last-child,
+.dropdown-separator + .dropdown-separator {
+  display: none;
+}
 
 .dropdown-item {
   white-space: nowrap;
