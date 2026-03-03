@@ -33,7 +33,6 @@ export type Application = {
   layout?: Layout;
   services: Service[];
   servicesByID: Partial<{ [serviceID: string]: Service }>;
-  servicesWithFavorite: Service[];
   healthStatuses: HealthStatus[];
   healthStatusesByServiceID: Partial<{
     [serviceID: string]: HealthStatus[];
@@ -108,8 +107,6 @@ export function useApplicationContextState(
       layout: layout.data,
       services: services.data ?? [],
       servicesByID,
-      servicesWithFavorite:
-        services.data?.filter((service) => service.config.favorite) ?? [],
       healthStatuses: healthStatuses.data ?? [],
       healthStatusesByServiceID,
       versions: versions.data ?? [],

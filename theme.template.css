@@ -365,6 +365,29 @@
   > .menu
   > .end.menu-item
   > .sub.menu
+  > .search.menu-item {
+}
+
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
+  > .search.menu-item
+  > .input {
+}
+
+.search.combobox {
+}
+
+.search.combobox > .combobox-item.link {
+}
+
+.dashboard
+  > .navigation
+  > .menu
+  > .end.menu-item
+  > .sub.menu
   > .user.menu-item {
 }
 
@@ -440,6 +463,35 @@
   > .home.page
   > .sections
   > .favorites.section
+  > .services
+  > .service.card {
+}
+
+.dashboard > .home.page > .sections > .unassigned.section {
+}
+
+.dashboard > .home.page > .sections > .unassigned.section > .header {
+}
+
+.dashboard > .home.page > .sections > .unassigned.section > .header > .title {
+}
+
+.dashboard
+  > .home.page
+  > .sections
+  > .unassigned.section
+  > .header
+  > .title
+  > .name.text {
+}
+
+.dashboard > .home.page > .sections > .unassigned.section > .services {
+}
+
+.dashboard
+  > .home.page
+  > .sections
+  > .unassigned.section
   > .services
   > .service.card {
 }

@@ -1,16 +1,27 @@
 import type { FetchProviderType } from '@civet/common';
 import { useConfigContext } from '@civet/core';
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
+import {
+  Combobox,
+  ComboboxInput,
+  ComboboxOption,
+  ComboboxOptions,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+} from '@headlessui/react';
 import { useState } from 'react';
-import { Link as RouterLink } from 'react-router';
+import { Link as RouterLink, useNavigate } from 'react-router';
 import { useApplication } from '@/application';
 import Image from '@/components/Image';
 import Link from '@/components/Link';
 import NavItemLink from '@/components/NavItemLink';
 import Text from '@/components/Text';
 import { unsetAccessToken } from '@/data/accessTokens';
+import type { Service } from '@/data/dataServices';
 
 export default function Navigation() {
+  const navigate = useNavigate();
   const { dataProvider } = useConfigContext<FetchProviderType>();
   const {
     appName,
@@ -20,13 +31,17 @@ export default function Navigation() {
     admin,
     unhide,
     setUnhide,
-    layout,
     logoutRedirectURL,
+    layout,
+    services,
     healthStatuses,
+    healthStatusesByServiceID,
     versions,
+    versionsByServiceID,
   } = useApplication();
 
   const [active, setActive] = useState(false);
+  const [search, setSearch] = useState('');
 
   return (
     <nav className="navigation" data-active={active ? '' : undefined}>
@@ -114,6 +129,73 @@ export default function Navigation() {
                   undefined
                 }
               />
+            </li>
+
+            <li className="search menu-item">
+              <Combobox
+                value={null}
+                onChange={(service: Service | null) => {
+                  if (service != null) {
+                    const page = layout?.pages?.find((page) =>
+                      page.sections?.some((section) =>
+                        section.serviceIDs?.includes(service.id),
+                      ),
+                    );
+                    if (page?.name) {
+                      navigate({
+                        pathname: `/${encodeURIComponent(page.name)}`,
+                        hash: `service:${service.id}`,
+                      });
+                    } else {
+                      navigate({
+                        pathname: '/',
+                        search: 'no-redirect',
+                        hash: `service:${service.id}`,
+                      });
+                    }
+                  }
+                }}
+              >
+                <ComboboxInput
+                  className="input"
+                  aria-label="Search"
+                  placeholder="Search"
+                  onChange={(event) => {
+                    setSearch(event.target.value);
+                  }}
+                />
+
+                {!search ? null : (
+                  <ComboboxOptions className="search combobox" anchor="bottom">
+                    {services
+                      .filter((service) => {
+                        const s = search.toLocaleLowerCase();
+                        return (
+                          service.name.toLocaleLowerCase().includes(s) ||
+                          service.description.toLocaleLowerCase().includes(s) ||
+                          healthStatusesByServiceID[service.id]?.some(
+                            (healthStatus) =>
+                              healthStatus.name.toLocaleLowerCase().includes(s),
+                          ) ||
+                          versionsByServiceID[service.id]?.some((version) =>
+                            version.name.toLocaleLowerCase().includes(s),
+                          )
+                        );
+                      })
+                      .map((service) => (
+                        <ComboboxOption
+                          key={service.id}
+                          className="combobox-item link"
+                          as="a"
+                          value={service}
+                          data-text={service.name}
+                        >
+                          <span className="content">{service.name}</span>
+                        </ComboboxOption>
+                      ))}
+                  </ComboboxOptions>
+                )}
+              </Combobox>
             </li>
 
             <li className="user menu-item">

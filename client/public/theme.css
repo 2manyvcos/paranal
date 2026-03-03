@@ -94,6 +94,19 @@ a[role='button'] {
   text-decoration: underline dashed;
 }
 
+.combobox {
+  display: flex;
+  flex-direction: column;
+}
+
+.combobox-item {
+  white-space: nowrap;
+}
+
+.combobox-item[data-active] {
+  text-decoration: underline dashed;
+}
+
 .footer.markdown > .content {
   text-align: center;
 }
