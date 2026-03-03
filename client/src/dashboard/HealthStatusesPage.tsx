@@ -1,3 +1,12 @@
+import { useApplication } from '@/application';
+
 export default function HealthStatusesPage() {
-  return <div className="health-statuses page">TODO: health page</div>;
+  const { appName } = useApplication();
+
+  return (
+    <div className="health-statuses page">
+      <title>{`Health | ${appName}`}</title>
+      TODO: health page
+    </div>
+  );
 }

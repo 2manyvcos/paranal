@@ -17,6 +17,7 @@ export default function Navigation() {
     tagline,
     logo,
     userName,
+    admin,
     unhide,
     setUnhide,
     layout,
@@ -130,6 +131,26 @@ export default function Navigation() {
                 <MenuItems className="user dropdown" anchor="bottom">
                   <MenuItem>
                     <Link
+                      className="user dropdown-item"
+                      to="/user"
+                      text="Settings"
+                    />
+                  </MenuItem>
+
+                  {!admin ? null : (
+                    <MenuItem>
+                      <Link
+                        className="admin dropdown-item"
+                        to="/admin"
+                        text="Admin Panel"
+                      />
+                    </MenuItem>
+                  )}
+
+                  <div className="separator" />
+
+                  <MenuItem>
+                    <Link
                       className="unhide dropdown-item"
                       as="a"
                       tabIndex={0}
@@ -141,7 +162,7 @@ export default function Navigation() {
                           ? 'Stop showing hidden services'
                           : 'Show hidden services'
                       }
-                      data-active={unhide ? '' : undefined}
+                      data-enabled={unhide ? '' : undefined}
                     />
                   </MenuItem>
 

@@ -1,3 +1,12 @@
+import { useApplication } from '@/application';
+
 export default function VersionsPage() {
-  return <div className="versions page">TODO: versions page</div>;
+  const { appName } = useApplication();
+
+  return (
+    <div className="versions page">
+      <title>{`Versions | ${appName}`}</title>
+      TODO: versions page
+    </div>
+  );
 }

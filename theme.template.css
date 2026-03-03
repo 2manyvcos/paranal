@@ -383,9 +383,15 @@
 .user.dropdown > .separator {
 }
 
+.user.dropdown > .user.dropdown-item.link {
+}
+
+.user.dropdown > .admin.dropdown-item.link {
+}
+
 .user.dropdown > .unhide.dropdown-item.link {
 }
-.user.dropdown > .unhide.dropdown-item.link[data-active] {
+.user.dropdown > .unhide.dropdown-item.link[data-enabled] {
   /* used for when showing hidden services is enabled */
 }
 
@@ -398,6 +404,12 @@
 /* Home */
 
 .dashboard > .home.page {
+}
+
+.dashboard > .home.page > .header {
+}
+
+.dashboard > .home.page > .header > .name.text {
 }
 
 .dashboard > .home.page > .sections {

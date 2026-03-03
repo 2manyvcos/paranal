@@ -9,6 +9,7 @@ import DashboardScreen from './dashboard/DashboardScreen';
 import HealthStatusesPage from './dashboard/HealthStatusesPage';
 import HomePage from './dashboard/HomePage';
 import ServicePage from './dashboard/ServicePage';
+import UserPage from './dashboard/UserPage';
 import VersionsPage from './dashboard/VersionsPage';
 import { useUser } from './data/dataUser';
 import { useBooleanDataAttribute, useDataAttribute } from './dataAttributes';
@@ -72,6 +73,7 @@ function App() {
               <Route index element={<HomePage />} />
               <Route path="health-statuses" element={<HealthStatusesPage />} />
               <Route path="versions" element={<VersionsPage />} />
+              <Route path="user" element={<UserPage />} />
 
               {layout?.pages?.map((page) =>
                 !page.name ? null : (

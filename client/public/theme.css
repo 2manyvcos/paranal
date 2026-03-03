@@ -90,7 +90,7 @@ a[role='button'] {
   white-space: nowrap;
 }
 
-.dropdown-item[data-focus] {
+.dropdown-item[data-active] {
   text-decoration: underline dashed;
 }
 
