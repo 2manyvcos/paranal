@@ -73,9 +73,9 @@ export default function Navigation() {
 
         <li className="end menu-item">
           <ul className="sub menu">
-            <li className="healthstatuses menu-item">
+            <li className="health-statuses menu-item">
               <NavItemLink
-                to="/healthstatuses"
+                to="/health-statuses"
                 text="Health"
                 data-total={healthStatuses.length || undefined}
                 data-combined={

@@ -112,7 +112,7 @@ func PostHTTPCredentials(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	app.PublishClientEvent(schema.NewUpdateEvent("/v1/httpcredentials/" + url.PathEscape(newRecord.Name)))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/http-credentials/" + url.PathEscape(newRecord.Name)))
 	res.WriteHeader(http.StatusCreated)
 }
 
@@ -218,7 +218,7 @@ func PatchHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	app.PublishClientEvent(schema.NewUpdateEvent("/v1/httpcredentials/" + url.PathEscape(credentialName)))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/http-credentials/" + url.PathEscape(credentialName)))
 }
 
 func DeleteHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
@@ -240,5 +240,5 @@ func DeleteHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	app.PublishClientEvent(schema.NewUpdateEvent("/v1/httpcredentials/" + url.PathEscape(credentialName)))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/http-credentials/" + url.PathEscape(credentialName)))
 }

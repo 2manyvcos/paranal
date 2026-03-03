@@ -19,11 +19,11 @@ func New() http.Handler {
 	api.Handle("DELETE /v1/user", helper.WithAuth(http.HandlerFunc(DeleteUser)))
 	api.Handle("PUT /v1/user/password", helper.WithAuth(http.HandlerFunc(PutUserPassword)))
 
-	api.Handle("GET /v1/user/alertchannels", helper.WithAuth(http.HandlerFunc(GetUserAlertChannels)))
-	api.Handle("POST /v1/user/alertchannels", helper.WithAuth(http.HandlerFunc(PostUserAlertChannels)))
-	api.Handle("GET /v1/user/alertchannels/{channelID}", helper.WithAuth(http.HandlerFunc(GetUserAlertChannelsByID)))
-	api.Handle("PATCH /v1/user/alertchannels/{channelID}", helper.WithAuth(http.HandlerFunc(PatchUserAlertChannelsByID)))
-	api.Handle("DELETE /v1/user/alertchannels/{channelID}", helper.WithAuth(http.HandlerFunc(DeleteUserAlertChannelsByID)))
+	api.Handle("GET /v1/user/alert-channels", helper.WithAuth(http.HandlerFunc(GetUserAlertChannels)))
+	api.Handle("POST /v1/user/alert-channels", helper.WithAuth(http.HandlerFunc(PostUserAlertChannels)))
+	api.Handle("GET /v1/user/alert-channels/{channelID}", helper.WithAuth(http.HandlerFunc(GetUserAlertChannelsByID)))
+	api.Handle("PATCH /v1/user/alert-channels/{channelID}", helper.WithAuth(http.HandlerFunc(PatchUserAlertChannelsByID)))
+	api.Handle("DELETE /v1/user/alert-channels/{channelID}", helper.WithAuth(http.HandlerFunc(DeleteUserAlertChannelsByID)))
 
 	api.Handle("GET /v1/layout", helper.WithAuth(http.HandlerFunc(GetLayout)))
 	api.Handle("PUT /v1/layout", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PutLayout))))
@@ -36,23 +36,23 @@ func New() http.Handler {
 	api.Handle("PATCH /v1/users/{userName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchUsersByName))))
 	api.Handle("DELETE /v1/users/{userName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteUsersByName))))
 
-	api.Handle("GET /v1/httpcredentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetHTTPCredentials))))
-	api.Handle("POST /v1/httpcredentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostHTTPCredentials))))
-	api.Handle("GET /v1/httpcredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetHTTPCredentialsByName))))
-	api.Handle("PATCH /v1/httpcredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchHTTPCredentialsByName))))
-	api.Handle("DELETE /v1/httpcredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteHTTPCredentialsByName))))
+	api.Handle("GET /v1/http-credentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetHTTPCredentials))))
+	api.Handle("POST /v1/http-credentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostHTTPCredentials))))
+	api.Handle("GET /v1/http-credentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetHTTPCredentialsByName))))
+	api.Handle("PATCH /v1/http-credentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchHTTPCredentialsByName))))
+	api.Handle("DELETE /v1/http-credentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteHTTPCredentialsByName))))
 
-	api.Handle("GET /v1/sshcredentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetSSHCredentials))))
-	api.Handle("POST /v1/sshcredentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostSSHCredentials))))
-	api.Handle("GET /v1/sshcredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetSSHCredentialsByName))))
-	api.Handle("PATCH /v1/sshcredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchSSHCredentialsByName))))
-	api.Handle("DELETE /v1/sshcredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteSSHCredentialsByName))))
+	api.Handle("GET /v1/ssh-credentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetSSHCredentials))))
+	api.Handle("POST /v1/ssh-credentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostSSHCredentials))))
+	api.Handle("GET /v1/ssh-credentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetSSHCredentialsByName))))
+	api.Handle("PATCH /v1/ssh-credentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchSSHCredentialsByName))))
+	api.Handle("DELETE /v1/ssh-credentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteSSHCredentialsByName))))
 
-	api.Handle("GET /v1/usercredentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetUserCredentials))))
-	api.Handle("POST /v1/usercredentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostUserCredentials))))
-	api.Handle("GET /v1/usercredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetUserCredentialsByName))))
-	api.Handle("PATCH /v1/usercredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchUserCredentialsByName))))
-	api.Handle("DELETE /v1/usercredentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteUserCredentialsByName))))
+	api.Handle("GET /v1/user-credentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetUserCredentials))))
+	api.Handle("POST /v1/user-credentials", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostUserCredentials))))
+	api.Handle("GET /v1/user-credentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetUserCredentialsByName))))
+	api.Handle("PATCH /v1/user-credentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PatchUserCredentialsByName))))
+	api.Handle("DELETE /v1/user-credentials/{credentialName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(DeleteUserCredentialsByName))))
 
 	api.Handle("GET /v1/services", helper.WithAuth(http.HandlerFunc(GetServices)))
 	api.Handle("POST /v1/services", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostServices))))
@@ -73,16 +73,16 @@ func New() http.Handler {
 	api.Handle("GET /v1/services/{serviceID}/actions", helper.WithAuth(http.HandlerFunc(GetServicesByIDActions)))
 	api.Handle("POST /v1/services/{serviceID}/actions/{actionName}/run", helper.WithAuth(http.HandlerFunc(PostServicesByIDActionsByNameRun)))
 
-	api.Handle("GET /v1/healthstatuses", helper.WithAuth(http.HandlerFunc(GetHealthStatuses)))
-	api.Handle("GET /v1/services/{serviceID}/healthstatuses", helper.WithAuth(http.HandlerFunc(GetServicesByIDHealthStatuses)))
+	api.Handle("GET /v1/health-statuses", helper.WithAuth(http.HandlerFunc(GetHealthStatuses)))
+	api.Handle("GET /v1/services/{serviceID}/health-statuses", helper.WithAuth(http.HandlerFunc(GetServicesByIDHealthStatuses)))
 
 	api.Handle("GET /v1/versions", helper.WithAuth(http.HandlerFunc(GetVersions)))
 	api.Handle("GET /v1/services/{serviceID}/versions", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersions)))
 	api.Handle("GET /v1/services/{serviceID}/versions/{versionName}/details", helper.WithAuth(http.HandlerFunc(GetServicesByIDVersionsByNameDetails)))
 
-	api.Handle("GET /v1/maintenancetasks", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasks))))
-	api.Handle("GET /v1/maintenancetasks/{taskName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasksByName))))
-	api.Handle("POST /v1/maintenancetasks/{taskName}/run", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostMaintenanceTasksByNameRun))))
+	api.Handle("GET /v1/maintenance-tasks", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasks))))
+	api.Handle("GET /v1/maintenance-tasks/{taskName}", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetMaintenanceTasksByName))))
+	api.Handle("POST /v1/maintenance-tasks/{taskName}/run", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostMaintenanceTasksByNameRun))))
 
 	return api
 }

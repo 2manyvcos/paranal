@@ -16,12 +16,12 @@ func init() {
       CREATE TABLE IF NOT EXISTS users (
         name TEXT PRIMARY KEY NOT NULL,
         role INTEGER NOT NULL,
-        passwordHash TEXT NOT NULL,
-        displayName TEXT NOT NULL,
-        startPage TEXT NOT NULL,
-        errorAlerts BOOLEAN NOT NULL,
-        healthAlerts BOOLEAN NOT NULL,
-        versionAlerts BOOLEAN NOT NULL
+        password_hash TEXT NOT NULL,
+        display_name TEXT NOT NULL,
+        start_page TEXT NOT NULL,
+        error_alerts BOOLEAN NOT NULL,
+        health_alerts BOOLEAN NOT NULL,
+        version_alerts BOOLEAN NOT NULL
       )
     `)
 		if err != nil {
@@ -46,29 +46,29 @@ func UserQuery(query *schema.UserQuery) (clause string, placeholders []any) {
 	}
 	if query.HasPassword != nil {
 		if *query.HasPassword {
-			conditions = append(conditions, "IFNULL(users.passwordHash, '') <> ''")
+			conditions = append(conditions, "IFNULL(users.password_hash, '') <> ''")
 		} else {
-			conditions = append(conditions, "IFNULL(users.passwordHash, '') = ''")
+			conditions = append(conditions, "IFNULL(users.password_hash, '') = ''")
 		}
 	}
 	if query.DisplayName != nil {
-		conditions = append(conditions, "users.displayName = ?")
+		conditions = append(conditions, "users.display_name = ?")
 		placeholders = append(placeholders, *query.DisplayName)
 	}
 	if query.StartPage != nil {
-		conditions = append(conditions, "users.startPage = ?")
+		conditions = append(conditions, "users.start_page = ?")
 		placeholders = append(placeholders, *query.StartPage)
 	}
 	if query.ErrorAlerts != nil {
-		conditions = append(conditions, "IFNULL(users.errorAlerts, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(users.error_alerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.ErrorAlerts)
 	}
 	if query.HealthAlerts != nil {
-		conditions = append(conditions, "IFNULL(users.healthAlerts, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(users.health_alerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.HealthAlerts)
 	}
 	if query.VersionAlerts != nil {
-		conditions = append(conditions, "IFNULL(users.versionAlerts, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(users.version_alerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.VersionAlerts)
 	}
 	if len(conditions) == 0 {
@@ -82,7 +82,7 @@ func (i *impl) ListUsers(query *schema.UserQuery) ([]schema.User, error) {
 	where, wherePlaceholders := UserQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT name, role, passwordHash, displayName, startPage, errorAlerts, healthAlerts, versionAlerts
+      SELECT name, role, password_hash, display_name, start_page, error_alerts, health_alerts, version_alerts
       FROM users
       WHERE `+where+`
       ORDER BY name
@@ -112,7 +112,7 @@ func (i *impl) GetUser(query schema.UserQuery) (schema.User, error) {
 	var record schema.User
 	err := i.QueryRow(
 		`
-      SELECT name, role, passwordHash, displayName, startPage, errorAlerts, healthAlerts, versionAlerts
+      SELECT name, role, password_hash, display_name, start_page, error_alerts, health_alerts, version_alerts
       FROM users
       WHERE `+where+`
     `,
@@ -130,7 +130,7 @@ func (i *impl) CreateUser(record schema.User) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO users (name, role, passwordHash, displayName, startPage, errorAlerts, healthAlerts, versionAlerts)
+      INSERT INTO users (name, role, password_hash, display_name, start_page, error_alerts, health_alerts, version_alerts)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `,
 		&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.HealthAlerts, &record.VersionAlerts,
@@ -144,18 +144,18 @@ func (i *impl) CreateOrUpdateUser(record schema.User) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO users (name, role, passwordHash, displayName, startPage, errorAlerts, healthAlerts, versionAlerts)
+      INSERT INTO users (name, role, password_hash, display_name, start_page, error_alerts, health_alerts, version_alerts)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT (name)
       DO UPDATE
       SET
         role = excluded.role,
-        passwordHash = excluded.passwordHash,
-        displayName = excluded.displayName,
-        startPage = excluded.startPage,
-        errorAlerts = excluded.errorAlerts,
-        healthAlerts = excluded.healthAlerts,
-        versionAlerts = excluded.versionAlerts
+        password_hash = excluded.password_hash,
+        display_name = excluded.display_name,
+        start_page = excluded.start_page,
+        error_alerts = excluded.error_alerts,
+        health_alerts = excluded.health_alerts,
+        version_alerts = excluded.version_alerts
     `,
 		&record.Name, &record.Role, &record.PasswordHash, &record.DisplayName, &record.StartPage, &record.ErrorAlerts, &record.HealthAlerts, &record.VersionAlerts,
 	)
@@ -173,12 +173,12 @@ func (i *impl) UpdateUsers(query schema.UserQuery, record schema.User) error {
       SET
         name = ?,
         role = ?,
-        passwordHash = ?,
-        displayName = ?,
-        startPage = ?,
-        errorAlerts = ?,
-        healthAlerts = ?,
-        versionAlerts = ?
+        password_hash = ?,
+        display_name = ?,
+        start_page = ?,
+        error_alerts = ?,
+        health_alerts = ?,
+        version_alerts = ?
       WHERE `+where+`
     `,
 		slices.Concat(

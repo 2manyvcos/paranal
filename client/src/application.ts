@@ -1,12 +1,12 @@
 import { createContext, useContext, useMemo } from 'react';
-import { useLayout, type Layout } from './data/data-layout';
-import { useServices, type Service } from './data/data-services';
 import {
   useHealthStatuses,
   type HealthStatus,
-} from './data/data-healthstatuses';
-import type { User } from './data/data-user';
-import { useVersions, type Version } from './data/data-versions';
+} from './data/dataHealthStatuses';
+import { useLayout, type Layout } from './data/dataLayout';
+import { useServices, type Service } from './data/dataServices';
+import type { User } from './data/dataUser';
+import { useVersions, type Version } from './data/dataVersions';
 import { useErrorNotification } from './data/errors';
 
 export type Application = {

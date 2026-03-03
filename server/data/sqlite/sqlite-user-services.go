@@ -31,10 +31,10 @@ func (i *impl) ListUserServices(userName string, query *schema.UserServiceQuery)
 	where, wherePlaceholders := UserServiceQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, serviceconfigs.favorite, serviceconfigs.hidden, serviceconfigs.healthAlerts, serviceconfigs.versionAlerts
+      SELECT services.id, services.name, services.description, services.logo, services.url, service_configs.favorite, service_configs.hidden, service_configs.health_alerts, service_configs.version_alerts
       FROM services
-      LEFT JOIN serviceconfigs
-      ON serviceconfigs.serviceID = services.id AND serviceconfigs.userName = ?
+      LEFT JOIN service_configs
+      ON service_configs.service_id = services.id AND service_configs.user_name = ?
       WHERE `+where+`
       ORDER BY services.name
     `,
@@ -86,10 +86,10 @@ func (i *impl) GetUserService(userName string, query schema.UserServiceQuery) (s
 	var versionAlerts *bool
 	err := i.QueryRow(
 		`
-      SELECT services.id, services.name, services.description, services.logo, services.url, serviceconfigs.favorite, serviceconfigs.hidden, serviceconfigs.healthAlerts, serviceconfigs.versionAlerts
+      SELECT services.id, services.name, services.description, services.logo, services.url, service_configs.favorite, service_configs.hidden, service_configs.health_alerts, service_configs.version_alerts
       FROM services
-      LEFT JOIN serviceconfigs
-      ON services.id = serviceconfigs.serviceID AND serviceconfigs.userName = ?
+      LEFT JOIN service_configs
+      ON services.id = service_configs.service_id AND service_configs.user_name = ?
       WHERE `+where+`
     `,
 		slices.Concat(

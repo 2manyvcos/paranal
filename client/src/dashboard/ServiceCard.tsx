@@ -3,7 +3,7 @@ import { useApplication } from '@/application';
 import Image from '@/components/Image';
 import Link from '@/components/Link';
 import Text from '@/components/Text';
-import type { Service } from '@/data/data-services';
+import type { Service } from '@/data/dataServices';
 
 export default function ServiceCard({ service }: { service: Service }) {
   const { healthStatusesByServiceID, versionsByServiceID } = useApplication();
@@ -74,7 +74,7 @@ export default function ServiceCard({ service }: { service: Service }) {
         <Link
           className="unhealthy badge"
           to={{
-            pathname: '/healthstatuses',
+            pathname: '/health-statuses',
             search: new URLSearchParams({
               serviceID: service.id,
               unhealthy: 'true',

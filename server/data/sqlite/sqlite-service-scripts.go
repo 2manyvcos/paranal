@@ -13,29 +13,29 @@ import (
 func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
-      CREATE TABLE IF NOT EXISTS servicescripts (
+      CREATE TABLE IF NOT EXISTS service_scripts (
         id TEXT PRIMARY KEY NOT NULL,
-        serviceID TEXT NOT NULL,
+        service_id TEXT NOT NULL,
         name TEXT NOT NULL,
         schedule TEXT NOT NULL,
         source TEXT NOT NULL
       )
     `)
 		if err != nil {
-			return fmt.Errorf("creating table \"servicescripts\" failed - %s", err)
+			return fmt.Errorf("creating table \"service_scripts\" failed - %s", err)
 		}
 		return nil
 	})
 
 	cleanups = append(cleanups, func(i *impl) error {
 		_, err := i.Exec(`
-      DELETE FROM servicescripts
+      DELETE FROM service_scripts
       WHERE
         ROWID NOT IN (
-          SELECT servicescripts.ROWID
-          FROM servicescripts
+          SELECT service_scripts.ROWID
+          FROM service_scripts
           INNER JOIN services
-          ON servicescripts.serviceID = services.id
+          ON service_scripts.service_id = services.id
         )
     `)
 		return err
@@ -48,23 +48,23 @@ func ServiceScriptQuery(query *schema.ServiceScriptQuery) (clause string, placeh
 	}
 	var conditions []string
 	if query.ID != nil {
-		conditions = append(conditions, "servicescripts.id = ?")
+		conditions = append(conditions, "service_scripts.id = ?")
 		placeholders = append(placeholders, *query.ID)
 	}
 	if query.ServiceID != nil {
-		conditions = append(conditions, "servicescripts.serviceID = ?")
+		conditions = append(conditions, "service_scripts.service_id = ?")
 		placeholders = append(placeholders, *query.ServiceID)
 	}
 	if query.Name != nil {
-		conditions = append(conditions, "servicescripts.name = ?")
+		conditions = append(conditions, "service_scripts.name = ?")
 		placeholders = append(placeholders, *query.Name)
 	}
 	if query.Schedule != nil {
-		conditions = append(conditions, "servicescripts.schedule = ?")
+		conditions = append(conditions, "service_scripts.schedule = ?")
 		placeholders = append(placeholders, *query.Schedule)
 	}
 	if query.Source != nil {
-		conditions = append(conditions, "servicescripts.source = ?")
+		conditions = append(conditions, "service_scripts.source = ?")
 		placeholders = append(placeholders, *query.Source)
 	}
 	if len(conditions) == 0 {
@@ -78,10 +78,10 @@ func (i *impl) ListServiceScripts(query *schema.ServiceScriptQuery) ([]schema.Se
 	where, wherePlaceholders := ServiceScriptQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT servicescripts.id, servicescripts.serviceID, servicescripts.name, servicescripts.schedule, servicescripts.source
-      FROM servicescripts
+      SELECT service_scripts.id, service_scripts.service_id, service_scripts.name, service_scripts.schedule, service_scripts.source
+      FROM service_scripts
       INNER JOIN services
-      ON servicescripts.serviceID = services.id
+      ON service_scripts.service_id = services.id
       WHERE `+where+`
     `,
 		wherePlaceholders...,
@@ -109,10 +109,10 @@ func (i *impl) GetServiceScript(query schema.ServiceScriptQuery) (schema.Service
 	var record schema.ServiceScript
 	err := i.QueryRow(
 		`
-      SELECT servicescripts.id, servicescripts.serviceID, servicescripts.name, servicescripts.schedule, servicescripts.source
-      FROM servicescripts
+      SELECT service_scripts.id, service_scripts.service_id, service_scripts.name, service_scripts.schedule, service_scripts.source
+      FROM service_scripts
       INNER JOIN services
-      ON servicescripts.serviceID = services.id
+      ON service_scripts.service_id = services.id
       WHERE `+where+`
     `,
 		wherePlaceholders...,
@@ -129,7 +129,7 @@ func (i *impl) CreateServiceScript(record schema.ServiceScript) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO servicescripts (id, serviceID, name, schedule, source)
+      INSERT INTO service_scripts (id, service_id, name, schedule, source)
       VALUES (?, ?, ?, ?, ?)
     `,
 		&record.ID, &record.ServiceID, &record.Name, &record.Schedule, &record.Source,
@@ -144,10 +144,10 @@ func (i *impl) UpdateServiceScripts(query schema.ServiceScriptQuery, record sche
 	where, wherePlaceholders := ServiceScriptQuery(&query)
 	result, err := i.Exec(
 		`
-      UPDATE servicescripts
+      UPDATE service_scripts
       SET
         id = ?,
-        serviceID = ?,
+        service_id = ?,
         name = ?,
         schedule = ?,
         source = ?
@@ -165,7 +165,7 @@ func (i *impl) DeleteServiceScripts(query schema.ServiceScriptQuery) error {
 	where, wherePlaceholders := ServiceScriptQuery(&query)
 	result, err := i.Exec(
 		`
-      DELETE FROM servicescripts
+      DELETE FROM service_scripts
       WHERE `+where+`
     `,
 		wherePlaceholders...,

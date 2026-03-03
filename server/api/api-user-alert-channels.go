@@ -135,7 +135,7 @@ func PostUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alertchannels/"+url.PathEscape(newRecord.ID)))
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alert-channels/"+url.PathEscape(newRecord.ID)))
 	res.WriteHeader(http.StatusCreated)
 }
 
@@ -263,7 +263,7 @@ func PatchUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alertchannels/"+url.PathEscape(channelID)))
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alert-channels/"+url.PathEscape(channelID)))
 }
 
 func DeleteUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
@@ -291,5 +291,5 @@ func DeleteUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alertchannels/"+url.PathEscape(channelID)))
+	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alert-channels/"+url.PathEscape(channelID)))
 }

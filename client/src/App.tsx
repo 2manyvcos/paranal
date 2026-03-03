@@ -10,7 +10,7 @@ import HealthStatusesPage from './dashboard/HealthStatusesPage';
 import HomePage from './dashboard/HomePage';
 import ServicePage from './dashboard/ServicePage';
 import VersionsPage from './dashboard/VersionsPage';
-import { useUser } from './data/data-user';
+import { useUser } from './data/dataUser';
 import { useBooleanDataAttribute, useDataAttribute } from './dataAttributes';
 import ErrorScreen from './error/ErrorScreen';
 import NotFoundPage from './error/NotFoundPage';
@@ -70,7 +70,7 @@ function App() {
 
             <Route path="/" element={<DashboardScreen />}>
               <Route index element={<HomePage />} />
-              <Route path="healthstatuses" element={<HealthStatusesPage />} />
+              <Route path="health-statuses" element={<HealthStatusesPage />} />
               <Route path="versions" element={<VersionsPage />} />
 
               {layout?.pages?.map((page) =>

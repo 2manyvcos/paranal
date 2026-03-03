@@ -13,30 +13,30 @@ import (
 func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
-      CREATE TABLE IF NOT EXISTS useralertchannels (
+      CREATE TABLE IF NOT EXISTS user_alert_channels (
         id TEXT PRIMARY KEY NOT NULL,
-        userName TEXT NOT NULL,
+        user_name TEXT NOT NULL,
         url TEXT NOT NULL,
-        errorAlerts BOOLEAN NOT NULL,
-        healthAlerts BOOLEAN NOT NULL,
-        versionAlerts BOOLEAN NOT NULL
+        error_alerts BOOLEAN NOT NULL,
+        health_alerts BOOLEAN NOT NULL,
+        version_alerts BOOLEAN NOT NULL
       )
     `)
 		if err != nil {
-			return fmt.Errorf("creating table \"useralertchannels\" failed - %s", err)
+			return fmt.Errorf("creating table \"user_alert_channels\" failed - %s", err)
 		}
 		return nil
 	})
 
 	cleanups = append(cleanups, func(i *impl) error {
 		_, err := i.Exec(`
-      DELETE FROM useralertchannels
+      DELETE FROM user_alert_channels
       WHERE
         ROWID NOT IN (
-          SELECT useralertchannels.ROWID
-          FROM useralertchannels
+          SELECT user_alert_channels.ROWID
+          FROM user_alert_channels
           INNER JOIN users
-          ON useralertchannels.userName = users.name
+          ON user_alert_channels.user_name = users.name
         )
     `)
 		return err
@@ -49,30 +49,30 @@ func UserAlertChannelQuery(query *schema.UserAlertChannelQuery) (clause string, 
 	}
 	var conditions []string
 	if query.ID != nil {
-		conditions = append(conditions, "useralertchannels.id = ?")
+		conditions = append(conditions, "user_alert_channels.id = ?")
 		placeholders = append(placeholders, *query.ID)
 	}
 	if query.UserName != nil {
-		conditions = append(conditions, "useralertchannels.userName = ?")
+		conditions = append(conditions, "user_alert_channels.user_name = ?")
 		placeholders = append(placeholders, *query.UserName)
 	}
 	if query.HasURL != nil {
 		if *query.HasURL {
-			conditions = append(conditions, "IFNULL(useralertchannels.url, '') <> ''")
+			conditions = append(conditions, "IFNULL(user_alert_channels.url, '') <> ''")
 		} else {
-			conditions = append(conditions, "IFNULL(useralertchannels.url, '') = ''")
+			conditions = append(conditions, "IFNULL(user_alert_channels.url, '') = ''")
 		}
 	}
 	if query.ErrorAlerts != nil {
-		conditions = append(conditions, "IFNULL(useralertchannels.errorAlerts, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(user_alert_channels.error_alerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.ErrorAlerts)
 	}
 	if query.HealthAlerts != nil {
-		conditions = append(conditions, "IFNULL(useralertchannels.healthAlerts, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(user_alert_channels.health_alerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.HealthAlerts)
 	}
 	if query.VersionAlerts != nil {
-		conditions = append(conditions, "IFNULL(useralertchannels.versionAlerts, FALSE) = ?")
+		conditions = append(conditions, "IFNULL(user_alert_channels.version_alerts, FALSE) = ?")
 		placeholders = append(placeholders, *query.VersionAlerts)
 	}
 	if len(conditions) == 0 {
@@ -86,10 +86,10 @@ func (i *impl) ListUserAlertChannels(query *schema.UserAlertChannelQuery) ([]sch
 	where, wherePlaceholders := UserAlertChannelQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url, useralertchannels.errorAlerts, useralertchannels.healthAlerts, useralertchannels.versionAlerts
-      FROM useralertchannels
+      SELECT user_alert_channels.id, user_alert_channels.user_name, user_alert_channels.url, user_alert_channels.error_alerts, user_alert_channels.health_alerts, user_alert_channels.version_alerts
+      FROM user_alert_channels
       INNER JOIN users
-      ON useralertchannels.userName = users.name
+      ON user_alert_channels.user_name = users.name
       WHERE `+where+`
     `,
 		wherePlaceholders...,
@@ -117,10 +117,10 @@ func (i *impl) GetUserAlertChannel(query schema.UserAlertChannelQuery) (schema.U
 	var record schema.UserAlertChannel
 	err := i.QueryRow(
 		`
-      SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url, useralertchannels.errorAlerts, useralertchannels.healthAlerts, useralertchannels.versionAlerts
-      FROM useralertchannels
+      SELECT user_alert_channels.id, user_alert_channels.user_name, user_alert_channels.url, user_alert_channels.error_alerts, user_alert_channels.health_alerts, user_alert_channels.version_alerts
+      FROM user_alert_channels
       INNER JOIN users
-      ON useralertchannels.userName = users.name
+      ON user_alert_channels.user_name = users.name
       WHERE `+where+`
     `,
 		wherePlaceholders...,
@@ -137,7 +137,7 @@ func (i *impl) CreateUserAlertChannel(record schema.UserAlertChannel) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO useralertchannels (id, userName, url, errorAlerts, healthAlerts, versionAlerts)
+      INSERT INTO user_alert_channels (id, user_name, url, error_alerts, health_alerts, version_alerts)
       VALUES (?, ?, ?, ?, ?, ?)
     `,
 		&record.ID, &record.UserName, &record.URL, &record.ErrorAlerts, &record.HealthAlerts, &record.VersionAlerts,
@@ -152,14 +152,14 @@ func (i *impl) UpdateUserAlertChannels(query schema.UserAlertChannelQuery, recor
 	where, wherePlaceholders := UserAlertChannelQuery(&query)
 	result, err := i.Exec(
 		`
-      UPDATE useralertchannels
+      UPDATE user_alert_channels
       SET
         id = ?,
-        userName = ?,
+        user_name = ?,
         url = ?,
-        errorAlerts = ?,
-        healthAlerts = ?,
-        versionAlerts = ?
+        error_alerts = ?,
+        health_alerts = ?,
+        version_alerts = ?
       WHERE `+where+`
     `,
 		slices.Concat(
@@ -174,7 +174,7 @@ func (i *impl) DeleteUserAlertChannels(query schema.UserAlertChannelQuery) error
 	where, wherePlaceholders := UserAlertChannelQuery(&query)
 	result, err := i.Exec(
 		`
-      DELETE FROM useralertchannels
+      DELETE FROM user_alert_channels
       WHERE `+where+`
     `,
 		wherePlaceholders...,

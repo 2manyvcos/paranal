@@ -13,14 +13,14 @@ import (
 func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
-      CREATE TABLE IF NOT EXISTS usercredentials (
+      CREATE TABLE IF NOT EXISTS user_credentials (
         name TEXT PRIMARY KEY NOT NULL,
         description TEXT NOT NULL,
         value TEXT NOT NULL
       )
     `)
 		if err != nil {
-			return fmt.Errorf("creating table \"usercredentials\" failed - %s", err)
+			return fmt.Errorf("creating table \"user_credentials\" failed - %s", err)
 		}
 		return nil
 	})
@@ -32,18 +32,18 @@ func UserCredentialQuery(query *schema.UserCredentialQuery) (clause string, plac
 	}
 	var conditions []string
 	if query.Name != nil {
-		conditions = append(conditions, "usercredentials.name = ?")
+		conditions = append(conditions, "user_credentials.name = ?")
 		placeholders = append(placeholders, *query.Name)
 	}
 	if query.Description != nil {
-		conditions = append(conditions, "usercredentials.description = ?")
+		conditions = append(conditions, "user_credentials.description = ?")
 		placeholders = append(placeholders, *query.Description)
 	}
 	if query.HasValue != nil {
 		if *query.HasValue {
-			conditions = append(conditions, "IFNULL(usercredentials.value, '') <> ''")
+			conditions = append(conditions, "IFNULL(user_credentials.value, '') <> ''")
 		} else {
-			conditions = append(conditions, "IFNULL(usercredentials.value, '') = ''")
+			conditions = append(conditions, "IFNULL(user_credentials.value, '') = ''")
 		}
 	}
 	if len(conditions) == 0 {
@@ -58,7 +58,7 @@ func (i *impl) ListUserCredentials(query *schema.UserCredentialQuery) ([]schema.
 	rows, err := i.Query(
 		`
       SELECT name, description, value
-      FROM usercredentials
+      FROM user_credentials
       WHERE `+where+`
       ORDER BY name
     `,
@@ -88,7 +88,7 @@ func (i *impl) GetUserCredential(query schema.UserCredentialQuery) (schema.UserC
 	err := i.QueryRow(
 		`
       SELECT name, description, value
-      FROM usercredentials
+      FROM user_credentials
       WHERE `+where+`
     `,
 		wherePlaceholders...,
@@ -105,7 +105,7 @@ func (i *impl) CreateUserCredential(record schema.UserCredential) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO usercredentials (name, description, value)
+      INSERT INTO user_credentials (name, description, value)
       VALUES (?, ?, ?)
     `,
 		&record.Name, &record.Description, &record.Value,
@@ -120,7 +120,7 @@ func (i *impl) UpdateUserCredentials(query schema.UserCredentialQuery, record sc
 	where, wherePlaceholders := UserCredentialQuery(&query)
 	result, err := i.Exec(
 		`
-      UPDATE usercredentials
+      UPDATE user_credentials
       SET
         name = ?,
         description = ?,
@@ -139,7 +139,7 @@ func (i *impl) DeleteUserCredentials(query schema.UserCredentialQuery) error {
 	where, wherePlaceholders := UserCredentialQuery(&query)
 	result, err := i.Exec(
 		`
-      DELETE FROM usercredentials
+      DELETE FROM user_credentials
       WHERE `+where+`
     `,
 		wherePlaceholders...,

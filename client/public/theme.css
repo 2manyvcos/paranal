@@ -67,6 +67,14 @@ a[role='button'] {
   padding: 0;
 }
 
+.health-statuses.menu-item > .nav-item[data-combined]::after {
+  content: ' (' attr(data-combined) ')';
+}
+
+.versions.menu-item > .nav-item[data-combined]::after {
+  content: ' (' attr(data-combined) ')';
+}
+
 .footer.markdown > .content {
   text-align: center;
 }

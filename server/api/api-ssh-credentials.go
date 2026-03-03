@@ -114,7 +114,7 @@ func PostSSHCredentials(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	app.PublishClientEvent(schema.NewUpdateEvent("/v1/sshcredentials/" + url.PathEscape(newRecord.Name)))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/ssh-credentials/" + url.PathEscape(newRecord.Name)))
 	res.WriteHeader(http.StatusCreated)
 }
 
@@ -229,7 +229,7 @@ func PatchSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	app.PublishClientEvent(schema.NewUpdateEvent("/v1/sshcredentials/" + url.PathEscape(credentialName)))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/ssh-credentials/" + url.PathEscape(credentialName)))
 }
 
 func DeleteSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
@@ -251,5 +251,5 @@ func DeleteSSHCredentialsByName(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	app.PublishClientEvent(schema.NewUpdateEvent("/v1/sshcredentials/" + url.PathEscape(credentialName)))
+	app.PublishClientEvent(schema.NewUpdateEvent("/v1/ssh-credentials/" + url.PathEscape(credentialName)))
 }

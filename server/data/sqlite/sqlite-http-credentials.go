@@ -13,7 +13,7 @@ import (
 func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
-      CREATE TABLE IF NOT EXISTS httpcredentials (
+      CREATE TABLE IF NOT EXISTS http_credentials (
         name TEXT PRIMARY KEY NOT NULL,
         type INTEGER NOT NULL,
         key TEXT NOT NULL,
@@ -21,7 +21,7 @@ func init() {
       )
     `)
 		if err != nil {
-			return fmt.Errorf("creating table \"httpcredentials\" failed - %s", err)
+			return fmt.Errorf("creating table \"http_credentials\" failed - %s", err)
 		}
 		return nil
 	})
@@ -33,22 +33,22 @@ func HTTPCredentialQuery(query *schema.HTTPCredentialQuery) (clause string, plac
 	}
 	var conditions []string
 	if query.Name != nil {
-		conditions = append(conditions, "httpcredentials.name = ?")
+		conditions = append(conditions, "http_credentials.name = ?")
 		placeholders = append(placeholders, *query.Name)
 	}
 	if query.Type != nil {
-		conditions = append(conditions, "httpcredentials.type = ?")
+		conditions = append(conditions, "http_credentials.type = ?")
 		placeholders = append(placeholders, *query.Type)
 	}
 	if query.Key != nil {
-		conditions = append(conditions, "httpcredentials.key = ?")
+		conditions = append(conditions, "http_credentials.key = ?")
 		placeholders = append(placeholders, *query.Key)
 	}
 	if query.HasValue != nil {
 		if *query.HasValue {
-			conditions = append(conditions, "IFNULL(httpcredentials.value, '') <> ''")
+			conditions = append(conditions, "IFNULL(http_credentials.value, '') <> ''")
 		} else {
-			conditions = append(conditions, "IFNULL(httpcredentials.value, '') = ''")
+			conditions = append(conditions, "IFNULL(http_credentials.value, '') = ''")
 		}
 	}
 	if len(conditions) == 0 {
@@ -63,7 +63,7 @@ func (i *impl) ListHTTPCredentials(query *schema.HTTPCredentialQuery) ([]schema.
 	rows, err := i.Query(
 		`
       SELECT name, type, key, value
-      FROM httpcredentials
+      FROM http_credentials
       WHERE `+where+`
       ORDER BY name
     `,
@@ -93,7 +93,7 @@ func (i *impl) GetHTTPCredential(query schema.HTTPCredentialQuery) (schema.HTTPC
 	err := i.QueryRow(
 		`
       SELECT name, type, key, value
-      FROM httpcredentials
+      FROM http_credentials
       WHERE `+where+`
     `,
 		wherePlaceholders...,
@@ -110,7 +110,7 @@ func (i *impl) CreateHTTPCredential(record schema.HTTPCredential) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO httpcredentials (name, type, key, value)
+      INSERT INTO http_credentials (name, type, key, value)
       VALUES (?, ?, ?, ?)
     `,
 		&record.Name, &record.Type, &record.Key, &record.Value,
@@ -125,7 +125,7 @@ func (i *impl) UpdateHTTPCredentials(query schema.HTTPCredentialQuery, record sc
 	where, wherePlaceholders := HTTPCredentialQuery(&query)
 	result, err := i.Exec(
 		`
-      UPDATE httpcredentials
+      UPDATE http_credentials
       SET
         name = ?,
         type = ?,
@@ -145,7 +145,7 @@ func (i *impl) DeleteHTTPCredentials(query schema.HTTPCredentialQuery) error {
 	where, wherePlaceholders := HTTPCredentialQuery(&query)
 	result, err := i.Exec(
 		`
-      DELETE FROM httpcredentials
+      DELETE FROM http_credentials
       WHERE `+where+`
     `,
 		wherePlaceholders...,

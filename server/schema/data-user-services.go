@@ -1,6 +1,6 @@
 package schema
 
-// index for services joined to serviceconfigs
+// index for services joined to service_configs
 
 type UserServiceQuery struct {
 	ServiceQuery

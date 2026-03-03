@@ -13,15 +13,15 @@ import (
 func init() {
 	setups = append(setups, func(i *impl) error {
 		_, err := i.Exec(`
-      CREATE TABLE IF NOT EXISTS sshcredentials (
+      CREATE TABLE IF NOT EXISTS ssh_credentials (
         name TEXT PRIMARY KEY NOT NULL,
         user TEXT NOT NULL,
         password TEXT NOT NULL,
-        privateKey TEXT NOT NULL
+        private_key TEXT NOT NULL
       )
     `)
 		if err != nil {
-			return fmt.Errorf("creating table \"sshcredentials\" failed - %s", err)
+			return fmt.Errorf("creating table \"ssh_credentials\" failed - %s", err)
 		}
 		return nil
 	})
@@ -33,25 +33,25 @@ func SSHCredentialQuery(query *schema.SSHCredentialQuery) (clause string, placeh
 	}
 	var conditions []string
 	if query.Name != nil {
-		conditions = append(conditions, "sshcredentials.name = ?")
+		conditions = append(conditions, "ssh_credentials.name = ?")
 		placeholders = append(placeholders, *query.Name)
 	}
 	if query.User != nil {
-		conditions = append(conditions, "sshcredentials.user = ?")
+		conditions = append(conditions, "ssh_credentials.user = ?")
 		placeholders = append(placeholders, *query.User)
 	}
 	if query.HasPassword != nil {
 		if *query.HasPassword {
-			conditions = append(conditions, "IFNULL(sshcredentials.password, '') <> ''")
+			conditions = append(conditions, "IFNULL(ssh_credentials.password, '') <> ''")
 		} else {
-			conditions = append(conditions, "IFNULL(sshcredentials.password, '') = ''")
+			conditions = append(conditions, "IFNULL(ssh_credentials.password, '') = ''")
 		}
 	}
 	if query.HasPrivateKey != nil {
 		if *query.HasPrivateKey {
-			conditions = append(conditions, "IFNULL(sshcredentials.privateKey, '') <> ''")
+			conditions = append(conditions, "IFNULL(ssh_credentials.private_key, '') <> ''")
 		} else {
-			conditions = append(conditions, "IFNULL(sshcredentials.privateKey, '') = ''")
+			conditions = append(conditions, "IFNULL(ssh_credentials.private_key, '') = ''")
 		}
 	}
 	if len(conditions) == 0 {
@@ -65,8 +65,8 @@ func (i *impl) ListSSHCredentials(query *schema.SSHCredentialQuery) ([]schema.SS
 	where, wherePlaceholders := SSHCredentialQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT name, user, password, privateKey
-      FROM sshcredentials
+      SELECT name, user, password, private_key
+      FROM ssh_credentials
       WHERE `+where+`
       ORDER BY name
     `,
@@ -95,8 +95,8 @@ func (i *impl) GetSSHCredential(query schema.SSHCredentialQuery) (schema.SSHCred
 	var record schema.SSHCredential
 	err := i.QueryRow(
 		`
-      SELECT name, user, password, privateKey
-      FROM sshcredentials
+      SELECT name, user, password, private_key
+      FROM ssh_credentials
       WHERE `+where+`
     `,
 		wherePlaceholders...,
@@ -113,7 +113,7 @@ func (i *impl) CreateSSHCredential(record schema.SSHCredential) error {
 	}
 	_, err := i.Exec(
 		`
-      INSERT INTO sshcredentials (name, user, password, privateKey)
+      INSERT INTO ssh_credentials (name, user, password, private_key)
       VALUES (?, ?, ?, ?)
     `,
 		&record.Name, &record.User, &record.Password, &record.PrivateKey,
@@ -128,12 +128,12 @@ func (i *impl) UpdateSSHCredentials(query schema.SSHCredentialQuery, record sche
 	where, wherePlaceholders := SSHCredentialQuery(&query)
 	result, err := i.Exec(
 		`
-      UPDATE sshcredentials
+      UPDATE ssh_credentials
       SET
         name = ?,
         user = ?,
         password = ?
-        privateKey = ?
+        private_key = ?
       WHERE `+where+`
     `,
 		slices.Concat(
@@ -148,7 +148,7 @@ func (i *impl) DeleteSSHCredentials(query schema.SSHCredentialQuery) error {
 	where, wherePlaceholders := SSHCredentialQuery(&query)
 	result, err := i.Exec(
 		`
-      DELETE FROM sshcredentials
+      DELETE FROM ssh_credentials
       WHERE `+where+`
     `,
 		wherePlaceholders...,

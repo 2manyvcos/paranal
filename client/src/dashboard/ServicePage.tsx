@@ -2,7 +2,7 @@ import { useApplication } from '@/application';
 import Image from '@/components/Image';
 import Markdown from '@/components/Markdown';
 import Text from '@/components/Text';
-import type { Page } from '@/data/data-layout';
+import type { Page } from '@/data/dataLayout';
 import ServiceCard from './ServiceCard';
 
 export default function ServicePage({ page }: { page: Page }) {

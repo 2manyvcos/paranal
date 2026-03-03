@@ -407,8 +407,8 @@ func updateServiceState(s *State, serviceState *serviceState, serviceID string) 
 	sort.Sort(ByActionOrder(serviceState.actionsSorted))
 	escapedServiceID := url.PathEscape(serviceID)
 	if objectHash(previousHealthStatusesSorted) != objectHash(serviceState.healthStatusesSorted) {
-		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/healthstatuses"))
-		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/healthstatuses"))
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/health-statuses"))
+		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + escapedServiceID + "/health-statuses"))
 	}
 	if objectHash(previousVersionsSorted) != objectHash(serviceState.versionsSorted) {
 		s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/versions"))

@@ -23,23 +23,23 @@ func ServiceAlertChannelQuery(query *schema.ServiceAlertChannelQuery) (clause st
 	placeholders = append(placeholders, serviceConfigPlaceholders...)
 	if query.ErrorAlerts != nil {
 		if *query.ErrorAlerts {
-			conditions = append(conditions, "IFNULL(useralertchannels.errorAlerts, FALSE) = TRUE AND IFNULL(users.errorAlerts, FALSE) = TRUE")
+			conditions = append(conditions, "IFNULL(user_alert_channels.error_alerts, FALSE) = TRUE AND IFNULL(users.error_alerts, FALSE) = TRUE")
 		} else {
-			conditions = append(conditions, "(IFNULL(useralertchannels.errorAlerts, FALSE) = FALSE OR IFNULL(users.errorAlerts, FALSE) = FALSE)")
+			conditions = append(conditions, "(IFNULL(user_alert_channels.error_alerts, FALSE) = FALSE OR IFNULL(users.error_alerts, FALSE) = FALSE)")
 		}
 	}
 	if query.HealthAlerts != nil {
 		if *query.HealthAlerts {
-			conditions = append(conditions, "IFNULL(useralertchannels.healthAlerts, FALSE) = TRUE AND (IFNULL(users.healthAlerts, FALSE) = TRUE OR IFNULL(serviceconfigs.healthAlerts, FALSE) = TRUE)")
+			conditions = append(conditions, "IFNULL(user_alert_channels.health_alerts, FALSE) = TRUE AND (IFNULL(users.health_alerts, FALSE) = TRUE OR IFNULL(service_configs.health_alerts, FALSE) = TRUE)")
 		} else {
-			conditions = append(conditions, "(IFNULL(useralertchannels.healthAlerts, FALSE) = FALSE OR (IFNULL(users.healthAlerts, FALSE) = FALSE AND IFNULL(serviceconfigs.healthAlerts, FALSE) = FALSE))")
+			conditions = append(conditions, "(IFNULL(user_alert_channels.health_alerts, FALSE) = FALSE OR (IFNULL(users.health_alerts, FALSE) = FALSE AND IFNULL(service_configs.health_alerts, FALSE) = FALSE))")
 		}
 	}
 	if query.VersionAlerts != nil {
 		if *query.VersionAlerts {
-			conditions = append(conditions, "IFNULL(useralertchannels.versionAlerts, FALSE) = TRUE AND (IFNULL(users.versionAlerts, FALSE) = TRUE OR IFNULL(serviceconfigs.versionAlerts, FALSE) = TRUE)")
+			conditions = append(conditions, "IFNULL(user_alert_channels.version_alerts, FALSE) = TRUE AND (IFNULL(users.version_alerts, FALSE) = TRUE OR IFNULL(service_configs.version_alerts, FALSE) = TRUE)")
 		} else {
-			conditions = append(conditions, "(IFNULL(useralertchannels.versionAlerts, FALSE) = FALSE OR (IFNULL(users.versionAlerts, FALSE) = FALSE AND IFNULL(serviceconfigs.versionAlerts, FALSE) = FALSE))")
+			conditions = append(conditions, "(IFNULL(user_alert_channels.version_alerts, FALSE) = FALSE OR (IFNULL(users.version_alerts, FALSE) = FALSE AND IFNULL(service_configs.version_alerts, FALSE) = FALSE))")
 		}
 	}
 	if len(conditions) == 0 {
@@ -53,12 +53,12 @@ func (i *impl) ListServiceAlertChannels(serviceID string, query *schema.ServiceA
 	where, wherePlaceholders := ServiceAlertChannelQuery(query)
 	rows, err := i.Query(
 		`
-      SELECT useralertchannels.id, useralertchannels.userName, useralertchannels.url, useralertchannels.errorAlerts, useralertchannels.healthAlerts, useralertchannels.versionAlerts
-      FROM useralertchannels
+      SELECT user_alert_channels.id, user_alert_channels.user_name, user_alert_channels.url, user_alert_channels.error_alerts, user_alert_channels.health_alerts, user_alert_channels.version_alerts
+      FROM user_alert_channels
       INNER JOIN users
-      ON useralertchannels.userName = users.name
-      LEFT JOIN serviceconfigs
-      ON serviceconfigs.userName = users.name AND serviceconfigs.serviceID = ?
+      ON user_alert_channels.user_name = users.name
+      LEFT JOIN service_configs
+      ON service_configs.user_name = users.name AND service_configs.service_id = ?
       WHERE `+where+`
     `,
 		slices.Concat(

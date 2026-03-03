@@ -66,7 +66,7 @@ func (t *scheduledMaintenanceTask) Run() error {
 func newMaintenanceTaskRunner(s *State, name string, task *scheduledMaintenanceTask, fn func()) {
 	task.lock.Lock()
 	task.running = true
-	s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenancetasks/" + url.PathEscape(name)))
+	s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenance-tasks/" + url.PathEscape(name)))
 	task.lock.Unlock()
 
 	log.Printf("Running maintenance task \"%s\"\n", name)
@@ -75,7 +75,7 @@ func newMaintenanceTaskRunner(s *State, name string, task *scheduledMaintenanceT
 
 	task.lock.Lock()
 	task.running = false
-	s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenancetasks/" + url.PathEscape(name)))
+	s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenance-tasks/" + url.PathEscape(name)))
 	task.lock.Unlock()
 }
 
@@ -86,7 +86,7 @@ func (s *State) setupManualMaintenanceTask(name string, fn func()) error {
 			task.lock.Lock()
 			task.lastRun = time.Now()
 			task.running = true
-			s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenancetasks/" + url.PathEscape(name)))
+			s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenance-tasks/" + url.PathEscape(name)))
 			task.lock.Unlock()
 
 			log.Printf("Running maintenance task \"%s\"\n", name)
@@ -95,7 +95,7 @@ func (s *State) setupManualMaintenanceTask(name string, fn func()) error {
 
 			task.lock.Lock()
 			task.running = false
-			s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenancetasks/" + url.PathEscape(name)))
+			s.app.PublishClientEvent(schema.NewUpdateEvent("/v1/maintenance-tasks/" + url.PathEscape(name)))
 			task.lock.Unlock()
 		}()
 		return nil

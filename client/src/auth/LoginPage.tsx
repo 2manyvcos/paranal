@@ -6,7 +6,7 @@ import { useApplication } from '@/application';
 import Button from '@/components/Button';
 import Text from '@/components/Text';
 import { setAccessToken } from '@/data/accessTokens';
-import type { Auth } from '@/data/data-auth';
+import type { Auth } from '@/data/dataAuth';
 import { HTTP_UNAUTHORIZED, HTTPError } from '@/data/errors';
 import { notify } from '@/notifications/notification';
 

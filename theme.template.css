@@ -251,14 +251,14 @@
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .healthstatuses.menu-item {
+  > .health-statuses.menu-item {
 }
 .dashboard
   > .navigation
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .healthstatuses.menu-item
+  > .health-statuses.menu-item
   > .nav-item.link {
 }
 .dashboard
@@ -266,7 +266,7 @@
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .healthstatuses.menu-item
+  > .health-statuses.menu-item
   > .nav-item.link[data-active] {
   /* used for when the link refers to the active page */
 }
@@ -275,7 +275,7 @@
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .healthstatuses.menu-item
+  > .health-statuses.menu-item
   > .nav-item.link[data-total] {
   /* number of total health statuses if any */
 }
@@ -284,7 +284,7 @@
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .healthstatuses.menu-item
+  > .health-statuses.menu-item
   > .nav-item.link[data-combined] {
   /* number of health statuses that need attention if any */
 }
@@ -293,7 +293,7 @@
   > .menu
   > .end.menu-item
   > .sub.menu
-  > .healthstatuses.menu-item
+  > .health-statuses.menu-item
   > .nav-item.link[data-unhealthy] {
   /* number of unhealthy health statuses if any */
 }

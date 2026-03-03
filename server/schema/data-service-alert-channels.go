@@ -1,6 +1,6 @@
 package schema
 
-// index for useralertchannels joined to users and serviceconfigs
+// index for user_alert_channels joined to users and service_configs
 
 type ServiceAlertChannelQuery struct {
 	UserAlertChannelQuery

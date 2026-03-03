@@ -35,7 +35,7 @@ function healthStatusQuery(query?: HealthStatusQuery): string {
 
 export function useHealthStatuses(query?: HealthStatusQuery) {
   return useResource<FetchProviderType, HealthStatus[] | undefined>({
-    name: 'v1/healthstatuses',
+    name: 'v1/health-statuses',
     query: { search: healthStatusQuery(query) },
     events: true,
     disabled: query?.disabled,
