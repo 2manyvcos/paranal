@@ -19,14 +19,14 @@ import {
   type ActionGroup,
 } from '@/data/dataServicesActions';
 import { notifyError, useErrorNotification } from '@/data/errors';
-import ServiceMenuAction from './ServiceMenuAction';
+import ServiceDropdownActionItem from './ServiceDropdownActionItem';
 
 type GroupedActions = {
   group: ActionGroup;
   actions: Action[];
 };
 
-export default function ServiceMenu({
+export default function ServiceDropdown({
   service,
   open,
 }: {
@@ -159,7 +159,7 @@ export default function ServiceMenu({
       <MenuSeparator className="dropdown-separator" />
 
       {ungroupedActions.map((action) => (
-        <ServiceMenuAction
+        <ServiceDropdownActionItem
           key={action.name}
           service={service}
           action={action}
@@ -174,7 +174,7 @@ export default function ServiceMenu({
           <Text className="heading" as={MenuHeading} text={bundle.group.name} />
 
           {bundle.actions.map((action) => (
-            <ServiceMenuAction
+            <ServiceDropdownActionItem
               key={action.name}
               service={service}
               action={action}

@@ -5,7 +5,7 @@ import Image from '@/components/Image';
 import Link from '@/components/Link';
 import Text from '@/components/Text';
 import { type Service } from '@/data/dataServices';
-import ServiceMenu from './ServiceMenu';
+import ServiceDropdown from './ServiceDropdown';
 
 export default function ServiceCard({
   service,
@@ -73,7 +73,7 @@ export default function ServiceCard({
                     <span className="content">&#x22ee;</span>
                   </MenuButton>
 
-                  <ServiceMenu service={service} open={open} />
+                  <ServiceDropdown service={service} open={open} />
                 </>
               )}
             </Menu>

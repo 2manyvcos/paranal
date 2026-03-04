@@ -1,5 +1,3 @@
-import type { FetchProviderType } from '@civet/common';
-import { useConfigContext } from '@civet/core';
 import {
   Combobox,
   ComboboxInput,
@@ -7,32 +5,23 @@ import {
   ComboboxOptions,
   Menu,
   MenuButton,
-  MenuItem,
-  MenuItems,
-  MenuSeparator,
 } from '@headlessui/react';
 import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router';
 import { useApplication } from '@/application';
 import Image from '@/components/Image';
-import Link from '@/components/Link';
 import NavItemLink from '@/components/NavItemLink';
 import Text from '@/components/Text';
-import { unsetAccessToken } from '@/data/accessTokens';
 import type { Service } from '@/data/dataServices';
+import UserDropdown from './UserDropdown';
 
 export default function Navigation() {
   const navigate = useNavigate();
-  const { dataProvider } = useConfigContext<FetchProviderType>();
   const {
     appName,
     tagline,
     logo,
     userName,
-    admin,
-    unhide,
-    setUnhide,
-    logoutRedirectURL,
     layout,
     services,
     healthStatuses,
@@ -211,58 +200,7 @@ export default function Navigation() {
                   <span className="content">{userName || undefined}</span>
                 </MenuButton>
 
-                <MenuItems className="user dropdown" anchor="bottom">
-                  <MenuItem>
-                    <Link
-                      className="user dropdown-item"
-                      to="/user"
-                      text="Settings"
-                    />
-                  </MenuItem>
-
-                  {!admin ? null : (
-                    <MenuItem>
-                      <Link
-                        className="admin dropdown-item"
-                        to="/admin"
-                        text="Admin Panel"
-                      />
-                    </MenuItem>
-                  )}
-
-                  <MenuSeparator className="dropdown-separator" />
-
-                  <MenuItem>
-                    <Link
-                      className="unhide dropdown-item"
-                      as="a"
-                      onClick={() => {
-                        setUnhide((prev) => !prev);
-                      }}
-                      text={
-                        unhide
-                          ? 'Stop showing hidden services'
-                          : 'Show hidden services'
-                      }
-                      data-enabled={unhide ? '' : undefined}
-                    />
-                  </MenuItem>
-
-                  <MenuSeparator className="dropdown-separator" />
-
-                  <MenuItem>
-                    <Link
-                      className="logout dropdown-item"
-                      as="a"
-                      href={logoutRedirectURL || undefined}
-                      onClick={() => {
-                        unsetAccessToken();
-                        dataProvider!.notify('v1/user');
-                      }}
-                      text="Logout"
-                    />
-                  </MenuItem>
-                </MenuItems>
+                <UserDropdown />
               </Menu>
             </li>
           </ul>
