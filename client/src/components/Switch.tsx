@@ -1,14 +1,14 @@
-import { Button as HeadlessButton } from '@headlessui/react';
+import { Switch as HeadlessSwitch } from '@headlessui/react';
 import clsx from 'clsx';
 import type { ComponentProps, JSXElementConstructor } from 'react';
 
-export default function Button<
+export default function Switch<
   As extends
     | keyof React.JSX.IntrinsicElements
     | JSXElementConstructor<unknown>
-    | typeof HeadlessButton = typeof HeadlessButton,
+    | typeof HeadlessSwitch = typeof HeadlessSwitch,
 >({
-  as: Component = HeadlessButton as As,
+  as: Component = HeadlessSwitch as As,
   className,
   text,
   ...rest
@@ -21,12 +21,8 @@ export default function Button<
   const C = Component as any;
 
   return (
-    <C
-      {...rest}
-      className={clsx(className, 'button')}
-      data-text={text || undefined}
-    >
-      <span className="content">{text || undefined}</span>
+    <C {...rest} className={clsx(className, 'switch')}>
+      <span className="content" />
     </C>
   );
 }

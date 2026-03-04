@@ -1,18 +1,30 @@
 import clsx from 'clsx';
-import type { CSSProperties } from 'react';
+import type {
+  ComponentProps,
+  CSSProperties,
+  JSXElementConstructor,
+} from 'react';
 
-export default function Image({
-  as: Component = 'div',
+export default function Image<
+  As extends
+    | keyof React.JSX.IntrinsicElements
+    | JSXElementConstructor<unknown> = 'div',
+>({
+  as: Component = 'div' as As,
   className,
   image,
+  ...rest
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  as?: any;
+  as?: As;
   className?: string;
   image?: string;
-}) {
+} & Omit<ComponentProps<As>, 'children'>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const C = Component as any;
+
   return (
-    <Component
+    <C
+      {...rest}
       className={clsx(className, 'image')}
       style={
         {
@@ -22,6 +34,6 @@ export default function Image({
       data-image={image || undefined}
     >
       <img className="content" src={image || undefined} />
-    </Component>
+    </C>
   );
 }

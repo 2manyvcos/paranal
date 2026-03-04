@@ -1,19 +1,28 @@
 import clsx from 'clsx';
+import type { ComponentProps, JSXElementConstructor } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
-export default function Markdown({
-  as: Component = 'div',
+export default function Markdown<
+  As extends
+    | keyof React.JSX.IntrinsicElements
+    | JSXElementConstructor<unknown> = 'div',
+>({
+  as: Component = 'div' as As,
   className,
   markdown,
+  ...rest
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  as?: any;
+  as?: As;
   className?: string;
   markdown?: string;
-}) {
+} & Omit<ComponentProps<As>, 'children'>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const C = Component as any;
+
   return (
-    <Component
+    <C
+      {...rest}
       className={clsx(className, 'markdown')}
       data-markdown={markdown || undefined}
     >
@@ -22,6 +31,6 @@ export default function Markdown({
           {markdown || ''}
         </ReactMarkdown>
       </div>
-    </Component>
+    </C>
   );
 }

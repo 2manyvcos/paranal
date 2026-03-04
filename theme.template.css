@@ -1,6 +1,6 @@
 .html > .body > .app {
   /* React entrypoint */
-  /* contains the current screen (as a child) and popups (as descendants) */
+  /* contains the current screen (as a child) */
 }
 .app[data-loading] {
   /* used for when the app is still loading */
@@ -29,6 +29,16 @@
 }
 .button > span.content {
   /* contains the component's text if any */
+}
+
+.switch {
+  /* switch component */
+}
+.switch[data-checked] {
+  /* whether or not the switch is checked */
+}
+.button > span.content {
+  /* should be styled to display the component's state */
 }
 
 .link {
@@ -80,34 +90,34 @@
 
 /* Notification */
 
-.notifications.popup {
+.notifications {
 }
 
-.notifications.popup > .panel {
+.notifications > .panel {
 }
 
-.notifications.popup > .panel > .notification {
+.notifications > .panel > .notification {
 }
-.notifications.popup > .panel > .notification[data-closed],
-.notifications.popup > .panel > .notification[data-enter],
-.notifications.popup > .panel > .notification[data-leave],
-.notifications.popup > .panel > .notification[data-transition] {
+.notifications > .panel > .notification[data-closed],
+.notifications > .panel > .notification[data-enter],
+.notifications > .panel > .notification[data-leave],
+.notifications > .panel > .notification[data-transition] {
   /* used for transitioning */
 }
-.notifications.popup > .panel > .notification[data-loading] {
+.notifications > .panel > .notification[data-loading] {
   /* used for when the notification describes an ongoing event */
 }
-.notifications.popup > .panel > .notification[data-success] {
+.notifications > .panel > .notification[data-success] {
   /* used for when the notification describes a successful event */
 }
-.notifications.popup > .panel > .notification[data-error] {
+.notifications > .panel > .notification[data-error] {
   /* used for when the notification describes a failed event */
 }
 
-.notifications.popup > .panel > .notification > .message.text {
+.notifications > .panel > .notification > .message.text {
 }
 
-.notifications.popup > .panel > .notification > .close.button {
+.notifications > .panel > .notification > .close.button {
 }
 
 /* Auth */
@@ -156,7 +166,10 @@
 .auth > .login.page > .login.form > .remember-login.field > .input {
 }
 
-.auth > .login.page > .login.form > .submit.button {
+.auth > .login.page > .login.form > .buttons {
+}
+
+.auth > .login.page > .login.form > .buttons > .submit.button {
 }
 
 /* Dashboard */
@@ -634,8 +647,8 @@
 .service.card > .header > .controls > .context.control {
 }
 
-.service.card > .header > .controls > .context.control > .context-menu.link {
-  /* controls .service.dropdown */
+.service.card > .header > .controls > .context.control > .context.link {
+  /* controls .service.context.dropdown */
 }
 
 .service.card > .badges {
@@ -673,48 +686,170 @@
 
 /* Service Dropdown */
 
-.service.dropdown {
+.service.context.dropdown {
 }
-.service.dropdown[data-loading] {
+.service.context.dropdown[data-loading] {
   /* used for when service actions are still loading */
 }
 
-.service.dropdown > .dropdown-separator {
+.service.context.dropdown > .dropdown-separator {
 }
 
-.service.dropdown > .edit.dropdown-item.link {
+.service.context.dropdown > .edit.dropdown-item.link {
 }
 
-.service.dropdown > .favorite.dropdown-item.link {
+.service.context.dropdown > .favorite.dropdown-item.link {
 }
-.service.dropdown > .favorite.dropdown-item.link[data-enabled] {
+.service.context.dropdown > .favorite.dropdown-item.link[data-enabled] {
   /* used for when the related option is enabled */
 }
 
-.service.dropdown > .hidden.dropdown-item.link {
+.service.context.dropdown > .hidden.dropdown-item.link {
 }
-.service.dropdown > .hidden.dropdown-item.link[data-enabled] {
+.service.context.dropdown > .hidden.dropdown-item.link[data-enabled] {
   /* used for when the related option is enabled */
 }
 
-.service.dropdown > .alerts.dropdown-item.link {
+.service.context.dropdown > .alerts.dropdown-item.link {
+  /* controls .service.alerts.dialog */
 }
 
-.service.dropdown > .scripts.dropdown-item.link {
+.service.context.dropdown > .scripts.dropdown-item.link {
 }
 
-.service.dropdown > .action.dropdown-item.link {
+.service.context.dropdown > .action.dropdown-item.link {
 }
 
-.service.dropdown > .action-group.dropdown-section {
+.service.context.dropdown > .action-group.dropdown-section {
 }
 
-.service.dropdown > .action-group.dropdown-section > .heading.text {
+.service.context.dropdown > .action-group.dropdown-section > .heading.text {
 }
 
-.service.dropdown
+.service.context.dropdown
   > .action-group.dropdown-section
   > .action.dropdown-item.link {
+}
+
+/* Service Alerts Dialog */
+
+.service.alerts.dialog {
+}
+
+.service.alerts.dialog > .dialog-backdrop {
+}
+.service.alerts.dialog > .dialog-backdrop[data-closed],
+.service.alerts.dialog > .dialog-backdrop[data-enter],
+.service.alerts.dialog > .dialog-backdrop[data-leave],
+.service.alerts.dialog > .dialog-backdrop[data-transition] {
+  /* used for transitioning */
+}
+
+.service.alerts.dialog > .dialog-frame {
+}
+
+.service.alerts.dialog > .dialog-frame > .dialog-panel {
+}
+.service.alerts.dialog > .dialog-frame > .dialog-panel[data-closed],
+.service.alerts.dialog > .dialog-frame > .dialog-panel[data-enter],
+.service.alerts.dialog > .dialog-frame > .dialog-panel[data-leave],
+.service.alerts.dialog > .dialog-frame > .dialog-panel[data-transition] {
+  /* used for transitioning */
+}
+
+.service.alerts.dialog > .dialog-frame > .dialog-panel > .service.alerts.form {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .title.text {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .health-alerts.field {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .health-alerts.field
+  > .label.text {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .health-alerts.field
+  > .description.text {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .health-alerts.field
+  > .switch {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .version-alerts.field {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .version-alerts.field
+  > .label.text {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .version-alerts.field
+  > .description.text {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .version-alerts.field
+  > .switch {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .buttons {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .buttons
+  > .submit.button {
+}
+
+.service.alerts.dialog
+  > .dialog-frame
+  > .dialog-panel
+  > .service.alerts.form
+  > .buttons
+  > .close.button {
 }
 
 /* Admin */

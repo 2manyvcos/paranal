@@ -1,23 +1,30 @@
 import clsx from 'clsx';
+import type { ComponentProps, JSXElementConstructor } from 'react';
 
-export default function Text({
-  as: Component = 'div',
+export default function Text<
+  As extends
+    | keyof React.JSX.IntrinsicElements
+    | JSXElementConstructor<unknown> = 'div',
+>({
+  as: Component = 'div' as As,
   className,
   text,
   ...rest
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  as?: any;
+  as?: As;
   className?: string;
   text?: string;
-} & { [dataAttribute: `data-${string}`]: unknown }) {
+} & Omit<ComponentProps<As>, 'children'>) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const C = Component as any;
+
   return (
-    <Component
+    <C
       {...rest}
       className={clsx(className, 'text')}
       data-text={text || undefined}
     >
       <span className="content">{text || undefined}</span>
-    </Component>
+    </C>
   );
 }

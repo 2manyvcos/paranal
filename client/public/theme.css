@@ -16,23 +16,31 @@ body,
   display: none;
 }
 
+.switch[data-checked] > .content::before {
+  content: 'On';
+}
+.switch > .content::before {
+  content: 'Off';
+}
+
 a[role='button'] {
   cursor: pointer;
 }
 
-.notifications.popup {
+.notifications {
   position: fixed;
   left: 0;
   bottom: 0;
+  z-index: 50;
 }
 
-.notifications.popup > .panel {
+.notifications > .panel {
   display: flex;
   flex-direction: column;
   gap: 1em;
 }
 
-.notifications.popup > .panel > .notification {
+.notifications > .panel > .notification {
   display: flex;
   gap: 0.2em;
   padding: 0.5em;
@@ -41,7 +49,7 @@ a[role='button'] {
   border-radius: 1em;
   transition: 750ms ease-in;
 }
-.notifications.popup > .panel > .notification[data-closed] {
+.notifications > .panel > .notification[data-closed] {
   opacity: 0;
 }
 
@@ -183,4 +191,40 @@ a[role='button'] {
 
 .badge:not([data-text]) {
   display: none;
+}
+
+.dialog {
+  position: relative;
+}
+
+.dialog > .dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  transition: 750ms ease-in;
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(0.25em);
+}
+.dialog > .dialog-backdrop[data-closed] {
+  backdrop-filter: none;
+}
+
+.dialog > .dialog-frame {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1em;
+}
+
+.dialog > .dialog-frame > .dialog-panel {
+  padding: 0.5em;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 1em;
+  transition: 250ms ease-in;
+}
+.dialog > .dialog-frame > .dialog-panel[data-closed] {
+  opacity: 0;
 }

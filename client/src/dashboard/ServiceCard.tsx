@@ -5,7 +5,7 @@ import Image from '@/components/Image';
 import Link from '@/components/Link';
 import Text from '@/components/Text';
 import { type Service } from '@/data/dataServices';
-import ServiceDropdown from './ServiceDropdown';
+import ServiceContextDropdown from './ServiceContextDropdown';
 
 export default function ServiceCard({
   service,
@@ -64,7 +64,7 @@ export default function ServiceCard({
               {({ open }) => (
                 <>
                   <MenuButton
-                    className="context-menu link"
+                    className="context link"
                     as="a"
                     role="button"
                     tabIndex={0}
@@ -73,7 +73,7 @@ export default function ServiceCard({
                     <span className="content">&#x22ee;</span>
                   </MenuButton>
 
-                  <ServiceDropdown service={service} open={open} />
+                  <ServiceContextDropdown service={service} open={open} />
                 </>
               )}
             </Menu>

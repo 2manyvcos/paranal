@@ -10,7 +10,7 @@ import {
 import { errorMessage, logError } from '@/data/errors';
 import { notify } from '@/notifications/notifications';
 
-export default function ServiceDropdownActionItem({
+export default function ServiceActionDropdownItem({
   service,
   action,
 }: {
