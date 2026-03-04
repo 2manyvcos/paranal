@@ -35,7 +35,10 @@ a[role='button'] {
 .notifications.popup > .panel > .notification {
   display: flex;
   gap: 0.2em;
+  padding: 0.5em;
   background-color: white;
+  border: 1px solid black;
+  border-radius: 1em;
   transition: 750ms ease-in;
 }
 .notifications.popup > .panel > .notification[data-closed] {
@@ -124,7 +127,10 @@ a[role='button'] {
 .dropdown {
   display: flex;
   flex-direction: column;
+  padding: 0.5em;
   background-color: white;
+  border: 1px solid black;
+  border-radius: 1em;
 }
 .dropdown[data-loading] {
   opacity: 0.5;
@@ -151,7 +157,10 @@ a[role='button'] {
 .combobox {
   display: flex;
   flex-direction: column;
+  padding: 0.5em;
   background-color: white;
+  border: 1px solid black;
+  border-radius: 1em;
 }
 
 .combobox-item {
