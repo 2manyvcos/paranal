@@ -1,60 +1,20 @@
-import { Transition } from '@headlessui/react';
-import { useEffect, useState, useSyncExternalStore } from 'react';
-import Button from '@/components/Button';
-import Text from '@/components/Text';
-import {
-  getCurrentNotification,
-  removeCurrentNotification,
-  subscribeNotifications,
-} from './notification';
+import { useSyncExternalStore } from 'react';
+import Notification from './Notification';
+import { getNotifications, subscribeNotifications } from './notifications';
 
 export default function Notifications() {
-  const [visible, setVisible] = useState(false);
-  const [autoHide, setAutoHide] = useState<number>();
-  const currentNotification = useSyncExternalStore(
+  const notifications = useSyncExternalStore(
     subscribeNotifications,
-    getCurrentNotification,
+    getNotifications,
   );
 
-  useEffect(() => {
-    if (currentNotification == null) return;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setVisible(true);
-  }, [currentNotification]);
-
-  if (currentNotification == null) return null;
-
   return (
-    <Transition
-      key={currentNotification.id}
-      show={visible}
-      afterEnter={() => {
-        setAutoHide(
-          setTimeout(() => {
-            setVisible(false);
-          }, 3000),
-        );
-      }}
-      beforeLeave={() => {
-        clearTimeout(autoHide);
-      }}
-      afterLeave={() => {
-        removeCurrentNotification();
-      }}
-    >
-      <div className="notification popup" role="dialog" tabIndex={-1}>
-        <div className="panel">
-          <Text className="message" text={currentNotification.message} />
-
-          <Button
-            className="close"
-            onClick={() => {
-              setVisible(false);
-            }}
-            text="Close"
-          />
-        </div>
+    <div className="notifications popup" role="dialog" tabIndex={-1}>
+      <div className="panel">
+        {notifications.map((notification) => (
+          <Notification key={notification.id} notification={notification} />
+        ))}
       </div>
-    </Transition>
+    </div>
   );
 }

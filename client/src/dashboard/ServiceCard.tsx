@@ -1,20 +1,11 @@
-import type { FetchProviderType } from '@civet/common';
-import { useConfigContext } from '@civet/core';
-import {
-  Menu,
-  MenuButton,
-  MenuItem,
-  MenuItems,
-  MenuSeparator,
-} from '@headlessui/react';
-import { useState } from 'react';
+import { Menu, MenuButton } from '@headlessui/react';
 import { useLocation } from 'react-router';
 import { useApplication } from '@/application';
 import Image from '@/components/Image';
 import Link from '@/components/Link';
 import Text from '@/components/Text';
-import { patchServiceByIDConfig, type Service } from '@/data/dataServices';
-import { notifyError } from '@/data/errors';
+import { type Service } from '@/data/dataServices';
+import ServiceMenu from './ServiceMenu';
 
 export default function ServiceCard({
   service,
@@ -24,11 +15,7 @@ export default function ServiceCard({
   anchor?: boolean;
 }) {
   const { hash } = useLocation();
-  const { dataProvider } = useConfigContext<FetchProviderType>();
-  const { admin, healthStatusesByServiceID, versionsByServiceID } =
-    useApplication();
-
-  const [contextMenuOpen, setContextMenuOpen] = useState(false);
+  const { healthStatusesByServiceID, versionsByServiceID } = useApplication();
 
   const healthStatuses = healthStatusesByServiceID[service.id] ?? [];
   const unhealthyHealthStatuses = healthStatuses.filter(
@@ -37,8 +24,6 @@ export default function ServiceCard({
   const versions = versionsByServiceID[service.id] ?? [];
   const outdatedVersions = versions.filter((version) => version.outdated);
   const vulnerableVersions = versions.filter((version) => version.vulnerable);
-
-  // TODO: const contextActions = useContextActions({ disabled: !contextMenuOpen });
 
   return (
     <article
@@ -76,115 +61,21 @@ export default function ServiceCard({
 
           <div className="context control">
             <Menu>
-              {({ open }) => {
-                setContextMenuOpen(!!open);
+              {({ open }) => (
+                <>
+                  <MenuButton
+                    className="context-menu link"
+                    as="a"
+                    role="button"
+                    tabIndex={0}
+                    data-text={'\u22ee;'}
+                  >
+                    <span className="content">&#x22ee;</span>
+                  </MenuButton>
 
-                return (
-                  <>
-                    <MenuButton
-                      className="context-menu link"
-                      as="a"
-                      role="button"
-                      tabIndex={0}
-                      data-text={'\u22ee;'}
-                    >
-                      <span className="content">&#x22ee;</span>
-                    </MenuButton>
-
-                    <MenuItems className="service dropdown" anchor="bottom">
-                      {!admin ? null : (
-                        <MenuItem>
-                          <Link
-                            className="edit dropdown-item"
-                            as="a"
-                            onClick={() => {
-                              alert('TODO:');
-                            }}
-                            text="Edit"
-                          />
-                        </MenuItem>
-                      )}
-
-                      <MenuItem>
-                        <Link
-                          className="favorite dropdown-item"
-                          as="a"
-                          onClick={async () => {
-                            try {
-                              await patchServiceByIDConfig(
-                                dataProvider!,
-                                service.id,
-                                { favorite: !service.config.favorite },
-                              );
-                            } catch (error) {
-                              notifyError(error);
-                            }
-                          }}
-                          text={
-                            service.config.favorite
-                              ? 'Remove from favorites'
-                              : 'Add to favorites'
-                          }
-                          data-enabled={service.config.favorite || undefined}
-                        />
-                      </MenuItem>
-
-                      <MenuItem>
-                        <Link
-                          className="hidden dropdown-item"
-                          as="a"
-                          onClick={async () => {
-                            try {
-                              await patchServiceByIDConfig(
-                                dataProvider!,
-                                service.id,
-                                { hidden: !service.config.hidden },
-                              );
-                            } catch (error) {
-                              notifyError(error);
-                            }
-                          }}
-                          text={service.config.hidden ? 'Stop hiding' : 'Hide'}
-                          data-enabled={service.config.hidden || undefined}
-                        />
-                      </MenuItem>
-
-                      <MenuItem>
-                        <Link
-                          className="alerts dropdown-item"
-                          as="a"
-                          onClick={() => {
-                            alert('TODO:');
-                          }}
-                          text="Configure alerts"
-                        />
-                      </MenuItem>
-
-                      {!admin ? null : (
-                        <MenuItem>
-                          <Link
-                            className="scripts dropdown-item"
-                            as="a"
-                            onClick={() => {
-                              alert('TODO:');
-                            }}
-                            text="Scripts"
-                          />
-                        </MenuItem>
-                      )}
-
-                      <MenuSeparator className="dropdown-separator" />
-
-                      {/* TODO: context actions */}
-                      {/* <MenuSection>
-                        <MenuHeading>Test</MenuHeading>
-
-                        <MenuItem>...</MenuItem>
-                      </MenuSection> */}
-                    </MenuItems>
-                  </>
-                );
-              }}
+                  <ServiceMenu service={service} open={open} />
+                </>
+              )}
             </Menu>
           </div>
         </div>

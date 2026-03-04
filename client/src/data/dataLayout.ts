@@ -24,11 +24,11 @@ export type Section = {
   serviceIDs?: string[];
 };
 
-export function useLayout(query?: LayoutQuery) {
+export function useLayout(query: LayoutQuery) {
   return useResource<FetchProviderType, Layout | undefined>({
     name: 'v1/layout',
     query: undefined,
     events: true,
-    disabled: query?.disabled,
+    disabled: query.disabled,
   });
 }

@@ -8,7 +8,7 @@ import Text from '@/components/Text';
 import { setAccessToken } from '@/data/accessTokens';
 import { postAuth } from '@/data/dataAuth';
 import { HTTP_UNAUTHORIZED, HTTPError } from '@/data/errors';
-import { notify } from '@/notifications/notification';
+import { notify } from '@/notifications/notifications';
 
 export default function LoginPage() {
   const { dataProvider } = useConfigContext<FetchProviderType>();
@@ -25,18 +25,18 @@ export default function LoginPage() {
 
       try {
         setLoading(true);
-        const { accessToken } = await postAuth(dataProvider!, {
-          username,
-          password,
+        const { accessToken } = await postAuth({
+          dataProvider: dataProvider!,
+          data: { username, password },
         });
         setAccessToken(accessToken, rememberLogin);
         dataProvider!.notify('v1/user');
       } catch (error) {
         if (error instanceof HTTPError && error.status === HTTP_UNAUTHORIZED) {
-          notify('Invalid credentials. Please try again.');
+          notify.error('Invalid credentials. Please try again.');
         } else {
           console.error(error);
-          notify('Something went wrong. Please try again.');
+          notify.error('Something went wrong. Please try again.');
         }
       } finally {
         setLoading(false);

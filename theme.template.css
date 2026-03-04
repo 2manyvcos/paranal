@@ -80,19 +80,34 @@
 
 /* Notification */
 
-.notification.popup {
+.notifications.popup {
 }
-.notification.popup[data-closed] {
+
+.notifications.popup > .panel {
+}
+
+.notifications.popup > .panel > .notification {
+}
+.notifications.popup > .panel > .notification[data-closed],
+.notifications.popup > .panel > .notification[data-enter],
+.notifications.popup > .panel > .notification[data-leave],
+.notifications.popup > .panel > .notification[data-transition] {
   /* used for transitioning */
 }
-
-.notification > .panel {
+.notifications.popup > .panel > .notification[data-loading] {
+  /* used for when the notification describes an ongoing event */
+}
+.notifications.popup > .panel > .notification[data-success] {
+  /* used for when the notification describes a successful event */
+}
+.notifications.popup > .panel > .notification[data-error] {
+  /* used for when the notification describes a failed event */
 }
 
-.notification > .panel > .message.text {
+.notifications.popup > .panel > .notification > .message.text {
 }
 
-.notification > .panel > .close.button {
+.notifications.popup > .panel > .notification > .close.button {
 }
 
 /* Auth */
@@ -398,7 +413,13 @@
   > .sub.menu
   > .user.menu-item
   > .nav-item.link {
+  /* controls .user.dropdown */
 }
+
+.dashboard > .footer.markdown {
+}
+
+/* User Dropdown */
 
 .user.dropdown {
 }
@@ -419,9 +440,6 @@
 }
 
 .user.dropdown > .logout.dropdown-item.link {
-}
-
-.dashboard > .footer.markdown {
 }
 
 /* Home */
@@ -617,33 +635,7 @@
 }
 
 .service.card > .header > .controls > .context.control > .context-menu.link {
-}
-
-.service.dropdown {
-}
-
-.service.dropdown > .dropdown-separator {
-}
-
-.service.dropdown > .edit.dropdown-item.link {
-}
-
-.service.dropdown > .favorite.dropdown-item.link {
-}
-.service.dropdown > .favorite.dropdown-item.link[data-enabled] {
-  /* used for when the related option is enabled */
-}
-
-.service.dropdown > .hidden.dropdown-item.link {
-}
-.service.dropdown > .hidden.dropdown-item.link[data-enabled] {
-  /* used for when the related option is enabled */
-}
-
-.service.dropdown > .alerts.dropdown-item.link {
-}
-
-.service.dropdown > .scripts.dropdown-item.link {
+  /* controls .service.dropdown */
 }
 
 .service.card > .badges {
@@ -677,6 +669,52 @@
 }
 .service.card > .badges > .vulnerable.badge.link[data-cves] {
   /* number of CVEs related to this service if any */
+}
+
+/* Service Dropdown */
+
+.service.dropdown {
+}
+.service.dropdown[data-loading] {
+  /* used for when service actions are still loading */
+}
+
+.service.dropdown > .dropdown-separator {
+}
+
+.service.dropdown > .edit.dropdown-item.link {
+}
+
+.service.dropdown > .favorite.dropdown-item.link {
+}
+.service.dropdown > .favorite.dropdown-item.link[data-enabled] {
+  /* used for when the related option is enabled */
+}
+
+.service.dropdown > .hidden.dropdown-item.link {
+}
+.service.dropdown > .hidden.dropdown-item.link[data-enabled] {
+  /* used for when the related option is enabled */
+}
+
+.service.dropdown > .alerts.dropdown-item.link {
+}
+
+.service.dropdown > .scripts.dropdown-item.link {
+}
+
+.service.dropdown > .action.dropdown-item.link {
+}
+
+.service.dropdown > .action-group.dropdown-section {
+}
+
+.service.dropdown > .action-group.dropdown-section > .heading.text {
+}
+
+.service.dropdown
+  > .action-group.dropdown-section
+  > .action.dropdown-item.link {
 }
 
 /* Admin */

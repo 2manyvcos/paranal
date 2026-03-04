@@ -20,7 +20,7 @@ import UnexpectedErrorPage from './error/UnexpectedErrorPage';
 const root = document.getElementById('root')!;
 
 function App() {
-  const user = useUser();
+  const user = useUser({});
   const userLoading = user.isLoading && user.isInitial;
 
   const application = useApplicationContextState(user.data);

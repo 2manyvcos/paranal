@@ -7,21 +7,19 @@ export type Auth = {
   expires: string;
 };
 
-export type PostAuthRequest = {
-  username: string;
-  password: string;
-};
-
-export function postAuth(
-  dataProvider: FetchProviderType,
-  request: PostAuthRequest,
-): Promise<Auth> {
-  return dataProvider.request<Auth>(
+export function postAuth(request: {
+  dataProvider: FetchProviderType;
+  data: {
+    username: string;
+    password: string;
+  };
+}): Promise<Auth> {
+  return request.dataProvider.request<Auth>(
     'v1/auth',
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
+      body: JSON.stringify(request.data),
     },
     {
       async handleError(_url, _request, response, _meta) {

@@ -2,6 +2,10 @@ import type { FetchProviderType } from '@civet/common';
 import { Meta, useResource } from '@civet/core';
 import { HTTP_UNAUTHORIZED, HTTPError } from '@/data/errors';
 
+export type UserQuery = {
+  disabled?: boolean;
+};
+
 export type User = {
   name: string;
   role: string;
@@ -24,11 +28,12 @@ async function handleError(
   throw new HTTPError(await response.text(), response.status);
 }
 
-export function useUser() {
+export function useUser(query: UserQuery) {
   return useResource<FetchProviderType, User | undefined>({
     name: 'v1/user',
     query: undefined,
     options: { handleError },
     events: true,
+    disabled: query.disabled,
   });
 }
