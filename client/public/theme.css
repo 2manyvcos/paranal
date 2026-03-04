@@ -87,7 +87,8 @@ a[role='button'] {
   opacity: 0.5;
 }
 
-.dashboard .header-link {
+.dashboard .header-link,
+.dashboard .section > .header {
   display: inline-flex;
   align-items: center;
   text-decoration: inherit;
