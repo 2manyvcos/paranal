@@ -15,7 +15,6 @@ func WithRoles(roles []int, handler http.Handler) http.Handler {
 
 		if len(roles) > 0 && (authorizedUser == nil || !slices.Contains(roles, authorizedUser.Role)) {
 			http.Error(res, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-			return
 		}
 
 		handler.ServeHTTP(res, req)

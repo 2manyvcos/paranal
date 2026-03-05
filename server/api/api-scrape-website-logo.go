@@ -13,7 +13,7 @@ import (
 	"github.com/thanhpk/go-favicon"
 )
 
-func PostFindWebsiteLogo(res http.ResponseWriter, req *http.Request) {
+func PostScrapeWebsiteLogo(res http.ResponseWriter, req *http.Request) {
 	if !utils.JsonRegex.MatchString(req.Header.Get("Content-Type")) {
 		http.Error(res, http.StatusText(http.StatusUnsupportedMediaType), http.StatusUnsupportedMediaType)
 		return
@@ -39,6 +39,7 @@ func PostFindWebsiteLogo(res http.ResponseWriter, req *http.Request) {
 	logo := selectLogo(icons)
 	if logo == "" {
 		http.Error(res, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+    return
 	}
 
 	res.Header().Set("Content-Type", "application/json")

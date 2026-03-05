@@ -21,6 +21,10 @@ tags:
     description: User profile
   - name: User Alert Channels
     description: User alerting channels
+  - name: Layout
+    description: Client layout
+  - name: Scrape Website Logo
+    description: Scrape a website for its logo
 paths:
   /auth:
     post:
@@ -303,6 +307,76 @@ paths:
           description: Not found
         default:
           description: Unexpected error
+  /layout:
+    get:
+      tags: [Layout]
+      summary: Get client layout
+      operationId: getLayout
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layout'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    put:
+      tags: [Layout]
+      summary: Put client layout
+      operationId: putLayout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Layout'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /scrape-website-logo:
+    post:
+      tags: [Scrape Website Logo]
+      summary: Scrape a website for its logo
+      operationId: postScrapeWebsiteLogo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url:
+                  description: URL of the website to be scraped
+                  type: string
+                  format: uri
+                  example: https://example.com
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logo:
+                    description: URL of the scraped website logo
+                    type: string
+                    format: uri
+                    example: data:image/svg+xml;base64,...
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
 components:
   schemas:
     UpdateEvent:
@@ -378,6 +452,54 @@ components:
         versionAlerts:
           description: Whether or not the channel is used for version alerts
           type: boolean
+    Layout:
+      title: Layout
+      type: object
+      properties:
+        pages:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name:
+                description: Unique page name
+                type: string
+                example: my-services
+              displayName:
+                description: Name to be displayed in clients
+                type: string
+                example: My Services
+              header:
+                description: '[CommonMark](http://commonmark.org/help/) page header'
+                type: string
+                example: '**Markdown** content'
+              sections:
+                type: array
+                items:
+                  type: object
+                  required: [id]
+                  properties:
+                    id:
+                      description: Section ID
+                      type: string
+                      example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+                    name:
+                      description: Section name
+                      type: string
+                      example: Entertainment
+                    icon:
+                      description: Icon URL
+                      type: string
+                      format: uri
+                      example: data:image/svg+xml;base64,...
+                    serviceIDs:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        description: Service ID
+                        type: string
+                        example: e222bdbd-9b08-4a85-b939-0dfce13547b6
   securitySchemes:
     BearerAuth:
       description: Provide the access token with an Bearer authorization header

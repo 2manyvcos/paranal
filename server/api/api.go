@@ -28,7 +28,7 @@ func New() http.Handler {
 	api.Handle("GET /v1/layout", helper.WithAuth(http.HandlerFunc(GetLayout)))
 	api.Handle("PUT /v1/layout", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PutLayout))))
 
-	api.Handle("POST /v1/find-website-logo", helper.WithAuth(http.HandlerFunc(PostFindWebsiteLogo)))
+	api.Handle("POST /v1/scrape-website-logo", helper.WithAuth(http.HandlerFunc(PostScrapeWebsiteLogo)))
 
 	api.Handle("GET /v1/users", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(GetUsers))))
 	api.Handle("POST /v1/users", helper.WithAuth(helper.WithRole(schema.UserRoleAdmin, http.HandlerFunc(PostUsers))))
