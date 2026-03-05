@@ -8,7 +8,7 @@ const apiURL = new URL(
 );
 
 createApiReference('#root', {
-  theme: 'default',
+  theme: 'bluePlanet',
   sources: [
     {
       title: 'Paranal API v1 (latest)',
@@ -16,6 +16,7 @@ createApiReference('#root', {
       url: new URL('schema/openapi.v1.yaml', apiURL).toString(),
     },
   ],
+  darkMode: true,
   hideClientButton: true,
   agent: { disabled: true },
   telemetry: false,
