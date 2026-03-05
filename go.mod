@@ -3,11 +3,11 @@ module github.com/2manyvcos/paranal
 go 1.25.3
 
 ignore (
+	./api/reference
+	./api/schema
 	./client/dist
 	./client/public
 	./client/src
-	./api/schema
-	./api/swagger
 	./docs
 	node_modules
 )
@@ -41,10 +41,10 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subiz/safeurl v0.0.6 // indirect
-	golang.org/x/exp v0.0.0-20260218203240-3dfff04db8fa // indirect
-	golang.org/x/net v0.50.0 // indirect
+	golang.org/x/net v0.51.0 // indirect
 	golang.org/x/sys v0.41.0 // indirect
-	modernc.org/libc v1.68.0 // indirect
+	golang.org/x/tools v0.42.0 // indirect
+	modernc.org/libc v1.69.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 )

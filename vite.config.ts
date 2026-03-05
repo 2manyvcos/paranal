@@ -15,14 +15,10 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        swagger: resolve(__dirname, 'api/swagger/index.html'),
+        reference: resolve(__dirname, 'api/reference/index.html'),
       },
     },
   },
   publicDir: 'client/public',
   envPrefix: 'PARANAL_',
-  resolve: {
-    // FIXME: Workaround for https://github.com/vitejs/vite/issues/7439 (necessary for swagger-ui)
-    conditions: ['worker'],
-  },
 });

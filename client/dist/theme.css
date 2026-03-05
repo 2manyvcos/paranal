@@ -11,18 +11,75 @@ body,
   aspect-ratio: 1/1;
   height: 3em;
 }
+
 .image:not([data-image]) {
   display: none;
+}
+
+.switch[data-checked] > .content::before {
+  content: 'On';
+}
+.switch > .content::before {
+  content: 'Off';
 }
 
 a[role='button'] {
   cursor: pointer;
 }
 
-.notification.popup {
+.notifications {
   position: fixed;
   left: 0;
   bottom: 0;
+  z-index: 50;
+}
+
+.notifications > .panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.notifications > .panel > .notification {
+  display: flex;
+  gap: 0.2em;
+  padding: 0.5em;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 1em;
+  transition: 750ms ease-in;
+}
+.notifications > .panel > .notification[data-closed] {
+  opacity: 0;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.notifications > .panel > .notification[data-loading]::before {
+  content: '';
+  background-image: url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPgo8c3ZnIGZpbGw9IiMwMDAwMDAiIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDI0IDI0IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Im0yNC4xMjYgMTEuOTM3di4wM2MwIDEuNjg1LS4zNTMgMy4yODctLjk5IDQuNzM3bC4wMy0uMDc2Yy0xLjIyOCAyLjkxMy0zLjQ5OSA1LjE4NC02LjMzNCA2LjM4M2wtLjA3OC4wMjljLTEuMzg0LjYwNS0yLjk5Ni45NTYtNC42OTEuOTU2cy0zLjMwNy0uMzUyLTQuNzY5LS45ODZsLjA3Ny4wM2MtMi45MTMtMS4yMjgtNS4xODQtMy40OTktNi4zODItNi4zMzRsLS4wMjktLjA3OGMtLjYwNC0xLjM4OC0uOTU2LTMuMDA0LS45NTYtNC43MDMgMC0yLjAyOS41MDEtMy45NDEgMS4zODctNS42MThsLS4wMzIuMDY2YzEuNzc1LTMuMzc1IDUuMDE0LTUuNzc0IDguODQ5LTYuMzY0bC4wNjctLjAwOXYzLjE4M2MtNC4xMDYuODUtNy4xNDggNC40MzYtNy4xNDggOC43MzMgMCAxLjI2MS4yNjIgMi40NjEuNzM0IDMuNTQ4bC0uMDIyLS4wNThjLjkxMyAyLjE1OCAyLjU5NiAzLjg0IDQuNjk2IDQuNzMybC4wNTguMDIyYzEuMDIzLjQ1IDIuMjE2LjcxMiAzLjQ3LjcxMnMyLjQ0Ny0uMjYyIDMuNTI2LS43MzRsLS4wNTcuMDIyYzIuMTU4LS45MTMgMy44NC0yLjU5NiA0LjczMi00LjY5NmwuMDIyLS4wNThjLjQ0Ni0xLjAyNi43MDUtMi4yMjEuNzA1LTMuNDc3IDAtNC4yOTgtMy4wMzgtNy44ODYtNy4wODMtOC43MzZsLS4wNTgtLjAxdi0zLjE4M2M1Ljg0OS44OTkgMTAuMjc1IDUuODk1IDEwLjI3NSAxMS45MjZ2LjAxMi0uMDAxeiIvPjwvc3ZnPg==');
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 1em;
+  height: 1em;
+  aspect-ratio: 1/1;
+  display: inline-block;
+  animation: rotate 2s linear infinite;
+}
+.notifications > .panel > .notification[data-success]::before {
+  content: '\2713';
+  color: yellowgreen;
+}
+.notifications > .panel > .notification[data-error]::before {
+  content: '\010102';
+  color: tomato;
 }
 
 .login.page {
@@ -38,7 +95,8 @@ a[role='button'] {
   opacity: 0.5;
 }
 
-.dashboard .header-link {
+.dashboard .header-link,
+.dashboard .section > .header {
   display: inline-flex;
   align-items: center;
   text-decoration: inherit;
@@ -67,6 +125,61 @@ a[role='button'] {
   padding: 0;
 }
 
+.health-statuses.menu-item > .nav-item[data-combined]::after {
+  content: ' (' attr(data-combined) ')';
+}
+
+.versions.menu-item > .nav-item[data-combined]::after {
+  content: ' (' attr(data-combined) ')';
+}
+
+.dropdown {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5em;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 1em;
+}
+.dropdown[data-loading] {
+  opacity: 0.5;
+}
+
+.dropdown-separator {
+  height: 1px;
+  background-color: currentColor;
+}
+.dropdown-separator:first-child,
+.dropdown-separator:last-child,
+.dropdown-separator + .dropdown-separator {
+  display: none;
+}
+
+.dropdown-item {
+  white-space: nowrap;
+}
+
+.dropdown-item[data-active] {
+  text-decoration: underline dashed;
+}
+
+.combobox {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5em;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 1em;
+}
+
+.combobox-item {
+  white-space: nowrap;
+}
+
+.combobox-item[data-active] {
+  text-decoration: underline dashed;
+}
+
 .footer.markdown > .content {
   text-align: center;
 }
@@ -78,4 +191,40 @@ a[role='button'] {
 
 .badge:not([data-text]) {
   display: none;
+}
+
+.dialog {
+  position: relative;
+}
+
+.dialog > .dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  transition: 750ms ease-in;
+  background-color: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(0.25em);
+}
+.dialog > .dialog-backdrop[data-closed] {
+  backdrop-filter: none;
+}
+
+.dialog > .dialog-frame {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1em;
+}
+
+.dialog > .dialog-frame > .dialog-panel {
+  padding: 0.5em;
+  background-color: white;
+  border: 1px solid black;
+  border-radius: 1em;
+  transition: 250ms ease-in;
+}
+.dialog > .dialog-frame > .dialog-panel[data-closed] {
+  opacity: 0;
 }

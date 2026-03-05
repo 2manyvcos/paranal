@@ -53,9 +53,9 @@ func Run() {
 		"logoutRedirectURL": app.Config.Auth.LogoutRedirectURL,
 	}, "index.html", "manifest.json"), "index.html")))
 
-	http.Handle("/api/swagger/", http.FileServer(helper.FileTemplates(client.ClientFiles, map[string]any{
+	http.Handle("/api/reference/", http.FileServer(helper.FileTemplates(client.ClientFiles, map[string]any{
 		"api": app.Config.Client.API,
-	}, "api/swagger/index.html")))
+	}, "api/reference/index.html")))
 
 	apiSchemaFiles, _ := fs.Glob(apischema.SchemaFiles, "*.yaml")
 	apiSchemaServer := helper.WithApp(app, helper.WithCORS(http.FileServer(helper.FileTemplates(apischema.SchemaFiles, map[string]any{

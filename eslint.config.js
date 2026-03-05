@@ -15,7 +15,7 @@ export default defineConfig([
     'docs/.vitepress/dist',
   ]),
   {
-    files: ['client/**/*.{ts,tsx}', 'api/swagger/**/*.{ts,tsx}'],
+    files: ['client/**/*.{ts,tsx}', 'api/reference/**/*.{ts,tsx}'],
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
