@@ -158,7 +158,17 @@ func PostServicesByIDScripts(res http.ResponseWriter, req *http.Request) {
 	}
 	app.OnServiceScriptChanged(newRecord)
 	app.PublishClientEvent(schema.NewUpdateEvent("/v1/services/" + url.PathEscape(newRecord.ServiceID) + "/scripts/" + url.PathEscape(newRecord.ID)))
+
+	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(res).Encode(struct {
+		ID string `json:"id"`
+	}{
+		ID: newRecord.ID,
+	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func GetServicesByIDScriptsByID(res http.ResponseWriter, req *http.Request) {

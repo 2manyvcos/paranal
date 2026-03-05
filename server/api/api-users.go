@@ -104,9 +104,19 @@ func PostUsers(res http.ResponseWriter, req *http.Request) {
 		http.Error(res, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return
 	}
-	res.WriteHeader(http.StatusCreated)
 	app.PublishClientEvent(schema.NewUserUpdateEvent(newRecord.Name, "/v1/user"))
 	app.PublishClientEvent(schema.NewUpdateEvent("/v1/users/" + url.PathEscape(newRecord.Name)))
+
+	res.Header().Set("Content-Type", "application/json")
+	res.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(res).Encode(struct {
+		Name string `json:"name"`
+	}{
+		Name: newRecord.Name,
+	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func GetUsersByName(res http.ResponseWriter, req *http.Request) {

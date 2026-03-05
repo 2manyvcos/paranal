@@ -136,7 +136,17 @@ func PostUserAlertChannels(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	app.PublishClientEvent(schema.NewUserUpdateEvent(authorizedUser.Name, "/v1/user/alert-channels/"+url.PathEscape(newRecord.ID)))
+
+	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(res).Encode(struct {
+		ID string `json:"id"`
+	}{
+		ID: newRecord.ID,
+	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func GetUserAlertChannelsByID(res http.ResponseWriter, req *http.Request) {

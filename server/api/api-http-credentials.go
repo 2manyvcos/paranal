@@ -113,7 +113,17 @@ func PostHTTPCredentials(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 	app.PublishClientEvent(schema.NewUpdateEvent("/v1/http-credentials/" + url.PathEscape(newRecord.Name)))
+
+	res.Header().Set("Content-Type", "application/json")
 	res.WriteHeader(http.StatusCreated)
+	err = json.NewEncoder(res).Encode(struct {
+		Name string `json:"name"`
+	}{
+		Name: newRecord.Name,
+	})
+	if err != nil {
+		log.Printf("Error encoding response payload - %s\n", err)
+	}
 }
 
 func GetHTTPCredentialsByName(res http.ResponseWriter, req *http.Request) {
