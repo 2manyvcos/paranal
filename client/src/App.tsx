@@ -24,7 +24,8 @@ function App() {
   const userLoading = user.isLoading && user.isInitial;
 
   const application = useApplicationContextState(user.data);
-  const { appName, tagline, userName, admin, unhide, layout } = application;
+  const { appName, tagline, authorized, userName, admin, unhide, layout } =
+    application;
 
   useBooleanDataAttribute(root, 'loading', userLoading);
   useDataAttribute(root, 'app-name', appName);
@@ -59,11 +60,11 @@ function App() {
           <Route index element={<LoginPage />} />
         </Route>
 
-        {!application.authorized ? (
+        {!authorized ? (
           <Route path="/*" element={<NavigateToLoginPage />} />
         ) : (
           <>
-            {application.admin && (
+            {admin && (
               <Route path="/admin" element={<AdminScreen />}>
                 <Route path="*" element={<NotFoundPage />} />
               </Route>

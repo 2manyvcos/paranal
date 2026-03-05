@@ -125,6 +125,10 @@ a[role='button'] {
   padding: 0;
 }
 
+.page.menu-item > .nav-item:not([data-total]) {
+  display: none;
+}
+
 .health-statuses.menu-item > .nav-item[data-combined]::after {
   content: ' (' attr(data-combined) ')';
 }

@@ -67,16 +67,29 @@ export default function Navigation() {
               <NavItemLink to="/?no-redirect" text="Home" />
             </li>
 
-            {layout?.pages?.map((page) =>
-              !page.name ? null : (
+            {layout?.pages?.map((page) => {
+              if (!page.name) return null;
+              const assignedServices = Object.fromEntries(
+                page.sections?.flatMap(
+                  (section) =>
+                    section.serviceIDs?.map((serviceID) => [serviceID, true]) ??
+                    [],
+                ) ?? [],
+              );
+              return (
                 <li key={page.name} className="page menu-item">
                   <NavItemLink
                     to={`/${encodeURIComponent(page.name)}`}
                     text={page.displayName || page.name}
+                    data-total={
+                      services.filter((service) =>
+                        Object.hasOwn(assignedServices, service.id),
+                      ).length || undefined
+                    }
                   />
                 </li>
-              ),
-            )}
+              );
+            })}
           </ul>
         </li>
 

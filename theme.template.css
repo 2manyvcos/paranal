@@ -267,6 +267,15 @@
   > .nav-item.link[data-active] {
   /* used for when the link refers to the active page */
 }
+.dashboard
+  > .navigation
+  > .menu
+  > .start.menu-item
+  > .sub.menu
+  > .page.menu-item
+  > .nav-item.link[data-total] {
+  /* number of total services on this page if any */
+}
 
 .dashboard > .navigation > .menu > .end.menu-item {
 }
