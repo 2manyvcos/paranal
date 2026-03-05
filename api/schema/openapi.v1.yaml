@@ -13,15 +13,69 @@ externalDocs:
 servers:
   - url: '{{ .api }}/v1'
 tags:
-  - name: events
+  - name: Auth
+    description: Authentication
+  - name: Events
     description: Client events
-  - name: user
+  - name: User
     description: User profile
+  - name: User Alert Channels
+    description: User alerting channels
 paths:
+  /auth:
+    post:
+      tags: [Auth]
+      summary: Authenticate to the API
+      operationId: postAuth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userName, password]
+              properties:
+                userName:
+                  description: User name used for authentication
+                  type: string
+                  example: max
+                password:
+                  description: Password of the user to be authenticated
+                  type: string
+                  example: p4ssw0rd
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userName:
+                    description: User name of the authenticated user
+                    type: string
+                    example: max
+                  accessToken:
+                    description: Bearer token to be used for further API requests
+                    type: string
+                    format: jwt
+                    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmlnaW4iOiJhcGkiLCJzdWIiOiJtYXgiLCJleHAiOjE3NzI3NDk5MjN9.XSLz_Q4ELipGowUovYviaG22GlaIduiFY2Q4YXG7aYI'
+                  expires:
+                    description: 'Time at which `accessToken` expires'
+                    type: string
+                    format: date-time
+                    example: '2026-03-05T10:35:39.000Z'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
   /events:
     get:
-      tags: [events]
-      summary: Subscribe to client events using server-sent events
+      tags: [Events]
+      summary: Get client events
       operationId: getEvents
       responses:
         '200':
@@ -33,13 +87,15 @@ paths:
                   - $ref: '#/components/schemas/UpdateEvent'
                 discriminator:
                   propertyName: event
+                  mapping:
+                    update: '#/components/schemas/UpdateEvent'
         '401':
           description: Unauthorized
         default:
           description: Unexpected error
   /user:
     get:
-      tags: [user]
+      tags: [User]
       summary: Get user profile
       operationId: getUser
       responses:
@@ -48,55 +104,21 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  name:
-                    type: string
-                    example: max
-                  role:
-                    type: string
-                    enum: [common, admin]
-                  hasPassword:
-                    type: boolean
-                  displayName:
-                    type: string
-                    example: Max
-                  startPage:
-                    type: string
-                    example: my-services
-                  errorAlerts:
-                    type: boolean
-                  healthAlerts:
-                    type: boolean
-                  versionAlerts:
-                    type: boolean
+                $ref: '#/components/schemas/UserProfile'
         '401':
           description: Unauthorized
         default:
           description: Unexpected error
     patch:
-      tags: [user]
+      tags: [User]
       summary: Patch user profile
       operationId: patchUser
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                displayName:
-                  type: string
-                  example: Max
-                startPage:
-                  type: string
-                  example: my-services
-                errorAlerts:
-                  type: boolean
-                healthAlerts:
-                  type: boolean
-                versionAlerts:
-                  type: boolean
-        required: true
+              $ref: '#/components/schemas/UserProfile'
       responses:
         '200':
           description: Successful operation
@@ -105,7 +127,7 @@ paths:
         default:
           description: Unexpected error
     delete:
-      tags: [user]
+      tags: [User]
       summary: Delete user profile
       operationId: deleteUser
       responses:
@@ -117,10 +139,11 @@ paths:
           description: Unexpected error
   /user/password:
     put:
-      tags: [user]
+      tags: [User]
       summary: Update user password
       operationId: putUserPassword
       requestBody:
+        required: true
         content:
           application/json:
             schema:
@@ -128,10 +151,13 @@ paths:
               required: [currentPassword, newPassword]
               properties:
                 currentPassword:
+                  description: Current password of the authenticated user
                   type: string
+                  example: p4ssw0rd
                 newPassword:
+                  description: New password to be used for the authenticated user
                   type: string
-        required: true
+                  example: p4ssw0rd!
       responses:
         '200':
           description: Successful operation
@@ -141,26 +167,225 @@ paths:
           description: Unauthorized
         default:
           description: Unexpected error
+  /user/alert-channels:
+    get:
+      tags: [User Alert Channels]
+      summary: List alert channels
+      operationId: getUserAlertChannels
+      parameters:
+        - in: query
+          name: id
+          description: 'Filter results by `id`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: userName
+          description: 'Filter results by `userName`'
+          schema:
+            type: string
+            example: max
+        - in: query
+          name: hasURL
+          description: 'Filter results by `url`'
+          schema:
+            type: boolean
+        - in: query
+          name: errorAlerts
+          description: 'Filter results by `errorAlerts`'
+          schema:
+            type: boolean
+        - in: query
+          name: healthAlerts
+          description: 'Filter results by `healthAlerts`'
+          schema:
+            type: boolean
+        - in: query
+          name: versionAlerts
+          description: 'Filter results by `versionAlerts`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAlertChannel'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    post:
+      tags: [User Alert Channels]
+      summary: Create an alert channel
+      operationId: postUserAlertChannels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAlertChannel'
+              required: [url]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Channel ID
+                    type: string
+                    example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /user/alert-channels/{channelID}:
+    parameters:
+      - in: path
+        name: channelID
+        description: Channel ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [User Alert Channels]
+      summary: Get an alert channel
+      operationId: getUserAlertChannelsByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAlertChannel'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [User Alert Channels]
+      summary: Patch an alert channel
+      operationId: patchUserAlertChannelsByID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAlertChannel'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [User Alert Channels]
+      summary: Delete an alert channel
+      operationId: deleteUserAlertChannelsByID
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
 components:
   schemas:
     UpdateEvent:
-      description: A server-sent event indicating that an endpoint was updated
+      title: Update Event
+      description: Indicates that an endpoint was updated
       type: object
       required: [event, data]
       properties:
         event:
+          description: Type of event
           type: string
           enum: [update]
         data:
+          description: Event details
           type: string
           format: uri
           example: /v1/services/demo-service
+    UserProfile:
+      title: User Profile
+      type: object
+      properties:
+        name:
+          description: User name
+          readOnly: true
+          type: string
+          example: max
+        role:
+          description: Permission role
+          readOnly: true
+          type: string
+          enum: [common, admin]
+        hasPassword:
+          description: Whether or not the user has a password
+          readOnly: true
+          type: boolean
+        displayName:
+          description: Name to be displayed in clients
+          type: string
+          example: Max
+        startPage:
+          description: Name of the page to be displayed by default in clients
+          type: string
+          example: my-services
+        errorAlerts:
+          description: Whether or not error alerts are enabled for all services for the user
+          type: boolean
+        healthAlerts:
+          description: Whether or not health alerts are enabled for all services for this user
+          type: boolean
+        versionAlerts:
+          description: Whether or not version alerts are enabled for all services for this user
+          type: boolean
+    UserAlertChannel:
+      title: User Alert Channel
+      type: object
+      properties:
+        id:
+          description: Channel ID
+          readOnly: true
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        url:
+          description: '[Shoutrrr URL](https://containrrr.dev/shoutrrr/services/overview/#services_overview) to send alerts to'
+          type: string
+          format: uri
+          example: ntfy://ntfy.sh/example
+        errorAlerts:
+          description: Whether or not the channel is used for error alerts
+          type: boolean
+        healthAlerts:
+          description: Whether or not the channel is used for health alerts
+          type: boolean
+        versionAlerts:
+          description: Whether or not the channel is used for version alerts
+          type: boolean
   securitySchemes:
     BearerAuth:
+      description: Provide the access token with an Bearer authorization header
       type: http
       scheme: bearer
       bearerFormat: JWT
     BearerAuthInHeader:
+      description: Provide the access token with a query parameter in scenarios where headers aren't supported, such as with the [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) API
       type: apiKey
       in: query
       name: accessToken

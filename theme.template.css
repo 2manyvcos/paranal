@@ -139,13 +139,13 @@
 .auth > .login.page > .login.form > .title.text {
 }
 
-.auth > .login.page > .login.form > .username.field {
+.auth > .login.page > .login.form > .user-name.field {
 }
 
-.auth > .login.page > .login.form > .username.field > .label.text {
+.auth > .login.page > .login.form > .user-name.field > .label.text {
 }
 
-.auth > .login.page > .login.form > .username.field > .input {
+.auth > .login.page > .login.form > .user-name.field > .input {
 }
 
 .auth > .login.page > .login.form > .password.field {

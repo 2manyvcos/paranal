@@ -23,18 +23,18 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 	}
 
 	var requestPayload struct {
-		Username string `json:"username"`
+		UserName string `json:"userName"`
 		Password string `json:"password"`
 	}
 	decoder := json.NewDecoder(req.Body)
 	decoder.DisallowUnknownFields()
 	err := decoder.Decode(&requestPayload)
-	if err != nil || requestPayload.Username == "" || requestPayload.Password == "" {
+	if err != nil || requestPayload.UserName == "" || requestPayload.Password == "" {
 		http.Error(res, http.StatusText(http.StatusBadRequest), http.StatusBadRequest)
 		return
 	}
 
-	record, err := app.GetUser(schema.UserQuery{Name: &requestPayload.Username})
+	record, err := app.GetUser(schema.UserQuery{Name: &requestPayload.UserName})
 	if errors.Is(err, schema.ErrNotFound) {
 		maskAuthRejection()
 		http.Error(res, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
@@ -70,11 +70,11 @@ func PostAuth(res http.ResponseWriter, req *http.Request) {
 
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(struct {
-		Username    string    `json:"username"`
+		UserName    string    `json:"userName"`
 		AccessToken string    `json:"accessToken"`
 		Expires     time.Time `json:"expires"`
 	}{
-		Username:    requestPayload.Username,
+		UserName:    requestPayload.UserName,
 		AccessToken: accessToken,
 		Expires:     expires,
 	})

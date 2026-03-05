@@ -19,4 +19,5 @@ createApiReference('#root', {
   hideClientButton: true,
   agent: { disabled: true },
   telemetry: false,
+  orderSchemaPropertiesBy: 'preserve',
 });

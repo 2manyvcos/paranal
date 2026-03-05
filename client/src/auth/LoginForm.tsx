@@ -14,7 +14,7 @@ export default function LoginForm() {
   const { dataProvider } = useConfigContext<FetchProviderType>();
   const { appName } = useApplication();
 
-  const [username, setUsername] = useState('');
+  const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [rememberLogin, setRememberLogin] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,7 @@ export default function LoginForm() {
         setLoading(true);
         const { accessToken } = await postAuth({
           dataProvider: dataProvider!,
-          data: { username, password },
+          data: { userName, password },
         });
         setAccessToken(accessToken, rememberLogin);
         dataProvider!.notify('v1/user');
@@ -42,7 +42,7 @@ export default function LoginForm() {
         setLoading(false);
       }
     },
-    [dataProvider, username, password, rememberLogin],
+    [dataProvider, userName, password, rememberLogin],
   );
 
   return (
@@ -53,20 +53,20 @@ export default function LoginForm() {
     >
       <Text className="title" as="h1" text={`Login to ${appName}`} />
 
-      <Field className="username field">
+      <Field className="user-name field">
         <Text as={Label as unknown as 'label'} className="label" text="User" />
 
         <Input
           className="input"
           type="text"
-          name="username"
+          name="user-name"
           required
           autoFocus
           autoComplete="username"
           autoCapitalize="none"
-          value={username}
+          value={userName}
           onChange={(event) => {
-            setUsername(event.target.value);
+            setUserName(event.target.value);
           }}
         />
       </Field>

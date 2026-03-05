@@ -2,7 +2,7 @@ import type { FetchProviderType } from '@civet/common';
 import { HTTPError } from './errors';
 
 export type Auth = {
-  username: string;
+  userName: string;
   accessToken: string;
   expires: string;
 };
@@ -10,7 +10,7 @@ export type Auth = {
 export function postAuth(request: {
   dataProvider: FetchProviderType;
   data: {
-    username: string;
+    userName: string;
     password: string;
   };
 }): Promise<Auth> {
