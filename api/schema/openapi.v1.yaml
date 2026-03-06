@@ -29,6 +29,10 @@ tags:
     description: Manage users
   - name: HTTP Credentials
     description: Manage HTTP credentials
+  - name: SSH Credentials
+    description: Manage SSH credentials
+  - name: User Credentials
+    description: Manage user credentials
 paths:
   /auth:
     post:
@@ -377,7 +381,7 @@ paths:
                     description: URL of the scraped website logo
                     type: string
                     format: uri
-                    example: data:image/svg+xml;base64,...
+                    example: data:image/svg+xml;base64,…
         '401':
           description: Unauthorized
         '404':
@@ -676,6 +680,297 @@ paths:
           description: Not found
         default:
           description: Unexpected error
+  /ssh-credentials:
+    get:
+      tags: [SSH Credentials]
+      summary: List SSH credentials
+      description: Requires the `admin` privilege role
+      operationId: getSSHCredentials
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: my-credential
+        - in: query
+          name: user
+          description: 'Filter results by `user`'
+          schema:
+            type: string
+            example: max
+        - in: query
+          name: hasPassword
+          description: 'Filter results by `password`'
+          schema:
+            type: boolean
+        - in: query
+          name: hasPrivateKey
+          description: 'Filter results by `privateKey`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SSHCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+    post:
+      tags: [SSH Credentials]
+      summary: Create an SSH credential
+      description: Requires the `admin` privilege role
+      operationId: postSSHCredentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/SSHCredential'
+                  required: [name, user]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    description: Credential name
+                    type: string
+                    example: my-credential
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /ssh-credentials/{credentialName}:
+    parameters:
+      - in: path
+        name: credentialName
+        description: Credential name
+        required: true
+        schema:
+          type: string
+          example: my-credential
+    get:
+      tags: [SSH Credentials]
+      summary: Get an SSH credential
+      description: Requires the `admin` privilege role
+      operationId: getSSHCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SSHCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [SSH Credentials]
+      summary: Patch an SSH credential
+      description: Requires the `admin` privilege role
+      operationId: patchSSHCredentialsByName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/SSHCredential'
+                - properties:
+                    name:
+                      readOnly: true
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [SSH Credentials]
+      summary: Delete an SSH credential
+      description: Requires the `admin` privilege role
+      operationId: deleteSSHCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /user-credentials:
+    get:
+      tags: [User Credentials]
+      summary: List user credentials
+      description: Requires the `admin` privilege role
+      operationId: getUserCredentials
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: my-credential
+        - in: query
+          name: description
+          description: 'Filter results by `description`'
+          schema:
+            type: string
+            example: My secret credential
+        - in: query
+          name: hasValue
+          description: 'Filter results by `value`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+    post:
+      tags: [User Credentials]
+      summary: Create a user credential
+      description: Requires the `admin` privilege role
+      operationId: postUserCredentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UserCredential'
+                  required: [name, value]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    description: Credential name
+                    type: string
+                    example: my-credential
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /user-credentials/{credentialName}:
+    parameters:
+      - in: path
+        name: credentialName
+        description: Credential name
+        required: true
+        schema:
+          type: string
+          example: my-credential
+    get:
+      tags: [User Credentials]
+      summary: Get a user credential
+      description: Requires the `admin` privilege role
+      operationId: getUserCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [User Credentials]
+      summary: Patch a user credential
+      description: Requires the `admin` privilege role
+      operationId: patchUserCredentialsByName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UserCredential'
+                - properties:
+                    name:
+                      readOnly: true
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [User Credentials]
+      summary: Delete a user credential
+      description: Requires the `admin` privilege role
+      operationId: deleteUserCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
 components:
   schemas:
     UpdateEvent:
@@ -791,7 +1086,7 @@ components:
                       description: Icon URL
                       type: string
                       format: uri
-                      example: data:image/svg+xml;base64,...
+                      example: data:image/svg+xml;base64,…
                     serviceIDs:
                       type: array
                       uniqueItems: true
@@ -859,6 +1154,57 @@ components:
           writeOnly: true
           type: string
           example: p4ssw0rd
+        hasValue:
+          description: Whether or not the credential has a value
+          readOnly: true
+          type: boolean
+    SSHCredential:
+      title: SSH Credential
+      type: object
+      properties:
+        name:
+          description: Credential name
+          type: string
+          example: my-credential
+        user:
+          description: User name
+          type: string
+          example: max
+        password:
+          description: Password
+          writeOnly: true
+          type: string
+          example: p4ssw0rd
+        hasPassword:
+          description: Whether or not the credential has a password
+          readOnly: true
+          type: boolean
+        privateKey:
+          description: Private key
+          writeOnly: true
+          type: string
+          example: -----BEGIN OPENSSH PRIVATE KEY-----\n…
+        hasPrivateKey:
+          description: Whether or not the credential has a private key
+          readOnly: true
+          type: boolean
+    UserCredential:
+      title: User Credential
+      type: object
+      properties:
+        name:
+          description: Credential name
+          type: string
+          example: my-credential
+        description:
+          description: Description
+          type: string
+          example: My secret credential
+        value:
+          description: Credential value
+          writeOnly: true
+          type: string
+          example: s3cr3t
         hasValue:
           description: Whether or not the credential has a value
           readOnly: true
