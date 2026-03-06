@@ -54,7 +54,6 @@ func GetHTTPCredentials(res http.ResponseWriter, req *http.Request) {
 		responsePayload[i].Type = schema.HTTPCredentialTypeNames[record.Type]
 		responsePayload[i].Key = record.Key
 		responsePayload[i].HasValue = record.Value != ""
-
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(res).Encode(responsePayload)

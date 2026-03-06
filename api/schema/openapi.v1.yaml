@@ -27,6 +27,8 @@ tags:
     description: Scrape a website for its logo
   - name: Users
     description: Manage users
+  - name: HTTP Credentials
+    description: Manage HTTP credentials
 paths:
   /auth:
     post:
@@ -328,7 +330,7 @@ paths:
     put:
       tags: [Layout]
       summary: Set the client layout
-      description: Requires the `admin` role
+      description: Requires the `admin` privilege role
       operationId: putLayout
       requestBody:
         required: true
@@ -386,7 +388,7 @@ paths:
     get:
       tags: [Users]
       summary: List users
-      description: Requires the `admin` role
+      description: Requires the `admin` privilege role
       operationId: getUsers
       parameters:
         - in: query
@@ -424,7 +426,7 @@ paths:
     post:
       tags: [Users]
       summary: Create a user
-      description: Requires the `admin` role
+      description: Requires the `admin` privilege role
       operationId: postUsers
       requestBody:
         required: true
@@ -433,7 +435,7 @@ paths:
             schema:
               allOf:
                 - $ref: '#/components/schemas/User'
-                  required: [role, name]
+                  required: [name, role]
       responses:
         '201':
           description: Successful operation
@@ -466,7 +468,7 @@ paths:
     get:
       tags: [Users]
       summary: Get a user
-      description: Requires the `admin` role
+      description: Requires the `admin` privilege role
       operationId: getUsersByName
       responses:
         '200':
@@ -486,7 +488,7 @@ paths:
     patch:
       tags: [Users]
       summary: Patch a user
-      description: Requires the `admin` role
+      description: Requires the `admin` privilege role
       operationId: patchUsersByName
       requestBody:
         required: true
@@ -512,8 +514,157 @@ paths:
     delete:
       tags: [Users]
       summary: Delete a user
-      description: Requires the `admin` role
+      description: Requires the `admin` privilege role
       operationId: deleteUsersByName
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /http-credentials:
+    get:
+      tags: [HTTP Credentials]
+      summary: List HTTP credentials
+      description: Requires the `admin` privilege role
+      operationId: getHTTPCredentials
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: my-credential
+        - in: query
+          name: type
+          description: 'Filter results by `type`'
+          schema:
+            type: string
+            enum: [basic, bearer, header, query]
+        - in: query
+          name: key
+          description: 'Filter results by `key`'
+          schema:
+            type: string
+            example: max
+        - in: query
+          name: hasValue
+          description: 'Filter results by `value`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HTTPCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+    post:
+      tags: [HTTP Credentials]
+      summary: Create an HTTP credential
+      description: Requires the `admin` privilege role
+      operationId: postHTTPCredentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/HTTPCredential'
+                  required: [name, type, value]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    description: Credential name
+                    type: string
+                    example: my-credential
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /http-credentials/{credentialName}:
+    parameters:
+      - in: path
+        name: credentialName
+        description: Credential name
+        required: true
+        schema:
+          type: string
+          example: my-credential
+    get:
+      tags: [HTTP Credentials]
+      summary: Get an HTTP credential
+      description: Requires the `admin` privilege role
+      operationId: getHTTPCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [HTTP Credentials]
+      summary: Patch an HTTP credential
+      description: Requires the `admin` privilege role
+      operationId: patchHTTPCredentialsByName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/HTTPCredential'
+                - properties:
+                    name:
+                      readOnly: true
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [HTTP Credentials]
+      summary: Delete an HTTP credential
+      description: Requires the `admin` privilege role
+      operationId: deleteHTTPCredentialsByName
       responses:
         '200':
           description: Successful operation
@@ -667,6 +818,49 @@ components:
           example: p4ssw0rd
         hasPassword:
           description: Whether or not the user has a password
+          readOnly: true
+          type: boolean
+    HTTPCredential:
+      title: HTTP Credential
+      type: object
+      properties:
+        name:
+          description: Credential name
+          type: string
+          example: my-credential
+        type:
+          description: Credential type
+          type: string
+          enum: [basic, bearer, header, query]
+        key:
+          description: |
+            Credential key
+
+            The purpose of the key varies based on the selected type:
+            | Type     | Description         |
+            | -------- | ------------------- |
+            | `basic`  | User name           |
+            | `bearer` | *unused*            |
+            | `header` | Header name         |
+            | `query`  | Query parameter key |
+          type: string
+          example: max
+        value:
+          description: |
+            Credential value
+
+            The purpose of the value varies based on the selected type:
+            | Type     | Description           |
+            | -------- | --------------------- |
+            | `basic`  | Password              |
+            | `bearer` | Bearer token          |
+            | `header` | Header value          |
+            | `query`  | Query parameter value |
+          writeOnly: true
+          type: string
+          example: p4ssw0rd
+        hasValue:
+          description: Whether or not the credential has a value
           readOnly: true
           type: boolean
   securitySchemes:
