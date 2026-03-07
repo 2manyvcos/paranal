@@ -16,7 +16,7 @@ tags:
     description: Authenticate to the API
   - name: Events
     description: Get client events
-  - name: User
+  - name: User Profile
     description: Manage your user profile
   - name: User Alert Channels
     description: Manage your alerting channels
@@ -110,7 +110,7 @@ paths:
           description: Unexpected error
   /user:
     get:
-      tags: [User]
+      tags: [User Profile]
       summary: Get your user profile
       operationId: getUser
       responses:
@@ -125,7 +125,7 @@ paths:
         default:
           description: Unexpected error
     patch:
-      tags: [User]
+      tags: [User Profile]
       summary: Patch your user profile
       operationId: patchUser
       requestBody:
@@ -142,7 +142,7 @@ paths:
         default:
           description: Unexpected error
     delete:
-      tags: [User]
+      tags: [User Profile]
       summary: Delete your user profile
       operationId: deleteUser
       responses:
@@ -154,7 +154,7 @@ paths:
           description: Unexpected error
   /user/password:
     put:
-      tags: [User]
+      tags: [User Profile]
       summary: Update your password
       operationId: putUserPassword
       requestBody:
