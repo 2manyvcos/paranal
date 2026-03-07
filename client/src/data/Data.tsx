@@ -70,7 +70,8 @@ const eventReceiver = new SSEReceiver(nextEventSource(), {
         // the event may target a record of the current resource, but must not target a sub endpoint
         if (
           eventSegmentCount === resourceSegmentCount + 1 &&
-          resourceSegmentCount % 2 === 0
+          (resourceSegmentCount % 2 === 0 ||
+            resourcePath === '/v1/user/alert-channels/')
         )
           return [event];
 

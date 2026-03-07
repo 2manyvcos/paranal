@@ -1211,6 +1211,18 @@ paths:
           description: Not found
         default:
           description: Unexpected error
+  /services/{serviceID}/scripts:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Service Scripts]
+      summary: 'TODO:'
 components:
   schemas:
     UpdateEvent:
