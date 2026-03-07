@@ -1,8 +1,7 @@
 openapi: 3.1.1
 info:
   title: Paranal API
-  description: |-
-    This documentation describes the Paranal API.
+  description: This documentation describes the Paranal API.
   license:
     name: This file is distributed under the MIT license for the purpose of interoperability
     url: https://opensource.org/licenses/MIT
@@ -33,6 +32,10 @@ tags:
     description: Manage SSH credentials
   - name: User Credentials
     description: Manage user credentials
+  - name: Services
+    description: Manage services
+  - name: Service Scripts
+    description: Manage service scripts
 paths:
   /auth:
     post:
@@ -437,9 +440,8 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/User'
-                  required: [name, role]
+              $ref: '#/components/schemas/User'
+              required: [name, role]
       responses:
         '201':
           description: Successful operation
@@ -586,9 +588,8 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/HTTPCredential'
-                  required: [name, type, value]
+              $ref: '#/components/schemas/HTTPCredential'
+              required: [name, type, value]
       responses:
         '201':
           description: Successful operation
@@ -734,9 +735,8 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/SSHCredential'
-                  required: [name, user]
+              $ref: '#/components/schemas/SSHCredential'
+              required: [name, user]
       responses:
         '201':
           description: Successful operation
@@ -877,9 +877,8 @@ paths:
         content:
           application/json:
             schema:
-              allOf:
-                - $ref: '#/components/schemas/UserCredential'
-                  required: [name, value]
+              $ref: '#/components/schemas/UserCredential'
+              required: [name, value]
       responses:
         '201':
           description: Successful operation
@@ -971,11 +970,252 @@ paths:
           description: Not found
         default:
           description: Unexpected error
+  /services:
+    get:
+      tags: [Services]
+      summary: List services
+      operationId: getServices
+      parameters:
+        - in: query
+          name: id
+          description: 'Filter results by `id`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: My Service
+        - in: query
+          name: description
+          description: 'Filter results by `description`'
+          schema:
+            type: string
+            example: Description for my service
+        - in: query
+          name: logo
+          description: 'Filter results by `logo`'
+          schema:
+            type: string
+            example: data:image/svg+xml;base64,…
+        - in: query
+          name: url
+          description: 'Filter results by `url`'
+          schema:
+            type: string
+            example: https://example.com
+        - in: query
+          name: config.favorite
+          description: 'Filter results by `config.favorite`'
+          schema:
+            type: boolean
+        - in: query
+          name: config.hidden
+          description: 'Filter results by `config.hidden`'
+          schema:
+            type: boolean
+        - in: query
+          name: config.healthAlerts
+          description: 'Filter results by `config.healthAlerts`'
+          schema:
+            type: boolean
+        - in: query
+          name: config.versionAlerts
+          description: 'Filter results by `config.versionAlerts`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    post:
+      tags: [Services]
+      summary: Create a service
+      description: Requires the `admin` privilege role
+      operationId: postServices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+              required: [name, value]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Service ID
+                    type: string
+                    example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /services/{serviceID}:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Services]
+      summary: Get a service
+      operationId: getServicesByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [Services]
+      summary: Patch a service
+      description: Requires the `admin` privilege role
+      operationId: patchServicesByID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [Services]
+      summary: Delete a service
+      description: Requires the `admin` privilege role
+      operationId: deleteServicesByID
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /services/{serviceID}/config:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    patch:
+      tags: [Services]
+      summary: Patch personal configuration for a service
+      operationId: patchServicesByIDConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceConfig'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /services/{serviceID}/run-script:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    post:
+      tags: [Service Scripts]
+      summary: Run a user defined service script
+      description: Requires the `admin` privilege role
+      operationId: postServicesByIDRunScript
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [source]
+              properties:
+                source:
+                  description: '[JPL](https://jplorg.github.io/jpl) source code to be executed by the script'
+                  type: string
+                  example: "error->('test')"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UnsuccessfulServiceScriptResult'
+                  - $ref: '#/components/schemas/SuccessfulServiceScriptResult'
+                discriminator:
+                  propertyName: success
+                  mapping:
+                    false: '#/components/schemas/UnsuccessfulScriptResult'
+                    true: '#/components/schemas/SuccessfulScriptResult'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
 components:
   schemas:
     UpdateEvent:
       title: Update Event
-      description: Indicates that an endpoint was updated
+      description: Client event that indicates that an endpoint was updated
       type: object
       required: [event, data]
       properties:
@@ -987,9 +1227,10 @@ components:
           description: Event details
           type: string
           format: uri
-          example: /v1/services/demo-service
+          example: /v1/services/e222bdbd-9b08-4a85-b939-0dfce13547b6
     UserProfile:
       title: User Profile
+      description: Personal user profile
       type: object
       properties:
         name:
@@ -1015,16 +1256,17 @@ components:
           type: string
           example: my-services
         errorAlerts:
-          description: Whether or not error alerts are enabled for all services for the user
+          description: Whether or not error alerts are enabled for all services
           type: boolean
         healthAlerts:
-          description: Whether or not health alerts are enabled for all services for this user
+          description: Whether or not health alerts are enabled for all services
           type: boolean
         versionAlerts:
-          description: Whether or not version alerts are enabled for all services for this user
+          description: Whether or not version alerts are enabled for all services
           type: boolean
     UserAlertChannel:
       title: User Alert Channel
+      description: Personal alerting channel
       type: object
       properties:
         id:
@@ -1048,6 +1290,7 @@ components:
           type: boolean
     Layout:
       title: Layout
+      description: Layout that defines how services are arranged in clients
       type: object
       properties:
         pages:
@@ -1065,7 +1308,10 @@ components:
                 type: string
                 example: My Services
               header:
-                description: '[CommonMark](http://commonmark.org/help/) page header'
+                description: |-
+                  User defined page header
+
+                  Supports [CommonMark](http://commonmark.org/help/).
                 type: string
                 example: '**Markdown** content'
               sections:
@@ -1096,6 +1342,7 @@ components:
                         example: e222bdbd-9b08-4a85-b939-0dfce13547b6
     User:
       title: User
+      description: User that can authenticate against the API
       type: object
       properties:
         name:
@@ -1117,6 +1364,7 @@ components:
           type: boolean
     HTTPCredential:
       title: HTTP Credential
+      description: Credential for authentication in HTTP requests to be used in service scripts
       type: object
       properties:
         name:
@@ -1128,7 +1376,7 @@ components:
           type: string
           enum: [basic, bearer, header, query]
         key:
-          description: |
+          description: |-
             Credential key
 
             The purpose of the key varies based on the selected type:
@@ -1141,7 +1389,7 @@ components:
           type: string
           example: max
         value:
-          description: |
+          description: |-
             Credential value
 
             The purpose of the value varies based on the selected type:
@@ -1160,6 +1408,7 @@ components:
           type: boolean
     SSHCredential:
       title: SSH Credential
+      description: Credential for SSH authentication to be used in service scripts
       type: object
       properties:
         name:
@@ -1190,6 +1439,7 @@ components:
           type: boolean
     UserCredential:
       title: User Credential
+      description: Credential for user defined purposes to be used in service scripts
       type: object
       properties:
         name:
@@ -1209,6 +1459,281 @@ components:
           description: Whether or not the credential has a value
           readOnly: true
           type: boolean
+    Service:
+      title: Service
+      description: Service entity
+      type: object
+      properties:
+        id:
+          description: Service ID
+          readOnly: true
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        name:
+          description: Service name
+          type: string
+          example: My Service
+        description:
+          description: Service description
+          type: string
+          example: Description for my service
+        logo:
+          description: Logo URL
+          type: string
+          format: uri
+          example: data:image/svg+xml;base64,…
+        url:
+          description: Service URL
+          type: string
+          format: uri
+          example: https://example.com
+        config:
+          $ref: '#/components/schemas/ServiceConfig'
+          readOnly: true
+    ServiceConfig:
+      title: Service Config
+      description: Personal configuration for a service
+      type: object
+      properties:
+        favorite:
+          description: Whether or not the service occurs in your favorites section
+          type: boolean
+        hidden:
+          description: Whether or not the service is hidden
+          type: boolean
+        healthAlerts:
+          description: Whether or not health alerts are enabled for the service
+          type: boolean
+        versionAlerts:
+          description: Whether or not version alerts are enabled for the service
+          type: boolean
+    ServiceScript:
+      title: Service Script
+      description: Script that regularly runs to populate a service with dynamic information like health statuses or versions
+      type: object
+      properties: {}
+    UnsuccessfulServiceScriptResult:
+      title: Unsuccessful Service Script Result
+      description: Response that indicates that a service script executed unsuccessfully
+      type: object
+      properties:
+        success:
+          description: Whether or not the script executed successfully
+          type: boolean
+          enum: [false]
+        error:
+          description: Error description
+          type: string
+          example: 'JPLRuntimeError: test'
+    SuccessfulServiceScriptResult:
+      title: Successful Service Script Result
+      description: Response that indicates that a service script executed successfully
+      type: object
+      properties:
+        success:
+          description: Whether or not the script executed successfully
+          type: boolean
+          enum: [true]
+        results:
+          description: Script results
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/HealthStatusInstruction'
+              - $ref: '#/components/schemas/VersionInstruction'
+              - $ref: '#/components/schemas/ActionGroupInstruction'
+              - $ref: '#/components/schemas/ActionInstruction'
+              - title: Invalid result
+                description: Arbitrary result that cannot be processed by the server
+            discriminator:
+              propertyName: type
+              mapping:
+                healthStatus: '#/components/schemas/HealthStatusInstruction'
+                version: '#/components/schemas/VersionInstruction'
+                actionGroup: '#/components/schemas/ActionGroupInstruction'
+                action: '#/components/schemas/ActionInstruction'
+    HealthStatusInstruction:
+      title: Health Status Instruction
+      description: Event that instructs the server to register a health status for the related service
+      type: object
+      required: [type, status]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [healthStatus]
+        name:
+          description: Health status name - defaults to the name of the related service
+          type: string
+          example: Docker service
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+        status:
+          description: Health status
+          type: string
+          enum: [down, up]
+    VersionInstruction:
+      title: Version Instruction
+      description: Event that instructs the server to register a version for the related service
+      type: object
+      required: [type, currentVersion]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [version]
+        name:
+          description: Version name - defaults to the name of the related service
+          type: string
+          example: Docker service
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+        currentVersion:
+          description: Currently running version
+          type: string
+          example: 1.2.3
+        currentVersionNotes:
+          description: |-
+            Release notes for `currentVersion`
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: Bug fixes
+        currentCVEs:
+          description: Number of active CVEs for `currentVersion` - defaults to the number of entries in `currentCVEDescriptions`
+          type: integer
+          example: 1
+        currentCVEDescriptions:
+          description: Active CVEs for `currentVersion`
+          type: array
+          items:
+            $ref: '#/components/schemas/CVEDescription'
+        latestVersion:
+          description: Latest available version
+          type: string
+          example: 1.2.4
+        latestVersionNotes:
+          description: |-
+            Release notes for `latestVersion`
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: Bug fixes
+        latestCVEs:
+          description: Number of active CVEs for `latestVersion` - defaults to the number of entries in `latestCVEDescriptions`
+          type: integer
+          example: 1
+        latestCVEDescriptions:
+          description: Active CVEs for `latestVersion`
+          type: array
+          items:
+            $ref: '#/components/schemas/CVEDescription'
+        status:
+          description: Version status - if omitted, the value is determined by comparing `currentVersion` and `latestVersion`
+          type: string
+          enum: [outdated, upToDate]
+    CVEDescription:
+      title: CVE Description
+      description: CVE description details
+      type: object
+      properties:
+        name:
+          description: CVE name
+          type: string
+          example: CVE-2026-12345
+        description:
+          description: |-
+            CVE description
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: My Service contains a Cross-site Scripting (XSS) vulnerability…
+    ActionGroupInstruction:
+      title: Action Group Instruction
+      description: Event that instructs the server to register details for an action group for the related service
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [actionGroup]
+        name:
+          description: Group name
+          type: string
+          example: Docker Management
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+    ActionInstruction:
+      title: Action Instruction
+      description: Event that instructs the server to register an action for the related service
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [action]
+        name:
+          description: Action name
+          type: string
+          example: Restart Docker Service
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+        url:
+          description: URL to be opened by the action (mutually exclusive with `script`)
+          type: string
+          format: uri
+          example: https://example.com
+        script:
+          description: '[JPL](https://jplorg.github.io/jpl) source code to be executed by the action (mutually exclusive with `url`)'
+          type: string
+          example: "error->('test')"
+        group:
+          description: Action group name
+          type: string
+          example: Docker Management
+        restrictToAdmins:
+          description: Whether or not the action is only accessible to users with the `admin` privilege role
+          type: boolean
+    Time:
+      title: Time
+      description: Time representation
+      anyOf:
+        - title: String Representation
+          description: |-
+            The value is attempted to be parsed in a number of formats in the following order:
+            - [`RFC3339Nano`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC3339`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC1123Z`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC1123`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC850`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC822Z`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC822`](https://pkg.go.dev/time#pkg-constants)
+            - [`DateTime`](https://pkg.go.dev/time#pkg-constants)
+            - [`DateOnly`](https://pkg.go.dev/time#pkg-constants)
+          type: string
+          example: '2026-03-05T10:35:39.000Z'
+        - title: Number Representation
+          description: Unix time in seconds
+          type: integer
+          example: 1772706939
   securitySchemes:
     BearerAuth:
       description: Provide the access token with an Bearer authorization header

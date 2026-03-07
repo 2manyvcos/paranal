@@ -149,7 +149,6 @@ func (s *State) ListServiceActionGroups(serviceID string) []schema.ServiceAction
 	for i, actionGroup := range service.actionGroupsSorted {
 		result[i] = schema.ServiceActionGroup{
 			Name: actionGroup.Name,
-			Icon: actionGroup.Icon,
 		}
 	}
 	return result
@@ -168,7 +167,6 @@ func (s *State) ListServiceActions(serviceID string) []schema.ServiceAction {
 	for i, action := range service.actionsSorted {
 		result[i] = schema.ServiceAction{
 			Name:             action.Name,
-			Icon:             action.Icon,
 			URL:              action.URL,
 			Script:           action.Script,
 			Group:            action.Group,
@@ -193,7 +191,6 @@ func (s *State) GetServiceAction(serviceID string, actionName string) *schema.Se
 	}
 	result := schema.ServiceAction{
 		Name:             action.Name,
-		Icon:             action.Icon,
 		URL:              action.URL,
 		Script:           action.Script,
 		Group:            action.Group,
@@ -265,7 +262,6 @@ func (s *State) GetServiceVersionDetails(serviceID string, versionName string) *
 		currentCVEDescriptions[i] = schema.ServiceCVE{
 			Name:        cveDescription.Name,
 			Description: cveDescription.Description,
-			URL:         cveDescription.URL,
 		}
 	}
 	latestCVEDescriptions := make([]schema.ServiceCVE, len(version.LatestCVEDescriptions))
@@ -273,7 +269,6 @@ func (s *State) GetServiceVersionDetails(serviceID string, versionName string) *
 		latestCVEDescriptions[i] = schema.ServiceCVE{
 			Name:        cveDescription.Name,
 			Description: cveDescription.Description,
-			URL:         cveDescription.URL,
 		}
 	}
 	result := schema.ServiceVersionDetails{

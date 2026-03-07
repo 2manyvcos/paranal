@@ -102,21 +102,18 @@ func (s ServiceVersion) Vulnerable() bool {
 type ServiceCVE struct {
 	Name        string `mapstructure:"name"`
 	Description string `mapstructure:"description"`
-	URL         string `mapstructure:"url"`
 }
 
 type ServiceActionGroup struct {
 	Name  string `mapstructure:"name"`
 	Time  time.Time
 	Order string `mapstructure:"order"`
-	Icon  string `mapstructure:"icon"`
 }
 
 type ServiceAction struct {
 	Name             string `mapstructure:"name"`
 	Time             time.Time
 	Order            string `mapstructure:"order"`
-	Icon             string `mapstructure:"icon"`
 	URL              string `mapstructure:"url"`
 	Script           string `mapstructure:"script"`
 	Group            string `mapstructure:"group"`

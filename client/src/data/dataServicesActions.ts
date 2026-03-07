@@ -13,12 +13,10 @@ export type Actions = {
 
 export type ActionGroup = {
   name: string;
-  icon: string;
 };
 
 export type Action = {
   name: string;
-  icon: string;
   url: string;
   canRun: boolean;
   group: string;

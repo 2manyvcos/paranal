@@ -17,12 +17,10 @@ type Actions struct {
 
 type ActionGroup struct {
 	Name string `json:"name"`
-	Icon string `json:"icon"`
 }
 
 type Action struct {
 	Name             string `json:"name"`
-	Icon             string `json:"icon"`
 	URL              string `json:"url"`
 	CanRun           bool   `json:"canRun"`
 	Group            string `json:"group"`
@@ -51,7 +49,6 @@ func GetServicesByIDActions(res http.ResponseWriter, req *http.Request) {
 	responsePayload.Groups = make([]ActionGroup, len(actionGroups))
 	for i, actionGroup := range actionGroups {
 		responsePayload.Groups[i].Name = actionGroup.Name
-		responsePayload.Groups[i].Icon = actionGroup.Icon
 	}
 	responsePayload.Actions = make([]Action, 0, len(actions))
 	for _, action := range actions {
@@ -60,7 +57,6 @@ func GetServicesByIDActions(res http.ResponseWriter, req *http.Request) {
 		}
 		responsePayload.Actions = append(responsePayload.Actions, Action{
 			Name:             action.Name,
-			Icon:             action.Icon,
 			URL:              action.URL,
 			CanRun:           action.Script != "",
 			Group:            action.Group,

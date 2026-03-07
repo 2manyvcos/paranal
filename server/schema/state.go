@@ -45,12 +45,10 @@ type ServiceScriptState struct {
 
 type ServiceActionGroup struct {
 	Name string
-	Icon string
 }
 
 type ServiceAction struct {
 	Name             string
-	Icon             string
 	URL              string
 	Script           string
 	Group            string
@@ -124,7 +122,6 @@ type ServiceVersionDetails struct {
 type ServiceCVE struct {
 	Name        string
 	Description string
-	URL         string
 }
 
 type MaintenanceTaskState struct {

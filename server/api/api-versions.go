@@ -33,7 +33,6 @@ type VersionDetails struct {
 type CVE struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	URL         string `json:"url"`
 }
 
 func GetVersions(res http.ResponseWriter, req *http.Request) {
@@ -282,7 +281,6 @@ func GetServicesByIDVersionsByNameDetails(res http.ResponseWriter, req *http.Req
 		responsePayload.CurrentCVEDescriptions[i] = CVE{
 			Name:        cveDescription.Name,
 			Description: cveDescription.Description,
-			URL:         cveDescription.URL,
 		}
 	}
 	responsePayload.LatestCVEDescriptions = make([]CVE, len(details.LatestCVEDescriptions))
@@ -290,7 +288,6 @@ func GetServicesByIDVersionsByNameDetails(res http.ResponseWriter, req *http.Req
 		responsePayload.LatestCVEDescriptions[i] = CVE{
 			Name:        cveDescription.Name,
 			Description: cveDescription.Description,
-			URL:         cveDescription.URL,
 		}
 	}
 	res.Header().Set("Content-Type", "application/json")

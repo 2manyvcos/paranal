@@ -61,7 +61,7 @@ export default function ServiceContextDropdown({
       }
       let group = groups[action.group];
       if (!group) {
-        group = { group: { name: action.group, icon: '' }, actions: [] };
+        group = { group: { name: action.group }, actions: [] };
         groups[action.group] = group;
       }
       group.actions.push(action);
