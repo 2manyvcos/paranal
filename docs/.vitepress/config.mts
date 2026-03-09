@@ -48,6 +48,7 @@ export default defineConfig({
     nav: [
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/what-is-paranal', activeMatch: '/guide/' },
+      { text: 'API Reference', link: '/api' },
     ],
 
     sidebar: {
