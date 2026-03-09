@@ -38,6 +38,12 @@ tags:
     description: Manage service scripts
   - name: Service Actions
     description: Manage service actions
+  - name: Health Statuses
+    description: Manage health statuses
+  - name: Versions
+    description: Manage versions
+  - name: Maintenance Tasks
+    description: Manage maintenance tasks
 paths:
   /auth:
     post:
@@ -1493,82 +1499,552 @@ paths:
           description: Not found
         default:
           description: Unexpected error
+  /health-statuses:
+    get:
+      tags: [Health Statuses]
+      summary: List health statuses
+      operationId: getHealthStatuses
+      parameters:
+        - in: query
+          name: serviceID
+          description: 'Filter results by `serviceID`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: service.config.hidden
+          description: 'Filter results by `service.config.hidden`'
+          schema:
+            type: boolean
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Docker Service
+        - in: query
+          name: status
+          description: 'Filter results by `status`'
+          schema:
+            type: string
+            enum: [down, up]
+        - in: query
+          name: unhealthy
+          description: 'Filter results by `unhealthy`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HealthStatus'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /services/{serviceID}/health-statuses:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Health Statuses]
+      summary: List health statuses for a service
+      operationId: getServicesByIDHealthStatuses
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Docker Service
+        - in: query
+          name: status
+          description: 'Filter results by `status`'
+          schema:
+            type: string
+            enum: [down, up]
+        - in: query
+          name: unhealthy
+          description: 'Filter results by `unhealthy`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HealthStatus'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /versions:
+    get:
+      tags: [Versions]
+      summary: List versions
+      operationId: getVersions
+      parameters:
+        - in: query
+          name: serviceID
+          description: 'Filter results by `serviceID`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: service.config.hidden
+          description: 'Filter results by `service.config.hidden`'
+          schema:
+            type: boolean
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Docker Service
+        - in: query
+          name: currentVersion
+          description: 'Filter results by `currentVersion`'
+          schema:
+            type: string
+            example: 1.2.3
+        - in: query
+          name: hasCurrentCVEs
+          description: 'Filter results by `currentCVEs`'
+          schema:
+            type: boolean
+        - in: query
+          name: latestVersion
+          description: 'Filter results by `latestVersion`'
+          schema:
+            type: string
+            example: 1.2.4
+        - in: query
+          name: hasLatestCVEs
+          description: 'Filter results by `latestCVEs`'
+          schema:
+            type: boolean
+        - in: query
+          name: status
+          description: 'Filter results by `status`'
+          schema:
+            type: string
+            enum: [outdated, upToDate]
+        - in: query
+          name: outdated
+          description: 'Filter results by `outdated`'
+          schema:
+            type: boolean
+        - in: query
+          name: vulnerable
+          description: 'Filter results by `vulnerable`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Version'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /services/{serviceID}/versions:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Versions]
+      summary: List versions for a service
+      operationId: getServicesByIDVersions
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Docker Service
+        - in: query
+          name: currentVersion
+          description: 'Filter results by `currentVersion`'
+          schema:
+            type: string
+            example: 1.2.3
+        - in: query
+          name: hasCurrentCVEs
+          description: 'Filter results by `currentCVEs`'
+          schema:
+            type: boolean
+        - in: query
+          name: latestVersion
+          description: 'Filter results by `latestVersion`'
+          schema:
+            type: string
+            example: 1.2.4
+        - in: query
+          name: hasLatestCVEs
+          description: 'Filter results by `latestCVEs`'
+          schema:
+            type: boolean
+        - in: query
+          name: status
+          description: 'Filter results by `status`'
+          schema:
+            type: string
+            enum: [outdated, upToDate]
+        - in: query
+          name: outdated
+          description: 'Filter results by `outdated`'
+          schema:
+            type: boolean
+        - in: query
+          name: vulnerable
+          description: 'Filter results by `vulnerable`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Version'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /services/{serviceID}/versions/{versionName}/details:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+      - in: path
+        name: versionName
+        description: Version name
+        required: true
+        schema:
+          type: string
+          example: Docker Service
+    get:
+      tags: [Versions]
+      summary: Get detailed information about a version
+      operationId: getServicesByIDVersionsByNameDetails
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionDetails'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /maintenance-tasks:
+    get:
+      tags: [Maintenance Tasks]
+      summary: List maintenance tasks
+      description: Requires the `admin` privilege role
+      operationId: getMaintenanceTasks
+      parameters:
+        - in: query
+          name: running
+          description: 'Filter results by `running`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceTask'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+  /maintenance-tasks/{taskName}:
+    parameters:
+      - in: path
+        name: taskName
+        description: Task name
+        required: true
+        schema:
+          type: string
+          example: Cleanup database
+    get:
+      tags: [Maintenance Tasks]
+      summary: Get a maintenance task
+      description: Requires the `admin` privilege role
+      operationId: getMaintenanceTasksByName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceTask'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /maintenance-tasks/{taskName}/run:
+    parameters:
+      - in: path
+        name: taskName
+        description: Task name
+        required: true
+        schema:
+          type: string
+          example: Cleanup database
+    post:
+      tags: [Maintenance Tasks]
+      summary: Run a maintenance task
+      description: Requires the `admin` privilege role
+      operationId: postMaintenanceTasksByNameRun
+      responses:
+        '202':
+          description: Accepted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
 components:
   schemas:
-    UpdateEvent:
-      title: Update Event
-      description: Client event that indicates that an endpoint was updated
-      type: object
-      required: [event, data]
-      properties:
-        event:
-          description: Type of event
-          type: string
-          enum: [update]
-        data:
-          description: Event details
-          type: string
-          format: uri
-          example: /v1/services/e222bdbd-9b08-4a85-b939-0dfce13547b6
-    UserProfile:
-      title: User Profile
-      description: Personal user profile
+    Action:
+      title: Action
+      description: Custom action that can be performed for the related service
       type: object
       properties:
         name:
-          description: User name
-          readOnly: true
+          description: Action name
           type: string
-          example: max
-        role:
-          description: Privilege role
-          readOnly: true
-          type: string
-          enum: [common, admin]
-        hasPassword:
-          description: Whether or not the user has a password
-          readOnly: true
-          type: boolean
-        displayName:
-          description: Name to be displayed in clients
-          type: string
-          example: Max
-        startPage:
-          description: Name of the page to be displayed by default in clients
-          type: string
-          example: my-services
-        errorAlerts:
-          description: Whether or not error alerts are enabled for all services
-          type: boolean
-        healthAlerts:
-          description: Whether or not health alerts are enabled for all services
-          type: boolean
-        versionAlerts:
-          description: Whether or not version alerts are enabled for all services
-          type: boolean
-    UserAlertChannel:
-      title: User Alert Channel
-      description: Personal alerting channel
-      type: object
-      properties:
-        id:
-          description: Channel ID
-          readOnly: true
-          type: string
-          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+          example: Restart Docker Service
         url:
-          description: '[Shoutrrr URL](https://containrrr.dev/shoutrrr/services/overview/#services_overview) to send alerts to'
+          description: URL to be opened by the action (mutually exclusive with `canRun`)
           type: string
           format: uri
-          example: ntfy://ntfy.sh/example
-        errorAlerts:
-          description: Whether or not the channel is used for error alerts
+          example: https://example.com
+        canRun:
+          description: Whether or not the action can run a script (mutually exclusive with `url`)
           type: boolean
-        healthAlerts:
-          description: Whether or not the channel is used for health alerts
+        group:
+          description: Group name
+          type: string
+          example: Docker Management
+        restrictToAdmins:
+          description: Whether or not the action is only accessible to users with the `admin` privilege role
           type: boolean
-        versionAlerts:
-          description: Whether or not the channel is used for version alerts
+    ActionGroup:
+      title: Action Group
+      description: Details for an action group
+      type: object
+      properties:
+        name:
+          description: Group name
+          type: string
+          example: Docker Management
+    ActionGroupInstruction:
+      title: Action Group Instruction
+      description: Event that instructs the server to register details for an action group for the related service
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [actionGroup]
+        name:
+          description: Group name
+          type: string
+          example: Docker Management
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+    ActionInstruction:
+      title: Action Instruction
+      description: Event that instructs the server to register an action for the related service
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [action]
+        name:
+          description: Action name
+          type: string
+          example: Restart Docker Service
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+        url:
+          description: URL to be opened by the action (mutually exclusive with `script`)
+          type: string
+          format: uri
+          example: https://example.com
+        script:
+          description: '[JPL](https://jplorg.github.io/jpl) source code to be executed by the action (mutually exclusive with `url`)'
+          type: string
+          example: "error->('test')"
+        group:
+          description: Group name
+          type: string
+          example: Docker Management
+        restrictToAdmins:
+          description: Whether or not the action is only accessible to users with the `admin` privilege role
+          type: boolean
+    CVEDescription:
+      title: CVE Description
+      description: CVE description details
+      type: object
+      properties:
+        name:
+          description: CVE name
+          type: string
+          example: CVE-2026-12345
+        description:
+          description: |-
+            CVE description
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: My Service contains a Cross-site Scripting (XSS) vulnerability…
+    HealthStatus:
+      title: Health Status
+      description: Health status for monitoring service uptime
+      type: object
+      properties:
+        name:
+          description: Health status name
+          type: string
+          example: Docker Service
+        serviceID:
+          description: Service ID
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        status:
+          description: Health status
+          type: string
+          enum: [down, up]
+        unhealthy:
+          description: Whether or not the health status is unhealthy
+          type: boolean
+    HealthStatusInstruction:
+      title: Health Status Instruction
+      description: Event that instructs the server to register a health status for the related service
+      type: object
+      required: [type, status]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [healthStatus]
+        name:
+          description: Health status name - defaults to the name of the related service
+          type: string
+          example: Docker Service
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+        status:
+          description: Health status
+          type: string
+          enum: [down, up]
+    HTTPCredential:
+      title: HTTP Credential
+      description: Credential for authentication in HTTP requests to be used in service scripts
+      type: object
+      properties:
+        name:
+          description: Credential name
+          type: string
+          example: my-credential
+        type:
+          description: Credential type
+          type: string
+          enum: [basic, bearer, header, query]
+        key:
+          description: |-
+            Credential key
+
+            The purpose of the key varies based on the selected type:
+            | Type     | Description         |
+            | -------- | ------------------- |
+            | `basic`  | User name           |
+            | `bearer` | *unused*            |
+            | `header` | Header name         |
+            | `query`  | Query parameter key |
+          type: string
+          example: max
+        value:
+          description: |-
+            Credential value
+
+            The purpose of the value varies based on the selected type:
+            | Type     | Description           |
+            | -------- | --------------------- |
+            | `basic`  | Password              |
+            | `bearer` | Bearer token          |
+            | `header` | Header value          |
+            | `query`  | Query parameter value |
+          writeOnly: true
+          type: string
+          example: p4ssw0rd
+        hasValue:
+          description: Whether or not the credential has a value
+          readOnly: true
           type: boolean
     Layout:
       title: Layout
@@ -1622,125 +2098,28 @@ components:
                         description: Service ID
                         type: string
                         example: e222bdbd-9b08-4a85-b939-0dfce13547b6
-    User:
-      title: User
-      description: User that can authenticate against the API
+    MaintenanceTask:
+      title: Maintenance Task
+      description: Maintenance task
       type: object
       properties:
         name:
-          description: User name
+          description: Task name
           type: string
-          example: max
-        role:
-          description: Privilege role
+          example: Cleanup database
+        lastRun:
+          description: Time at which the task was last executed
           type: string
-          enum: [common, admin]
-        password:
-          description: Password
-          writeOnly: true
-          type: string
-          example: p4ssw0rd
-        hasPassword:
-          description: Whether or not the user has a password
-          readOnly: true
+          format: date-time
+          example: '2026-03-05T10:35:39.000Z'
+        running:
+          description: Whether or not the task is currently running
           type: boolean
-    HTTPCredential:
-      title: HTTP Credential
-      description: Credential for authentication in HTTP requests to be used in service scripts
-      type: object
-      properties:
-        name:
-          description: Credential name
+        nextRun:
+          description: Time at which the task will be executed next
           type: string
-          example: my-credential
-        type:
-          description: Credential type
-          type: string
-          enum: [basic, bearer, header, query]
-        key:
-          description: |-
-            Credential key
-
-            The purpose of the key varies based on the selected type:
-            | Type     | Description         |
-            | -------- | ------------------- |
-            | `basic`  | User name           |
-            | `bearer` | *unused*            |
-            | `header` | Header name         |
-            | `query`  | Query parameter key |
-          type: string
-          example: max
-        value:
-          description: |-
-            Credential value
-
-            The purpose of the value varies based on the selected type:
-            | Type     | Description           |
-            | -------- | --------------------- |
-            | `basic`  | Password              |
-            | `bearer` | Bearer token          |
-            | `header` | Header value          |
-            | `query`  | Query parameter value |
-          writeOnly: true
-          type: string
-          example: p4ssw0rd
-        hasValue:
-          description: Whether or not the credential has a value
-          readOnly: true
-          type: boolean
-    SSHCredential:
-      title: SSH Credential
-      description: Credential for SSH authentication to be used in service scripts
-      type: object
-      properties:
-        name:
-          description: Credential name
-          type: string
-          example: my-credential
-        user:
-          description: User name
-          type: string
-          example: max
-        password:
-          description: Password
-          writeOnly: true
-          type: string
-          example: p4ssw0rd
-        hasPassword:
-          description: Whether or not the credential has a password
-          readOnly: true
-          type: boolean
-        privateKey:
-          description: Private key
-          writeOnly: true
-          type: string
-          example: -----BEGIN OPENSSH PRIVATE KEY-----\n…
-        hasPrivateKey:
-          description: Whether or not the credential has a private key
-          readOnly: true
-          type: boolean
-    UserCredential:
-      title: User Credential
-      description: Credential for user defined purposes to be used in service scripts
-      type: object
-      properties:
-        name:
-          description: Credential name
-          type: string
-          example: my-credential
-        description:
-          description: Description
-          type: string
-          example: My secret credential
-        value:
-          description: Credential value
-          writeOnly: true
-          type: string
-          example: s3cr3t
-        hasValue:
-          description: Whether or not the credential has a value
-          readOnly: true
-          type: boolean
+          format: date-time
+          example: '2026-03-05T10:35:39.000Z'
     Service:
       title: Service
       description: Service entity
@@ -1833,19 +2212,49 @@ components:
           type: string
           format: date-time
           example: '2026-03-05T10:35:39.000Z'
-    UnsuccessfulServiceScriptResult:
-      title: Unsuccessful Service Script Result
-      description: Response that indicates that a service script executed unsuccessfully
+    SSHCredential:
+      title: SSH Credential
+      description: Credential for SSH authentication to be used in service scripts
+      type: object
+      properties:
+        name:
+          description: Credential name
+          type: string
+          example: my-credential
+        user:
+          description: User name
+          type: string
+          example: max
+        password:
+          description: Password
+          writeOnly: true
+          type: string
+          example: p4ssw0rd
+        hasPassword:
+          description: Whether or not the credential has a password
+          readOnly: true
+          type: boolean
+        privateKey:
+          description: Private key
+          writeOnly: true
+          type: string
+          example: -----BEGIN OPENSSH PRIVATE KEY-----\n…
+        hasPrivateKey:
+          description: Whether or not the credential has a private key
+          readOnly: true
+          type: boolean
+    SuccessfulActionResult:
+      title: Successful Action Result
+      description: Response that indicates that an action executed successfully
       type: object
       properties:
         success:
-          description: Whether or not the script executed successfully
+          description: Whether or not the action executed successfully
           type: boolean
-          enum: [false]
-        error:
-          description: Error description
-          type: string
-          example: 'JPLRuntimeError: test'
+          enum: [true]
+        results:
+          description: Script results
+          type: array
     SuccessfulServiceScriptResult:
       title: Successful Service Script Result
       description: Response that indicates that a service script executed successfully
@@ -1873,30 +2282,241 @@ components:
                 version: '#/components/schemas/VersionInstruction'
                 actionGroup: '#/components/schemas/ActionGroupInstruction'
                 action: '#/components/schemas/ActionInstruction'
-    HealthStatusInstruction:
-      title: Health Status Instruction
-      description: Event that instructs the server to register a health status for the related service
+    Time:
+      title: Time
+      description: Time representation
+      anyOf:
+        - title: String Representation
+          description: |-
+            The value is attempted to be parsed in a number of formats in the following order:
+            - [`RFC3339Nano`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC3339`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC1123Z`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC1123`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC850`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC822Z`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC822`](https://pkg.go.dev/time#pkg-constants)
+            - [`DateTime`](https://pkg.go.dev/time#pkg-constants)
+            - [`DateOnly`](https://pkg.go.dev/time#pkg-constants)
+          type: string
+          example: '2026-03-05T10:35:39.000Z'
+        - title: Number Representation
+          description: Unix time in seconds
+          type: integer
+          example: 1772706939
+    UnsuccessfulActionResult:
+      title: Unsuccessful Action Result
+      description: Response that indicates that an action executed unsuccessfully
       type: object
-      required: [type, status]
       properties:
-        type:
-          description: Event type
+        success:
+          description: Whether or not the action executed successfully
+          type: boolean
+          enum: [false]
+        error:
+          description: Error description
           type: string
-          enum: [healthStatus]
+          example: 'JPLRuntimeError: test'
+    UnsuccessfulServiceScriptResult:
+      title: Unsuccessful Service Script Result
+      description: Response that indicates that a service script executed unsuccessfully
+      type: object
+      properties:
+        success:
+          description: Whether or not the script executed successfully
+          type: boolean
+          enum: [false]
+        error:
+          description: Error description
+          type: string
+          example: 'JPLRuntimeError: test'
+    UpdateEvent:
+      title: Update Event
+      description: Client event that indicates that an endpoint was updated
+      type: object
+      required: [event, data]
+      properties:
+        event:
+          description: Type of event
+          type: string
+          enum: [update]
+        data:
+          description: Event details
+          type: string
+          format: uri
+          example: /v1/services/e222bdbd-9b08-4a85-b939-0dfce13547b6
+    User:
+      title: User
+      description: User that can authenticate against the API
+      type: object
+      properties:
         name:
-          description: Health status name - defaults to the name of the related service
+          description: User name
           type: string
-          example: Docker service
-        time:
-          description: Time of the event - defaults to the current server time
-          $ref: '#/components/schemas/Time'
-        order:
-          description: Value for sorting - defaults to `name`
+          example: max
+        role:
+          description: Privilege role
           type: string
+          enum: [common, admin]
+        password:
+          description: Password
+          writeOnly: true
+          type: string
+          example: p4ssw0rd
+        hasPassword:
+          description: Whether or not the user has a password
+          readOnly: true
+          type: boolean
+    UserAlertChannel:
+      title: User Alert Channel
+      description: Personal alerting channel
+      type: object
+      properties:
+        id:
+          description: Channel ID
+          readOnly: true
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        url:
+          description: '[Shoutrrr URL](https://containrrr.dev/shoutrrr/services/overview/#services_overview) to send alerts to'
+          type: string
+          format: uri
+          example: ntfy://ntfy.sh/example
+        errorAlerts:
+          description: Whether or not the channel is used for error alerts
+          type: boolean
+        healthAlerts:
+          description: Whether or not the channel is used for health alerts
+          type: boolean
+        versionAlerts:
+          description: Whether or not the channel is used for version alerts
+          type: boolean
+    UserCredential:
+      title: User Credential
+      description: Credential for user defined purposes to be used in service scripts
+      type: object
+      properties:
+        name:
+          description: Credential name
+          type: string
+          example: my-credential
+        description:
+          description: Description
+          type: string
+          example: My secret credential
+        value:
+          description: Credential value
+          writeOnly: true
+          type: string
+          example: s3cr3t
+        hasValue:
+          description: Whether or not the credential has a value
+          readOnly: true
+          type: boolean
+    UserProfile:
+      title: User Profile
+      description: Personal user profile
+      type: object
+      properties:
+        name:
+          description: User name
+          readOnly: true
+          type: string
+          example: max
+        role:
+          description: Privilege role
+          readOnly: true
+          type: string
+          enum: [common, admin]
+        hasPassword:
+          description: Whether or not the user has a password
+          readOnly: true
+          type: boolean
+        displayName:
+          description: Name to be displayed in clients
+          type: string
+          example: Max
+        startPage:
+          description: Name of the page to be displayed by default in clients
+          type: string
+          example: my-services
+        errorAlerts:
+          description: Whether or not error alerts are enabled for all services
+          type: boolean
+        healthAlerts:
+          description: Whether or not health alerts are enabled for all services
+          type: boolean
+        versionAlerts:
+          description: Whether or not version alerts are enabled for all services
+          type: boolean
+    Version:
+      title: Version
+      description: Version for monitoring service updates
+      type: object
+      properties:
+        name:
+          description: Version name
+          type: string
+          example: Docker Service
+        serviceID:
+          description: Service ID
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        currentVersion:
+          description: Currently running version
+          type: string
+          example: 1.2.3
+        currentCVEs:
+          description: Number of active CVEs for `currentVersion`
+          type: integer
+          example: 1
+        latestVersion:
+          description: Latest available version
+          type: string
+          example: 1.2.4
+        latestCVEs:
+          description: Number of active CVEs for `latestVersion`
+          type: integer
+          example: 1
         status:
-          description: Health status
+          description: Version status
           type: string
-          enum: [down, up]
+          enum: [outdated, upToDate]
+        outdated:
+          description: Whether or not the version is outdated
+          type: boolean
+        vulnerable:
+          description: Whether or not the version is vulnerable
+          type: boolean
+    VersionDetails:
+      title: Version Details
+      description: Detailed information about a version
+      type: object
+      properties:
+        currentVersionNotes:
+          description: |-
+            Release notes for `currentVersion`
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: Bug fixes
+        currentCVEDescriptions:
+          description: Active CVEs for `currentVersion`
+          type: array
+          items:
+            $ref: '#/components/schemas/CVEDescription'
+        latestVersionNotes:
+          description: |-
+            Release notes for `latestVersion`
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: Bug fixes
+        latestCVEDescriptions:
+          description: Active CVEs for `latestVersion`
+          type: array
+          items:
+            $ref: '#/components/schemas/CVEDescription'
     VersionInstruction:
       title: Version Instruction
       description: Event that instructs the server to register a version for the related service
@@ -1910,7 +2530,7 @@ components:
         name:
           description: Version name - defaults to the name of the related service
           type: string
-          example: Docker service
+          example: Docker Service
         time:
           description: Time of the event - defaults to the current server time
           $ref: '#/components/schemas/Time'
@@ -1961,158 +2581,6 @@ components:
           description: Version status - if omitted, the value is determined by comparing `currentVersion` and `latestVersion`
           type: string
           enum: [outdated, upToDate]
-    CVEDescription:
-      title: CVE Description
-      description: CVE description details
-      type: object
-      properties:
-        name:
-          description: CVE name
-          type: string
-          example: CVE-2026-12345
-        description:
-          description: |-
-            CVE description
-
-            Supports [CommonMark](http://commonmark.org/help/).
-          type: string
-          example: My Service contains a Cross-site Scripting (XSS) vulnerability…
-    ActionGroupInstruction:
-      title: Action Group Instruction
-      description: Event that instructs the server to register details for an action group for the related service
-      type: object
-      required: [type, name]
-      properties:
-        type:
-          description: Event type
-          type: string
-          enum: [actionGroup]
-        name:
-          description: Action group name
-          type: string
-          example: Docker Management
-        time:
-          description: Time of the event - defaults to the current server time
-          $ref: '#/components/schemas/Time'
-        order:
-          description: Value for sorting - defaults to `name`
-          type: string
-    ActionInstruction:
-      title: Action Instruction
-      description: Event that instructs the server to register an action for the related service
-      type: object
-      required: [type, name]
-      properties:
-        type:
-          description: Event type
-          type: string
-          enum: [action]
-        name:
-          description: Action name
-          type: string
-          example: Restart Docker Service
-        time:
-          description: Time of the event - defaults to the current server time
-          $ref: '#/components/schemas/Time'
-        order:
-          description: Value for sorting - defaults to `name`
-          type: string
-        url:
-          description: URL to be opened by the action (mutually exclusive with `script`)
-          type: string
-          format: uri
-          example: https://example.com
-        script:
-          description: '[JPL](https://jplorg.github.io/jpl) source code to be executed by the action (mutually exclusive with `url`)'
-          type: string
-          example: "error->('test')"
-        group:
-          description: Action group name
-          type: string
-          example: Docker Management
-        restrictToAdmins:
-          description: Whether or not the action is only accessible to users with the `admin` privilege role
-          type: boolean
-    Time:
-      title: Time
-      description: Time representation
-      anyOf:
-        - title: String Representation
-          description: |-
-            The value is attempted to be parsed in a number of formats in the following order:
-            - [`RFC3339Nano`](https://pkg.go.dev/time#pkg-constants)
-            - [`RFC3339`](https://pkg.go.dev/time#pkg-constants)
-            - [`RFC1123Z`](https://pkg.go.dev/time#pkg-constants)
-            - [`RFC1123`](https://pkg.go.dev/time#pkg-constants)
-            - [`RFC850`](https://pkg.go.dev/time#pkg-constants)
-            - [`RFC822Z`](https://pkg.go.dev/time#pkg-constants)
-            - [`RFC822`](https://pkg.go.dev/time#pkg-constants)
-            - [`DateTime`](https://pkg.go.dev/time#pkg-constants)
-            - [`DateOnly`](https://pkg.go.dev/time#pkg-constants)
-          type: string
-          example: '2026-03-05T10:35:39.000Z'
-        - title: Number Representation
-          description: Unix time in seconds
-          type: integer
-          example: 1772706939
-    ActionGroup:
-      title: Action Group
-      description: Details for an action group
-      type: object
-      properties:
-        name:
-          description: Action group name
-          type: string
-          example: Docker Management
-    Action:
-      title: Action
-      description: Custom action that can be performed for the related service
-      type: object
-      properties:
-        name:
-          description: Action name
-          type: string
-          example: Restart Docker Service
-        url:
-          description: URL to be opened by the action (mutually exclusive with `canRun`)
-          type: string
-          format: uri
-          example: https://example.com
-        canRun:
-          description: Whether or not the action can run a script (mutually exclusive with `url`)
-          type: boolean
-        group:
-          description: Action group name
-          type: string
-          example: Docker Management
-        restrictToAdmins:
-          description: Whether or not the action is only accessible to users with the `admin` privilege role
-          type: boolean
-    UnsuccessfulActionResult:
-      title: Unsuccessful Action Result
-      description: Response that indicates that an action executed unsuccessfully
-      type: object
-      properties:
-        success:
-          description: Whether or not the script executed successfully
-          type: boolean
-          enum: [false]
-        error:
-          description: Error description
-          type: string
-          example: 'JPLRuntimeError: test'
-    SuccessfulActionResult:
-      title: Successful Action Result
-      description: Response that indicates that an action executed successfully
-      type: object
-      properties:
-        success:
-          description: Whether or not the script executed successfully
-          type: boolean
-          enum: [true]
-        results:
-          description: Script results
-          type: array
   securitySchemes:
     BearerAuth:
       description: Provide the access token with an Bearer authorization header
