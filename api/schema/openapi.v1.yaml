@@ -1222,7 +1222,200 @@ paths:
           example: e222bdbd-9b08-4a85-b939-0dfce13547b6
     get:
       tags: [Service Scripts]
-      summary: 'TODO:'
+      summary: List service scripts
+      description: Requires the `admin` privilege role
+      operationId: getServicesByIDScripts
+      parameters:
+        - in: query
+          name: id
+          description: 'Filter results by `id`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Collect Docker Information
+        - in: query
+          name: schedule
+          description: 'Filter results by `schedule`'
+          schema:
+            type: string
+            format: cron
+            example: 0 * * * *
+        - in: query
+          name: source
+          description: 'Filter results by `source`'
+          schema:
+            type: string
+            example: "error->('test')"
+        - in: query
+          name: running
+          description: 'Filter results by `running`'
+          schema:
+            type: boolean
+        - in: query
+          name: hasError
+          description: 'Filter results by `error`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceScript'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+    post:
+      tags: [Service Scripts]
+      summary: Create a service script
+      description: Requires the `admin` privilege role
+      operationId: postServicesByIDScripts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceScript'
+              required: [name, schedule, source]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Script ID
+                    type: string
+                    example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /services/{serviceID}/scripts/{scriptID}:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+      - in: path
+        name: scriptID
+        description: Script ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Service Scripts]
+      summary: Get a service script
+      description: Requires the `admin` privilege role
+      operationId: getServicesByIDScriptsByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceScript'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [Service Scripts]
+      summary: Patch a service script
+      description: Requires the `admin` privilege role
+      operationId: patchServicesByIDScriptsByID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceScript'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [Service Scripts]
+      summary: Delete a service script
+      description: Requires the `admin` privilege role
+      operationId: deleteServicesByIDScriptsByID
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /services/{serviceID}/scripts/{scriptID}/run:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+      - in: path
+        name: scriptID
+        description: Script ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    post:
+      tags: [Service Scripts]
+      summary: Run a service script
+      description: Requires the `admin` privilege role
+      operationId: postServicesByIDScriptsByIDRun
+      responses:
+        '202':
+          description: Accepted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
 components:
   schemas:
     UpdateEvent:
@@ -1523,7 +1716,46 @@ components:
       title: Service Script
       description: Script that regularly runs to populate a service with dynamic information like health statuses or versions
       type: object
-      properties: {}
+      properties:
+        id:
+          description: Script ID
+          readOnly: true
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        name:
+          description: Script name
+          type: string
+          example: Collect Docker Information
+        schedule:
+          description: CRON schedule that defines how often the script runs
+          type: string
+          format: cron
+          example: 0 * * * *
+        source:
+          description: '[JPL](https://jplorg.github.io/jpl) source code to be executed by the script'
+          type: string
+          example: "error->('test')"
+        lastRun:
+          description: Time at which the script was last executed
+          readOnly: true
+          type: string
+          format: date-time
+          example: '2026-03-05T10:35:39.000Z'
+        running:
+          description: Whether or not the script is currently running
+          readOnly: true
+          type: boolean
+        error:
+          description: Error of the last run
+          readOnly: true
+          type: string
+          example: 'JPLRuntimeError: test'
+        nextRun:
+          description: Time at which the script will be executed next
+          readOnly: true
+          type: string
+          format: date-time
+          example: '2026-03-05T10:35:39.000Z'
     UnsuccessfulServiceScriptResult:
       title: Unsuccessful Service Script Result
       description: Response that indicates that a service script executed unsuccessfully
