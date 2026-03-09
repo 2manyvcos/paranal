@@ -36,6 +36,8 @@ tags:
     description: Manage services
   - name: Service Scripts
     description: Manage service scripts
+  - name: Service Actions
+    description: Manage service actions
 paths:
   /auth:
     post:
@@ -1201,8 +1203,8 @@ paths:
                 discriminator:
                   propertyName: success
                   mapping:
-                    false: '#/components/schemas/UnsuccessfulScriptResult'
-                    true: '#/components/schemas/SuccessfulScriptResult'
+                    false: '#/components/schemas/UnsuccessfulServiceScriptResult'
+                    true: '#/components/schemas/SuccessfulServiceScriptResult'
         '401':
           description: Unauthorized
         '403':
@@ -1414,6 +1416,81 @@ paths:
           description: Not found
         '409':
           description: Conflict
+        default:
+          description: Unexpected error
+  /services/{serviceID}/actions:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Service Actions]
+      summary: Get service actions
+      operationId: getServicesByIDActions
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionGroup'
+                  actions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Action'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /services/{serviceID}/actions/{actionName}/run:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+      - in: path
+        name: actionName
+        description: Action name
+        required: true
+        schema:
+          type: string
+          example: Restart Docker Service
+    post:
+      tags: [Service Actions]
+      summary: Run a service action
+      operationId: postServicesByIDActionsByNameRun
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UnsuccessfulActionResult'
+                  - $ref: '#/components/schemas/SuccessfulActionResult'
+                discriminator:
+                  propertyName: success
+                  mapping:
+                    false: '#/components/schemas/UnsuccessfulActionResult'
+                    true: '#/components/schemas/SuccessfulActionResult'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
         default:
           description: Unexpected error
 components:
@@ -1911,7 +1988,7 @@ components:
           type: string
           enum: [actionGroup]
         name:
-          description: Group name
+          description: Action group name
           type: string
           example: Docker Management
         time:
@@ -1978,6 +2055,64 @@ components:
           description: Unix time in seconds
           type: integer
           example: 1772706939
+    ActionGroup:
+      title: Action Group
+      description: Details for an action group
+      type: object
+      properties:
+        name:
+          description: Action group name
+          type: string
+          example: Docker Management
+    Action:
+      title: Action
+      description: Custom action that can be performed for the related service
+      type: object
+      properties:
+        name:
+          description: Action name
+          type: string
+          example: Restart Docker Service
+        url:
+          description: URL to be opened by the action (mutually exclusive with `canRun`)
+          type: string
+          format: uri
+          example: https://example.com
+        canRun:
+          description: Whether or not the action can run a script (mutually exclusive with `url`)
+          type: boolean
+        group:
+          description: Action group name
+          type: string
+          example: Docker Management
+        restrictToAdmins:
+          description: Whether or not the action is only accessible to users with the `admin` privilege role
+          type: boolean
+    UnsuccessfulActionResult:
+      title: Unsuccessful Action Result
+      description: Response that indicates that an action executed unsuccessfully
+      type: object
+      properties:
+        success:
+          description: Whether or not the script executed successfully
+          type: boolean
+          enum: [false]
+        error:
+          description: Error description
+          type: string
+          example: 'JPLRuntimeError: test'
+    SuccessfulActionResult:
+      title: Successful Action Result
+      description: Response that indicates that an action executed successfully
+      type: object
+      properties:
+        success:
+          description: Whether or not the script executed successfully
+          type: boolean
+          enum: [true]
+        results:
+          description: Script results
+          type: array
   securitySchemes:
     BearerAuth:
       description: Provide the access token with an Bearer authorization header
