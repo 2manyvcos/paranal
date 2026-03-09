@@ -42,9 +42,8 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subiz/safeurl v0.0.6 // indirect
 	golang.org/x/net v0.51.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/tools v0.42.0 // indirect
-	modernc.org/libc v1.69.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 )
