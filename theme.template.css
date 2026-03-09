@@ -728,6 +728,10 @@
 
 .service.context.dropdown > .action.dropdown-item.link {
 }
+.service.context.dropdown
+  > .action.dropdown-item.link[data-restrict-to-admins] {
+  /* used for when the related action is only accessible for admins */
+}
 
 .service.context.dropdown > .action-group.dropdown-section {
 }

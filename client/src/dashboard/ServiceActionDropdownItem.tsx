@@ -48,6 +48,7 @@ export default function ServiceActionDropdownItem({
           );
         }}
         text={action.name}
+        data-restrict-to-admins={action.restrictToAdmins ? '' : undefined}
       />
     </MenuItem>
   );
