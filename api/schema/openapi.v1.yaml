@@ -1,0 +1,2597 @@
+openapi: 3.1.1
+info:
+  title: Paranal API
+  description: This documentation describes the Paranal API.
+  license:
+    name: This file is distributed under the MIT license for the purpose of interoperability
+    url: https://opensource.org/licenses/MIT
+  version: 1.0.0
+externalDocs:
+  description: Paranal Documentation
+  url: https://2manyvcos.github.io/paranal
+servers:
+  - url: '{{ .api }}/v1'
+tags:
+  - name: Auth
+    description: Authenticate to the API
+  - name: Events
+    description: Get client events
+  - name: User Profile
+    description: Manage your user profile
+  - name: User Alert Channels
+    description: Manage your alerting channels
+  - name: Layout
+    description: Manage the client layout
+  - name: Scrape Website Logo
+    description: Scrape a website for its logo
+  - name: Users
+    description: Manage users
+  - name: HTTP Credentials
+    description: Manage HTTP credentials
+  - name: SSH Credentials
+    description: Manage SSH credentials
+  - name: User Credentials
+    description: Manage user credentials
+  - name: Services
+    description: Manage services
+  - name: Service Scripts
+    description: Manage service scripts
+  - name: Service Actions
+    description: Manage service actions
+  - name: Health Statuses
+    description: Manage health statuses
+  - name: Versions
+    description: Manage versions
+  - name: Maintenance Tasks
+    description: Manage maintenance tasks
+paths:
+  /auth:
+    post:
+      tags: [Auth]
+      summary: Authenticate to the API
+      operationId: postAuth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userName, password]
+              properties:
+                userName:
+                  description: User name used for authentication
+                  type: string
+                  example: max
+                password:
+                  description: Password of the user to be authenticated
+                  type: string
+                  example: p4ssw0rd
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userName:
+                    description: User name of the authenticated user
+                    type: string
+                    example: max
+                  accessToken:
+                    description: Bearer token to be used for further API requests
+                    type: string
+                    format: jwt
+                    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmlnaW4iOiJhcGkiLCJzdWIiOiJtYXgiLCJleHAiOjE3NzI3NDk5MjN9.XSLz_Q4ELipGowUovYviaG22GlaIduiFY2Q4YXG7aYI'
+                  expires:
+                    description: 'Time at which `accessToken` expires'
+                    type: string
+                    format: date-time
+                    example: '2026-03-05T10:35:39.000Z'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /events:
+    get:
+      tags: [Events]
+      summary: Get client events
+      operationId: getEvents
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/event-stream:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UpdateEvent'
+                discriminator:
+                  propertyName: event
+                  mapping:
+                    update: '#/components/schemas/UpdateEvent'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /user:
+    get:
+      tags: [User Profile]
+      summary: Get your user profile
+      operationId: getUser
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    patch:
+      tags: [User Profile]
+      summary: Patch your user profile
+      operationId: patchUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    delete:
+      tags: [User Profile]
+      summary: Delete your user profile
+      operationId: deleteUser
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /user/password:
+    put:
+      tags: [User Profile]
+      summary: Update your password
+      operationId: putUserPassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [currentPassword, newPassword]
+              properties:
+                currentPassword:
+                  description: Current password
+                  type: string
+                  example: p4ssw0rd
+                newPassword:
+                  description: New password
+                  type: string
+                  example: p4ssw0rd!
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /user/alert-channels:
+    get:
+      tags: [User Alert Channels]
+      summary: List your alert channels
+      operationId: getUserAlertChannels
+      parameters:
+        - in: query
+          name: id
+          description: 'Filter results by `id`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: userName
+          description: 'Filter results by `userName`'
+          schema:
+            type: string
+            example: max
+        - in: query
+          name: hasURL
+          description: 'Filter results by `url`'
+          schema:
+            type: boolean
+        - in: query
+          name: errorAlerts
+          description: 'Filter results by `errorAlerts`'
+          schema:
+            type: boolean
+        - in: query
+          name: healthAlerts
+          description: 'Filter results by `healthAlerts`'
+          schema:
+            type: boolean
+        - in: query
+          name: versionAlerts
+          description: 'Filter results by `versionAlerts`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserAlertChannel'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    post:
+      tags: [User Alert Channels]
+      summary: Create an alert channel
+      operationId: postUserAlertChannels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAlertChannel'
+              required: [url]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Channel ID
+                    type: string
+                    example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /user/alert-channels/{channelID}:
+    parameters:
+      - in: path
+        name: channelID
+        description: Channel ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [User Alert Channels]
+      summary: Get an alert channel
+      operationId: getUserAlertChannelsByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAlertChannel'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [User Alert Channels]
+      summary: Patch an alert channel
+      operationId: patchUserAlertChannelsByID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAlertChannel'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [User Alert Channels]
+      summary: Delete an alert channel
+      operationId: deleteUserAlertChannelsByID
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /layout:
+    get:
+      tags: [Layout]
+      summary: Get the client layout
+      operationId: getLayout
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Layout'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    put:
+      tags: [Layout]
+      summary: Set the client layout
+      description: Requires the `admin` privilege role
+      operationId: putLayout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Layout'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+  /scrape-website-logo:
+    post:
+      tags: [Scrape Website Logo]
+      summary: Scrape a website for its logo
+      operationId: postScrapeWebsiteLogo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url:
+                  description: URL of the website to be scraped
+                  type: string
+                  format: uri
+                  example: https://example.com
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  logo:
+                    description: URL of the scraped website logo
+                    type: string
+                    format: uri
+                    example: data:image/svg+xml;base64,…
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /users:
+    get:
+      tags: [Users]
+      summary: List users
+      description: Requires the `admin` privilege role
+      operationId: getUsers
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: max
+        - in: query
+          name: role
+          description: 'Filter results by `role`'
+          schema:
+            type: string
+            enum: [common, admin]
+        - in: query
+          name: hasPassword
+          description: 'Filter results by `password`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+    post:
+      tags: [Users]
+      summary: Create a user
+      description: Requires the `admin` privilege role
+      operationId: postUsers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+              required: [name, role]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    description: User name
+                    type: string
+                    example: max
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /users/{userName}:
+    parameters:
+      - in: path
+        name: userName
+        description: User name
+        required: true
+        schema:
+          type: string
+          example: max
+    get:
+      tags: [Users]
+      summary: Get a user
+      description: Requires the `admin` privilege role
+      operationId: getUsersByName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [Users]
+      summary: Patch a user
+      description: Requires the `admin` privilege role
+      operationId: patchUsersByName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/User'
+                - properties:
+                    name:
+                      readOnly: true
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [Users]
+      summary: Delete a user
+      description: Requires the `admin` privilege role
+      operationId: deleteUsersByName
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /http-credentials:
+    get:
+      tags: [HTTP Credentials]
+      summary: List HTTP credentials
+      description: Requires the `admin` privilege role
+      operationId: getHTTPCredentials
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: my-credential
+        - in: query
+          name: type
+          description: 'Filter results by `type`'
+          schema:
+            type: string
+            enum: [basic, bearer, header, query]
+        - in: query
+          name: key
+          description: 'Filter results by `key`'
+          schema:
+            type: string
+            example: max
+        - in: query
+          name: hasValue
+          description: 'Filter results by `value`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HTTPCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+    post:
+      tags: [HTTP Credentials]
+      summary: Create an HTTP credential
+      description: Requires the `admin` privilege role
+      operationId: postHTTPCredentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HTTPCredential'
+              required: [name, type, value]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    description: Credential name
+                    type: string
+                    example: my-credential
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /http-credentials/{credentialName}:
+    parameters:
+      - in: path
+        name: credentialName
+        description: Credential name
+        required: true
+        schema:
+          type: string
+          example: my-credential
+    get:
+      tags: [HTTP Credentials]
+      summary: Get an HTTP credential
+      description: Requires the `admin` privilege role
+      operationId: getHTTPCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [HTTP Credentials]
+      summary: Patch an HTTP credential
+      description: Requires the `admin` privilege role
+      operationId: patchHTTPCredentialsByName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/HTTPCredential'
+                - properties:
+                    name:
+                      readOnly: true
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [HTTP Credentials]
+      summary: Delete an HTTP credential
+      description: Requires the `admin` privilege role
+      operationId: deleteHTTPCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /ssh-credentials:
+    get:
+      tags: [SSH Credentials]
+      summary: List SSH credentials
+      description: Requires the `admin` privilege role
+      operationId: getSSHCredentials
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: my-credential
+        - in: query
+          name: user
+          description: 'Filter results by `user`'
+          schema:
+            type: string
+            example: max
+        - in: query
+          name: hasPassword
+          description: 'Filter results by `password`'
+          schema:
+            type: boolean
+        - in: query
+          name: hasPrivateKey
+          description: 'Filter results by `privateKey`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SSHCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+    post:
+      tags: [SSH Credentials]
+      summary: Create an SSH credential
+      description: Requires the `admin` privilege role
+      operationId: postSSHCredentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SSHCredential'
+              required: [name, user]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    description: Credential name
+                    type: string
+                    example: my-credential
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /ssh-credentials/{credentialName}:
+    parameters:
+      - in: path
+        name: credentialName
+        description: Credential name
+        required: true
+        schema:
+          type: string
+          example: my-credential
+    get:
+      tags: [SSH Credentials]
+      summary: Get an SSH credential
+      description: Requires the `admin` privilege role
+      operationId: getSSHCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SSHCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [SSH Credentials]
+      summary: Patch an SSH credential
+      description: Requires the `admin` privilege role
+      operationId: patchSSHCredentialsByName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/SSHCredential'
+                - properties:
+                    name:
+                      readOnly: true
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [SSH Credentials]
+      summary: Delete an SSH credential
+      description: Requires the `admin` privilege role
+      operationId: deleteSSHCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /user-credentials:
+    get:
+      tags: [User Credentials]
+      summary: List user credentials
+      description: Requires the `admin` privilege role
+      operationId: getUserCredentials
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: my-credential
+        - in: query
+          name: description
+          description: 'Filter results by `description`'
+          schema:
+            type: string
+            example: My secret credential
+        - in: query
+          name: hasValue
+          description: 'Filter results by `value`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+    post:
+      tags: [User Credentials]
+      summary: Create a user credential
+      description: Requires the `admin` privilege role
+      operationId: postUserCredentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCredential'
+              required: [name, value]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    description: Credential name
+                    type: string
+                    example: my-credential
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /user-credentials/{credentialName}:
+    parameters:
+      - in: path
+        name: credentialName
+        description: Credential name
+        required: true
+        schema:
+          type: string
+          example: my-credential
+    get:
+      tags: [User Credentials]
+      summary: Get a user credential
+      description: Requires the `admin` privilege role
+      operationId: getUserCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCredential'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [User Credentials]
+      summary: Patch a user credential
+      description: Requires the `admin` privilege role
+      operationId: patchUserCredentialsByName
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UserCredential'
+                - properties:
+                    name:
+                      readOnly: true
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [User Credentials]
+      summary: Delete a user credential
+      description: Requires the `admin` privilege role
+      operationId: deleteUserCredentialsByName
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /services:
+    get:
+      tags: [Services]
+      summary: List services
+      operationId: getServices
+      parameters:
+        - in: query
+          name: id
+          description: 'Filter results by `id`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: My Service
+        - in: query
+          name: description
+          description: 'Filter results by `description`'
+          schema:
+            type: string
+            example: Description for my service
+        - in: query
+          name: logo
+          description: 'Filter results by `logo`'
+          schema:
+            type: string
+            example: data:image/svg+xml;base64,…
+        - in: query
+          name: url
+          description: 'Filter results by `url`'
+          schema:
+            type: string
+            example: https://example.com
+        - in: query
+          name: config.favorite
+          description: 'Filter results by `config.favorite`'
+          schema:
+            type: boolean
+        - in: query
+          name: config.hidden
+          description: 'Filter results by `config.hidden`'
+          schema:
+            type: boolean
+        - in: query
+          name: config.healthAlerts
+          description: 'Filter results by `config.healthAlerts`'
+          schema:
+            type: boolean
+        - in: query
+          name: config.versionAlerts
+          description: 'Filter results by `config.versionAlerts`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+    post:
+      tags: [Services]
+      summary: Create a service
+      description: Requires the `admin` privilege role
+      operationId: postServices
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+              required: [name, value]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Service ID
+                    type: string
+                    example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /services/{serviceID}:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Services]
+      summary: Get a service
+      operationId: getServicesByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [Services]
+      summary: Patch a service
+      description: Requires the `admin` privilege role
+      operationId: patchServicesByID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Service'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [Services]
+      summary: Delete a service
+      description: Requires the `admin` privilege role
+      operationId: deleteServicesByID
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /services/{serviceID}/config:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    patch:
+      tags: [Services]
+      summary: Patch personal configuration for a service
+      operationId: patchServicesByIDConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceConfig'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /services/{serviceID}/run-script:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    post:
+      tags: [Service Scripts]
+      summary: Run a user defined service script
+      description: Requires the `admin` privilege role
+      operationId: postServicesByIDRunScript
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [source]
+              properties:
+                source:
+                  description: '[JPL](https://jplorg.github.io/jpl) source code to be executed by the script'
+                  type: string
+                  example: "error->('test')"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UnsuccessfulServiceScriptResult'
+                  - $ref: '#/components/schemas/SuccessfulServiceScriptResult'
+                discriminator:
+                  propertyName: success
+                  mapping:
+                    false: '#/components/schemas/UnsuccessfulServiceScriptResult'
+                    true: '#/components/schemas/SuccessfulServiceScriptResult'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /services/{serviceID}/scripts:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Service Scripts]
+      summary: List service scripts
+      description: Requires the `admin` privilege role
+      operationId: getServicesByIDScripts
+      parameters:
+        - in: query
+          name: id
+          description: 'Filter results by `id`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Collect Docker Information
+        - in: query
+          name: schedule
+          description: 'Filter results by `schedule`'
+          schema:
+            type: string
+            format: cron
+            example: 0 * * * *
+        - in: query
+          name: source
+          description: 'Filter results by `source`'
+          schema:
+            type: string
+            example: "error->('test')"
+        - in: query
+          name: running
+          description: 'Filter results by `running`'
+          schema:
+            type: boolean
+        - in: query
+          name: hasError
+          description: 'Filter results by `error`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ServiceScript'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+    post:
+      tags: [Service Scripts]
+      summary: Create a service script
+      description: Requires the `admin` privilege role
+      operationId: postServicesByIDScripts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceScript'
+              required: [name, schedule, source]
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    description: Script ID
+                    type: string
+                    example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /services/{serviceID}/scripts/{scriptID}:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+      - in: path
+        name: scriptID
+        description: Script ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Service Scripts]
+      summary: Get a service script
+      description: Requires the `admin` privilege role
+      operationId: getServicesByIDScriptsByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceScript'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    patch:
+      tags: [Service Scripts]
+      summary: Patch a service script
+      description: Requires the `admin` privilege role
+      operationId: patchServicesByIDScriptsByID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ServiceScript'
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+    delete:
+      tags: [Service Scripts]
+      summary: Delete a service script
+      description: Requires the `admin` privilege role
+      operationId: deleteServicesByIDScriptsByID
+      responses:
+        '200':
+          description: Successful operation
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /services/{serviceID}/scripts/{scriptID}/run:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+      - in: path
+        name: scriptID
+        description: Script ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    post:
+      tags: [Service Scripts]
+      summary: Run a service script
+      description: Requires the `admin` privilege role
+      operationId: postServicesByIDScriptsByIDRun
+      responses:
+        '202':
+          description: Accepted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+  /services/{serviceID}/actions:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Service Actions]
+      summary: Get service actions
+      operationId: getServicesByIDActions
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ActionGroup'
+                  actions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Action'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /services/{serviceID}/actions/{actionName}/run:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+      - in: path
+        name: actionName
+        description: Action name
+        required: true
+        schema:
+          type: string
+          example: Restart Docker Service
+    post:
+      tags: [Service Actions]
+      summary: Run a service action
+      operationId: postServicesByIDActionsByNameRun
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/UnsuccessfulActionResult'
+                  - $ref: '#/components/schemas/SuccessfulActionResult'
+                discriminator:
+                  propertyName: success
+                  mapping:
+                    false: '#/components/schemas/UnsuccessfulActionResult'
+                    true: '#/components/schemas/SuccessfulActionResult'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /health-statuses:
+    get:
+      tags: [Health Statuses]
+      summary: List health statuses
+      operationId: getHealthStatuses
+      parameters:
+        - in: query
+          name: serviceID
+          description: 'Filter results by `serviceID`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: service.config.hidden
+          description: 'Filter results by `service.config.hidden`'
+          schema:
+            type: boolean
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Docker Service
+        - in: query
+          name: status
+          description: 'Filter results by `status`'
+          schema:
+            type: string
+            enum: [down, up]
+        - in: query
+          name: unhealthy
+          description: 'Filter results by `unhealthy`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HealthStatus'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /services/{serviceID}/health-statuses:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Health Statuses]
+      summary: List health statuses for a service
+      operationId: getServicesByIDHealthStatuses
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Docker Service
+        - in: query
+          name: status
+          description: 'Filter results by `status`'
+          schema:
+            type: string
+            enum: [down, up]
+        - in: query
+          name: unhealthy
+          description: 'Filter results by `unhealthy`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/HealthStatus'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /versions:
+    get:
+      tags: [Versions]
+      summary: List versions
+      operationId: getVersions
+      parameters:
+        - in: query
+          name: serviceID
+          description: 'Filter results by `serviceID`'
+          schema:
+            type: string
+            example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        - in: query
+          name: service.config.hidden
+          description: 'Filter results by `service.config.hidden`'
+          schema:
+            type: boolean
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Docker Service
+        - in: query
+          name: currentVersion
+          description: 'Filter results by `currentVersion`'
+          schema:
+            type: string
+            example: 1.2.3
+        - in: query
+          name: hasCurrentCVEs
+          description: 'Filter results by `currentCVEs`'
+          schema:
+            type: boolean
+        - in: query
+          name: latestVersion
+          description: 'Filter results by `latestVersion`'
+          schema:
+            type: string
+            example: 1.2.4
+        - in: query
+          name: hasLatestCVEs
+          description: 'Filter results by `latestCVEs`'
+          schema:
+            type: boolean
+        - in: query
+          name: status
+          description: 'Filter results by `status`'
+          schema:
+            type: string
+            enum: [outdated, upToDate]
+        - in: query
+          name: outdated
+          description: 'Filter results by `outdated`'
+          schema:
+            type: boolean
+        - in: query
+          name: vulnerable
+          description: 'Filter results by `vulnerable`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Version'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /services/{serviceID}/versions:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    get:
+      tags: [Versions]
+      summary: List versions for a service
+      operationId: getServicesByIDVersions
+      parameters:
+        - in: query
+          name: name
+          description: 'Filter results by `name`'
+          schema:
+            type: string
+            example: Docker Service
+        - in: query
+          name: currentVersion
+          description: 'Filter results by `currentVersion`'
+          schema:
+            type: string
+            example: 1.2.3
+        - in: query
+          name: hasCurrentCVEs
+          description: 'Filter results by `currentCVEs`'
+          schema:
+            type: boolean
+        - in: query
+          name: latestVersion
+          description: 'Filter results by `latestVersion`'
+          schema:
+            type: string
+            example: 1.2.4
+        - in: query
+          name: hasLatestCVEs
+          description: 'Filter results by `latestCVEs`'
+          schema:
+            type: boolean
+        - in: query
+          name: status
+          description: 'Filter results by `status`'
+          schema:
+            type: string
+            enum: [outdated, upToDate]
+        - in: query
+          name: outdated
+          description: 'Filter results by `outdated`'
+          schema:
+            type: boolean
+        - in: query
+          name: vulnerable
+          description: 'Filter results by `vulnerable`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Version'
+        '401':
+          description: Unauthorized
+        default:
+          description: Unexpected error
+  /services/{serviceID}/versions/{versionName}/details:
+    parameters:
+      - in: path
+        name: serviceID
+        description: Service ID
+        required: true
+        schema:
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+      - in: path
+        name: versionName
+        description: Version name
+        required: true
+        schema:
+          type: string
+          example: Docker Service
+    get:
+      tags: [Versions]
+      summary: Get detailed information about a version
+      operationId: getServicesByIDVersionsByNameDetails
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionDetails'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /maintenance-tasks:
+    get:
+      tags: [Maintenance Tasks]
+      summary: List maintenance tasks
+      description: Requires the `admin` privilege role
+      operationId: getMaintenanceTasks
+      parameters:
+        - in: query
+          name: running
+          description: 'Filter results by `running`'
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MaintenanceTask'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        default:
+          description: Unexpected error
+  /maintenance-tasks/{taskName}:
+    parameters:
+      - in: path
+        name: taskName
+        description: Task name
+        required: true
+        schema:
+          type: string
+          example: Cleanup database
+    get:
+      tags: [Maintenance Tasks]
+      summary: Get a maintenance task
+      description: Requires the `admin` privilege role
+      operationId: getMaintenanceTasksByName
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MaintenanceTask'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /maintenance-tasks/{taskName}/run:
+    parameters:
+      - in: path
+        name: taskName
+        description: Task name
+        required: true
+        schema:
+          type: string
+          example: Cleanup database
+    post:
+      tags: [Maintenance Tasks]
+      summary: Run a maintenance task
+      description: Requires the `admin` privilege role
+      operationId: postMaintenanceTasksByNameRun
+      responses:
+        '202':
+          description: Accepted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not found
+        '409':
+          description: Conflict
+        default:
+          description: Unexpected error
+components:
+  schemas:
+    Action:
+      title: Action
+      description: Custom action that can be performed for the related service
+      type: object
+      properties:
+        name:
+          description: Action name
+          type: string
+          example: Restart Docker Service
+        url:
+          description: URL to be opened by the action (mutually exclusive with `canRun`)
+          type: string
+          format: uri
+          example: https://example.com
+        canRun:
+          description: Whether or not the action can run a script (mutually exclusive with `url`)
+          type: boolean
+        group:
+          description: Group name
+          type: string
+          example: Docker Management
+        restrictToAdmins:
+          description: Whether or not the action is only accessible to users with the `admin` privilege role
+          type: boolean
+    ActionGroup:
+      title: Action Group
+      description: Details for an action group
+      type: object
+      properties:
+        name:
+          description: Group name
+          type: string
+          example: Docker Management
+    ActionGroupInstruction:
+      title: Action Group Instruction
+      description: Event that instructs the server to register details for an action group for the related service
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [actionGroup]
+        name:
+          description: Group name
+          type: string
+          example: Docker Management
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+    ActionInstruction:
+      title: Action Instruction
+      description: Event that instructs the server to register an action for the related service
+      type: object
+      required: [type, name]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [action]
+        name:
+          description: Action name
+          type: string
+          example: Restart Docker Service
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+        url:
+          description: URL to be opened by the action (mutually exclusive with `script`)
+          type: string
+          format: uri
+          example: https://example.com
+        script:
+          description: '[JPL](https://jplorg.github.io/jpl) source code to be executed by the action (mutually exclusive with `url`)'
+          type: string
+          example: "error->('test')"
+        group:
+          description: Group name
+          type: string
+          example: Docker Management
+        restrictToAdmins:
+          description: Whether or not the action is only accessible to users with the `admin` privilege role
+          type: boolean
+    CVEDescription:
+      title: CVE Description
+      description: CVE description details
+      type: object
+      properties:
+        name:
+          description: CVE name
+          type: string
+          example: CVE-2026-12345
+        description:
+          description: |-
+            CVE description
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: My Service contains a Cross-site Scripting (XSS) vulnerability…
+    HealthStatus:
+      title: Health Status
+      description: Health status for monitoring service uptime
+      type: object
+      properties:
+        name:
+          description: Health status name
+          type: string
+          example: Docker Service
+        serviceID:
+          description: Service ID
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        status:
+          description: Health status
+          type: string
+          enum: [down, up]
+        unhealthy:
+          description: Whether or not the health status is unhealthy
+          type: boolean
+    HealthStatusInstruction:
+      title: Health Status Instruction
+      description: Event that instructs the server to register a health status for the related service
+      type: object
+      required: [type, status]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [healthStatus]
+        name:
+          description: Health status name - defaults to the name of the related service
+          type: string
+          example: Docker Service
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+        status:
+          description: Health status
+          type: string
+          enum: [down, up]
+    HTTPCredential:
+      title: HTTP Credential
+      description: Credential for authentication in HTTP requests to be used in service scripts
+      type: object
+      properties:
+        name:
+          description: Credential name
+          type: string
+          example: my-credential
+        type:
+          description: Credential type
+          type: string
+          enum: [basic, bearer, header, query]
+        key:
+          description: |-
+            Credential key
+
+            The purpose of the key varies based on the selected type:
+            | Type     | Description         |
+            | -------- | ------------------- |
+            | `basic`  | User name           |
+            | `bearer` | *unused*            |
+            | `header` | Header name         |
+            | `query`  | Query parameter key |
+          type: string
+          example: max
+        value:
+          description: |-
+            Credential value
+
+            The purpose of the value varies based on the selected type:
+            | Type     | Description           |
+            | -------- | --------------------- |
+            | `basic`  | Password              |
+            | `bearer` | Bearer token          |
+            | `header` | Header value          |
+            | `query`  | Query parameter value |
+          writeOnly: true
+          type: string
+          example: p4ssw0rd
+        hasValue:
+          description: Whether or not the credential has a value
+          readOnly: true
+          type: boolean
+    Layout:
+      title: Layout
+      description: Layout that defines how services are arranged in clients
+      type: object
+      properties:
+        pages:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name:
+                description: Unique page name
+                type: string
+                example: my-services
+              displayName:
+                description: Name to be displayed in clients
+                type: string
+                example: My Services
+              header:
+                description: |-
+                  User defined page header
+
+                  Supports [CommonMark](http://commonmark.org/help/).
+                type: string
+                example: '**Markdown** content'
+              sections:
+                type: array
+                items:
+                  type: object
+                  required: [id]
+                  properties:
+                    id:
+                      description: Section ID
+                      type: string
+                      example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+                    name:
+                      description: Section name
+                      type: string
+                      example: Entertainment
+                    icon:
+                      description: Icon URL
+                      type: string
+                      format: uri
+                      example: data:image/svg+xml;base64,…
+                    serviceIDs:
+                      type: array
+                      uniqueItems: true
+                      items:
+                        description: Service ID
+                        type: string
+                        example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+    MaintenanceTask:
+      title: Maintenance Task
+      description: Maintenance task
+      type: object
+      properties:
+        name:
+          description: Task name
+          type: string
+          example: Cleanup database
+        lastRun:
+          description: Time at which the task was last executed
+          type: string
+          format: date-time
+          example: '2026-03-05T10:35:39.000Z'
+        running:
+          description: Whether or not the task is currently running
+          type: boolean
+        nextRun:
+          description: Time at which the task will be executed next
+          type: string
+          format: date-time
+          example: '2026-03-05T10:35:39.000Z'
+    Service:
+      title: Service
+      description: Service entity
+      type: object
+      properties:
+        id:
+          description: Service ID
+          readOnly: true
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        name:
+          description: Service name
+          type: string
+          example: My Service
+        description:
+          description: Service description
+          type: string
+          example: Description for my service
+        logo:
+          description: Logo URL
+          type: string
+          format: uri
+          example: data:image/svg+xml;base64,…
+        url:
+          description: Service URL
+          type: string
+          format: uri
+          example: https://example.com
+        config:
+          $ref: '#/components/schemas/ServiceConfig'
+          readOnly: true
+    ServiceConfig:
+      title: Service Config
+      description: Personal configuration for a service
+      type: object
+      properties:
+        favorite:
+          description: Whether or not the service occurs in your favorites section
+          type: boolean
+        hidden:
+          description: Whether or not the service is hidden
+          type: boolean
+        healthAlerts:
+          description: Whether or not health alerts are enabled for the service
+          type: boolean
+        versionAlerts:
+          description: Whether or not version alerts are enabled for the service
+          type: boolean
+    ServiceScript:
+      title: Service Script
+      description: Script that regularly runs to populate a service with dynamic information like health statuses or versions
+      type: object
+      properties:
+        id:
+          description: Script ID
+          readOnly: true
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        name:
+          description: Script name
+          type: string
+          example: Collect Docker Information
+        schedule:
+          description: CRON schedule that defines how often the script runs
+          type: string
+          format: cron
+          example: 0 * * * *
+        source:
+          description: '[JPL](https://jplorg.github.io/jpl) source code to be executed by the script'
+          type: string
+          example: "error->('test')"
+        lastRun:
+          description: Time at which the script was last executed
+          readOnly: true
+          type: string
+          format: date-time
+          example: '2026-03-05T10:35:39.000Z'
+        running:
+          description: Whether or not the script is currently running
+          readOnly: true
+          type: boolean
+        error:
+          description: Error of the last run
+          readOnly: true
+          type: string
+          example: 'JPLRuntimeError: test'
+        nextRun:
+          description: Time at which the script will be executed next
+          readOnly: true
+          type: string
+          format: date-time
+          example: '2026-03-05T10:35:39.000Z'
+    SSHCredential:
+      title: SSH Credential
+      description: Credential for SSH authentication to be used in service scripts
+      type: object
+      properties:
+        name:
+          description: Credential name
+          type: string
+          example: my-credential
+        user:
+          description: User name
+          type: string
+          example: max
+        password:
+          description: Password
+          writeOnly: true
+          type: string
+          example: p4ssw0rd
+        hasPassword:
+          description: Whether or not the credential has a password
+          readOnly: true
+          type: boolean
+        privateKey:
+          description: Private key
+          writeOnly: true
+          type: string
+          example: -----BEGIN OPENSSH PRIVATE KEY-----\n…
+        hasPrivateKey:
+          description: Whether or not the credential has a private key
+          readOnly: true
+          type: boolean
+    SuccessfulActionResult:
+      title: Successful Action Result
+      description: Response that indicates that an action executed successfully
+      type: object
+      properties:
+        success:
+          description: Whether or not the action executed successfully
+          type: boolean
+          enum: [true]
+        results:
+          description: Script results
+          type: array
+    SuccessfulServiceScriptResult:
+      title: Successful Service Script Result
+      description: Response that indicates that a service script executed successfully
+      type: object
+      properties:
+        success:
+          description: Whether or not the script executed successfully
+          type: boolean
+          enum: [true]
+        results:
+          description: Script results
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/HealthStatusInstruction'
+              - $ref: '#/components/schemas/VersionInstruction'
+              - $ref: '#/components/schemas/ActionGroupInstruction'
+              - $ref: '#/components/schemas/ActionInstruction'
+              - title: Invalid result
+                description: Arbitrary result that cannot be processed by the server
+            discriminator:
+              propertyName: type
+              mapping:
+                healthStatus: '#/components/schemas/HealthStatusInstruction'
+                version: '#/components/schemas/VersionInstruction'
+                actionGroup: '#/components/schemas/ActionGroupInstruction'
+                action: '#/components/schemas/ActionInstruction'
+    Time:
+      title: Time
+      description: Time representation
+      anyOf:
+        - title: String Representation
+          description: |-
+            The value is attempted to be parsed in a number of formats in the following order:
+            - [`RFC3339Nano`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC3339`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC1123Z`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC1123`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC850`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC822Z`](https://pkg.go.dev/time#pkg-constants)
+            - [`RFC822`](https://pkg.go.dev/time#pkg-constants)
+            - [`DateTime`](https://pkg.go.dev/time#pkg-constants)
+            - [`DateOnly`](https://pkg.go.dev/time#pkg-constants)
+          type: string
+          example: '2026-03-05T10:35:39.000Z'
+        - title: Number Representation
+          description: Unix time in seconds
+          type: integer
+          example: 1772706939
+    UnsuccessfulActionResult:
+      title: Unsuccessful Action Result
+      description: Response that indicates that an action executed unsuccessfully
+      type: object
+      properties:
+        success:
+          description: Whether or not the action executed successfully
+          type: boolean
+          enum: [false]
+        error:
+          description: Error description
+          type: string
+          example: 'JPLRuntimeError: test'
+    UnsuccessfulServiceScriptResult:
+      title: Unsuccessful Service Script Result
+      description: Response that indicates that a service script executed unsuccessfully
+      type: object
+      properties:
+        success:
+          description: Whether or not the script executed successfully
+          type: boolean
+          enum: [false]
+        error:
+          description: Error description
+          type: string
+          example: 'JPLRuntimeError: test'
+    UpdateEvent:
+      title: Update Event
+      description: Client event that indicates that an endpoint was updated
+      type: object
+      required: [event, data]
+      properties:
+        event:
+          description: Type of event
+          type: string
+          enum: [update]
+        data:
+          description: Event details
+          type: string
+          format: uri
+          example: /v1/services/e222bdbd-9b08-4a85-b939-0dfce13547b6
+    User:
+      title: User
+      description: User that can authenticate against the API
+      type: object
+      properties:
+        name:
+          description: User name
+          type: string
+          example: max
+        role:
+          description: Privilege role
+          type: string
+          enum: [common, admin]
+        password:
+          description: Password
+          writeOnly: true
+          type: string
+          example: p4ssw0rd
+        hasPassword:
+          description: Whether or not the user has a password
+          readOnly: true
+          type: boolean
+    UserAlertChannel:
+      title: User Alert Channel
+      description: Personal alerting channel
+      type: object
+      properties:
+        id:
+          description: Channel ID
+          readOnly: true
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        url:
+          description: '[Shoutrrr URL](https://containrrr.dev/shoutrrr/services/overview/#services_overview) to send alerts to'
+          type: string
+          format: uri
+          example: ntfy://ntfy.sh/example
+        errorAlerts:
+          description: Whether or not the channel is used for error alerts
+          type: boolean
+        healthAlerts:
+          description: Whether or not the channel is used for health alerts
+          type: boolean
+        versionAlerts:
+          description: Whether or not the channel is used for version alerts
+          type: boolean
+    UserCredential:
+      title: User Credential
+      description: Credential for user defined purposes to be used in service scripts
+      type: object
+      properties:
+        name:
+          description: Credential name
+          type: string
+          example: my-credential
+        description:
+          description: Description
+          type: string
+          example: My secret credential
+        value:
+          description: Credential value
+          writeOnly: true
+          type: string
+          example: s3cr3t
+        hasValue:
+          description: Whether or not the credential has a value
+          readOnly: true
+          type: boolean
+    UserProfile:
+      title: User Profile
+      description: Personal user profile
+      type: object
+      properties:
+        name:
+          description: User name
+          readOnly: true
+          type: string
+          example: max
+        role:
+          description: Privilege role
+          readOnly: true
+          type: string
+          enum: [common, admin]
+        hasPassword:
+          description: Whether or not the user has a password
+          readOnly: true
+          type: boolean
+        displayName:
+          description: Name to be displayed in clients
+          type: string
+          example: Max
+        startPage:
+          description: Name of the page to be displayed by default in clients
+          type: string
+          example: my-services
+        errorAlerts:
+          description: Whether or not error alerts are enabled for all services
+          type: boolean
+        healthAlerts:
+          description: Whether or not health alerts are enabled for all services
+          type: boolean
+        versionAlerts:
+          description: Whether or not version alerts are enabled for all services
+          type: boolean
+    Version:
+      title: Version
+      description: Version for monitoring service updates
+      type: object
+      properties:
+        name:
+          description: Version name
+          type: string
+          example: Docker Service
+        serviceID:
+          description: Service ID
+          type: string
+          example: e222bdbd-9b08-4a85-b939-0dfce13547b6
+        currentVersion:
+          description: Currently running version
+          type: string
+          example: 1.2.3
+        currentCVEs:
+          description: Number of active CVEs for `currentVersion`
+          type: integer
+          example: 1
+        latestVersion:
+          description: Latest available version
+          type: string
+          example: 1.2.4
+        latestCVEs:
+          description: Number of active CVEs for `latestVersion`
+          type: integer
+          example: 1
+        status:
+          description: Version status
+          type: string
+          enum: [outdated, upToDate]
+        outdated:
+          description: Whether or not the version is outdated
+          type: boolean
+        vulnerable:
+          description: Whether or not the version is vulnerable
+          type: boolean
+    VersionDetails:
+      title: Version Details
+      description: Detailed information about a version
+      type: object
+      properties:
+        currentVersionNotes:
+          description: |-
+            Release notes for `currentVersion`
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: Bug fixes
+        currentCVEDescriptions:
+          description: Active CVEs for `currentVersion`
+          type: array
+          items:
+            $ref: '#/components/schemas/CVEDescription'
+        latestVersionNotes:
+          description: |-
+            Release notes for `latestVersion`
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: Bug fixes
+        latestCVEDescriptions:
+          description: Active CVEs for `latestVersion`
+          type: array
+          items:
+            $ref: '#/components/schemas/CVEDescription'
+    VersionInstruction:
+      title: Version Instruction
+      description: Event that instructs the server to register a version for the related service
+      type: object
+      required: [type, currentVersion]
+      properties:
+        type:
+          description: Event type
+          type: string
+          enum: [version]
+        name:
+          description: Version name - defaults to the name of the related service
+          type: string
+          example: Docker Service
+        time:
+          description: Time of the event - defaults to the current server time
+          $ref: '#/components/schemas/Time'
+        order:
+          description: Value for sorting - defaults to `name`
+          type: string
+        currentVersion:
+          description: Currently running version
+          type: string
+          example: 1.2.3
+        currentVersionNotes:
+          description: |-
+            Release notes for `currentVersion`
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: Bug fixes
+        currentCVEs:
+          description: Number of active CVEs for `currentVersion` - defaults to the number of entries in `currentCVEDescriptions`
+          type: integer
+          example: 1
+        currentCVEDescriptions:
+          description: Active CVEs for `currentVersion`
+          type: array
+          items:
+            $ref: '#/components/schemas/CVEDescription'
+        latestVersion:
+          description: Latest available version
+          type: string
+          example: 1.2.4
+        latestVersionNotes:
+          description: |-
+            Release notes for `latestVersion`
+
+            Supports [CommonMark](http://commonmark.org/help/).
+          type: string
+          example: Bug fixes
+        latestCVEs:
+          description: Number of active CVEs for `latestVersion` - defaults to the number of entries in `latestCVEDescriptions`
+          type: integer
+          example: 1
+        latestCVEDescriptions:
+          description: Active CVEs for `latestVersion`
+          type: array
+          items:
+            $ref: '#/components/schemas/CVEDescription'
+        status:
+          description: Version status - if omitted, the value is determined by comparing `currentVersion` and `latestVersion`
+          type: string
+          enum: [outdated, upToDate]
+  securitySchemes:
+    BearerAuth:
+      description: Provide the access token with an Bearer authorization header
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    BearerAuthInHeader:
+      description: Provide the access token with a query parameter in scenarios where headers aren't supported, such as with the [EventSource](https://developer.mozilla.org/en-US/docs/Web/API/EventSource) API
+      type: apiKey
+      in: query
+      name: accessToken
+security:
+  - BearerAuth: []
+  - BearerAuthInHeader: []
