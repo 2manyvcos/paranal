@@ -19,7 +19,7 @@ import UnexpectedErrorPage from '@/error/UnexpectedErrorPage';
 
 const root = document.getElementById('root')!;
 
-function App() {
+export default function App() {
   const user = useUser({});
   const userLoading = user.isLoading && user.isInitial;
 
@@ -94,5 +94,3 @@ function App() {
     </ApplicationContext.Provider>
   );
 }
-
-export default App;
