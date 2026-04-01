@@ -3,7 +3,7 @@ import { createApiReference } from '@scalar/api-reference';
 import '@scalar/api-reference/style.css';
 
 const apiURL = new URL(
-  window.paranal.api.replace(/\/*$/g, '/'),
+  window.paranal.api.replace(/\/*$/, '/'),
   window.location.href,
 );
 

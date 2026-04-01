@@ -6,7 +6,7 @@ import { getAccessToken } from './accessTokens';
 import { HTTP_UNAUTHORIZED, HTTPError } from './errors';
 
 const apiURL = new URL(
-  window.paranal.api.replace(/\/*$/g, '/'),
+  window.paranal.api.replace(/\/*$/, '/'),
   window.location.href,
 );
 
@@ -60,8 +60,8 @@ const eventReceiver = new SSEReceiver(nextEventSource(), {
       case 'update': {
         const resourcePath = new URL(resource.name, apiURL).pathname
           .substring(apiURL.pathname.length - 1)
-          .replace(/\/*$/g, '/');
-        const eventPath = event.data.replace(/\/*$/g, '/');
+          .replace(/\/*$/, '/');
+        const eventPath = event.data.replace(/\/*$/, '/');
 
         if (eventPath === resourcePath) return [event];
 
