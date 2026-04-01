@@ -5,12 +5,17 @@
   "author": {
     "name": "Aaron Burmeister"
   },
+  "homepage": "https://2manyvcos.github.io/paranal",
   "repository": {
     "type": "git",
-    "url": "https://github.com/2manyvcos/paranal"
+    "url": "git+https://github.com/2manyvcos/paranal.git"
+  },
+  "bugs": {
+    "url": "https://github.com/2manyvcos/paranal/issues"
   },
   "private": true,
   "type": "module",
+  "license": "MIT",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

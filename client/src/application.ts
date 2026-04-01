@@ -9,12 +9,12 @@ import {
 import {
   useHealthStatuses,
   type HealthStatus,
-} from './data/dataHealthStatuses';
-import { useLayout, type Layout } from './data/dataLayout';
-import { useServices, type Service } from './data/dataServices';
-import type { User } from './data/dataUser';
-import { useVersions, type Version } from './data/dataVersions';
-import { useErrorNotification } from './data/errors';
+} from '@/data/dataHealthStatuses';
+import { useLayout, type Layout } from '@/data/dataLayout';
+import { useServices, type Service } from '@/data/dataServices';
+import type { User } from '@/data/dataUser';
+import { useVersions, type Version } from '@/data/dataVersions';
+import { useErrorNotification } from '@/data/errors';
 
 export type Application = {
   appName: string;

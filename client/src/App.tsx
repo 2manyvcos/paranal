@@ -1,21 +1,21 @@
 import { useEffect } from 'react';
 import { Route, Routes } from 'react-router';
-import NavigateToLoginPage from './NavigateToLoginPage';
-import AdminScreen from './admin/AdminScreen';
-import { ApplicationContext, useApplicationContextState } from './application';
-import AuthScreen from './auth/AuthScreen';
-import LoginPage from './auth/LoginPage';
-import DashboardScreen from './dashboard/DashboardScreen';
-import HealthStatusesPage from './dashboard/HealthStatusesPage';
-import HomePage from './dashboard/HomePage';
-import ServicePage from './dashboard/ServicePage';
-import UserPage from './dashboard/UserPage';
-import VersionsPage from './dashboard/VersionsPage';
-import { useUser } from './data/dataUser';
-import { useBooleanDataAttribute, useDataAttribute } from './dataAttributes';
-import ErrorScreen from './error/ErrorScreen';
-import NotFoundPage from './error/NotFoundPage';
-import UnexpectedErrorPage from './error/UnexpectedErrorPage';
+import NavigateToLoginPage from '@/NavigateToLoginPage';
+import AdminScreen from '@/admin/AdminScreen';
+import { ApplicationContext, useApplicationContextState } from '@/application';
+import AuthScreen from '@/auth/AuthScreen';
+import LoginPage from '@/auth/LoginPage';
+import DashboardScreen from '@/dashboard/DashboardScreen';
+import HealthStatusesPage from '@/dashboard/HealthStatusesPage';
+import HomePage from '@/dashboard/HomePage';
+import ServicePage from '@/dashboard/ServicePage';
+import UserPage from '@/dashboard/UserPage';
+import VersionsPage from '@/dashboard/VersionsPage';
+import { useUser } from '@/data/dataUser';
+import { useBooleanDataAttribute, useDataAttribute } from '@/dataAttributes';
+import ErrorScreen from '@/error/ErrorScreen';
+import NotFoundPage from '@/error/NotFoundPage';
+import UnexpectedErrorPage from '@/error/UnexpectedErrorPage';
 
 const root = document.getElementById('root')!;
 

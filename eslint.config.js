@@ -27,7 +27,7 @@ export default defineConfig([
       'import/resolver': {
         typescript: true,
         alias: {
-          extensions: ['.js', '.jsx'],
+          extensions: ['.ts', '.tsx'],
           map: [['@', './client/src']],
         },
       },
