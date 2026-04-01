@@ -17,6 +17,6 @@ __debug_*
 docs/.vitepress/cache
 docs/.vitepress/dist
 
-# Runtime data
+# Application data
 .env
 .paranal/
