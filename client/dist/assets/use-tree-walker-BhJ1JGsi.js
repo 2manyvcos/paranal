@@ -1,1 +1,0 @@
-import{St as e}from"./dist-Bfke8VKn.js";import{tt as t}from"./runtime-core.esm-bundler-Cx-8_BNF.js";function n({container:n,accept:r,walk:i,enabled:a}){t(()=>{let t=n.value;if(!t||a!==void 0&&!a.value)return;let o=e(n);if(!o)return;let s=Object.assign(e=>r(e),{acceptNode:r}),c=o.createTreeWalker(t,NodeFilter.SHOW_ELEMENT,s,!1);for(;c.nextNode();)i(c.currentNode)})}export{n as t};

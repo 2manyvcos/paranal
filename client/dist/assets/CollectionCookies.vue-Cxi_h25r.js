@@ -1,1 +1,0 @@
-import{V as e,d as t,it as n,v as r,x as i}from"./runtime-core.esm-bundler-Cx-8_BNF.js";import{v as a}from"./reference-BndGb6Nb.js";var o=i({__name:`CollectionCookies`,setup(i){return(i,o)=>(e(),t(a,null,{title:n(()=>[...o[0]||=[r(`Cookies`,-1)]]),_:1}))}});export{o as default};
