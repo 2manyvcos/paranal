@@ -1,5 +1,5 @@
 import { Notifier } from '@civet/core';
-import { v4 as uuid } from 'uuid';
+import { v7 as uuid } from 'uuid';
 
 export type NotificationMessage = {
   message: string;

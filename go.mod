@@ -15,7 +15,7 @@ ignore (
 require (
 	github.com/alexedwards/argon2id v1.0.0
 	github.com/containrrr/shoutrrr v0.8.0
-	github.com/go-co-op/gocron/v2 v2.19.1
+	github.com/go-co-op/gocron/v2 v2.21.1
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -23,8 +23,8 @@ require (
 	github.com/jplorg/jpl/go/v2 v2.0.1
 	github.com/spf13/cobra v1.10.2
 	github.com/thanhpk/go-favicon v0.0.1
-	golang.org/x/crypto v0.49.0
-	modernc.org/sqlite v1.48.0
+	golang.org/x/crypto v0.50.0
+	modernc.org/sqlite v1.49.1
 )
 
 require (
@@ -35,15 +35,15 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/subiz/safeurl v0.0.6 // indirect
-	golang.org/x/net v0.52.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
-	modernc.org/libc v1.70.0 // indirect
+	golang.org/x/net v0.53.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	modernc.org/libc v1.72.1 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
 )
