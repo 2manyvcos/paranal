@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+  <head>
+    <title>API Reference</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <style>
+    #return-to-documentation {
+      position: fixed;
+      top: 0;
+      right: 0;
+      padding: 5px;
+      border-radius: 100px;
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      color: var(--scalar-color-1);
+    }
+  </style>
+  <body>
+    <div id="root"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+
+    <script>
+      Scalar.createApiReference('#root', {
+        theme: 'bluePlanet',
+        sources: [
+          {
+            title: 'Paranal API v1 (latest)',
+            slug: 'openapi.v1',
+            url: '/paranal/api/schema/openapi.v1.yaml',
+          },
+        ],
+        darkMode: true,
+        hideClientButton: true,
+        agent: { disabled: true },
+        telemetry: false,
+        orderSchemaPropertiesBy: 'preserve',
+      });
+    </script>
+  </body>
+</html>
