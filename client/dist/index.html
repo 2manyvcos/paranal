@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <link rel="manifest" href="/manifest.json" />
+    <title>{{ .appName }}</title>
+    <script>
+      window.paranal = {
+        api: '{{ .api }}',
+      };
+    </script>
+    <script type="module" crossorigin src="/assets/main-CZhTSdh_.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/modulepreload-polyfill-BIgaVKhB.js">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

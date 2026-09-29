@@ -1,0 +1,16 @@
+.vscode
+client/dist
+docs/.vitepress/cache
+docs/.vitepress/dist
+node_modules
+.env
+.git
+.gitignore
+.reeve.yaml
+Dockerfile
+
+logs
+*.log
+npm-debug.log*
+.npm
+__debug_*
