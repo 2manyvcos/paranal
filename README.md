@@ -1,4 +1,4 @@
-# Paranal
+# Paranal 🔭
 
 Self hosted, fully customizable dashboard. Keep track of the things you actually care about.
 
