@@ -5,7 +5,7 @@ name: deploy paranal documentation
 when:
   workerGroup: { include: [soldier@midgar] }
   trigger: { include: [commit, action] }
-  action: { include: [paranal:deploy-documentation] }
+  action: { include: [pages:2manyvcos.github.io/paranal:deploy] }
 
 steps:
   - name: deploy
