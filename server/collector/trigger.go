@@ -7,14 +7,14 @@ import (
 )
 
 type Trigger interface {
-	setup(collector *Collector, env Environment) error
+	setup(collector *Collector) error
 }
 
 var _ Trigger = (*startTrigger)(nil)
 
 type startTrigger struct{}
 
-func (t startTrigger) setup(collector *Collector, env Environment) error {
+func (t startTrigger) setup(collector *Collector) error {
 	collector.scheduler.Schedule(map[string]any{
 		"type": "start",
 		"time": time.Now().UTC().Format(time.RFC3339Nano),
@@ -33,8 +33,8 @@ type scheduleTrigger struct {
 	crontab string
 }
 
-func (t scheduleTrigger) setup(collector *Collector, env Environment) error {
-	job, err := env.CronScheduler().NewJob(
+func (t scheduleTrigger) setup(collector *Collector) error {
+	job, err := collector.app.CronScheduler.NewJob(
 		gocron.CronJob(t.crontab, true),
 		gocron.NewTask(func() {
 			collector.scheduler.Schedule(map[string]any{
@@ -50,7 +50,7 @@ func (t scheduleTrigger) setup(collector *Collector, env Environment) error {
 	go func() {
 		<-collector.done
 
-		env.CronScheduler().RemoveJob(job.ID())
+		collector.app.CronScheduler.RemoveJob(job.ID())
 	}()
 
 	return nil
@@ -68,7 +68,7 @@ func OnSchedule(crontab string) Trigger {
 // 	webhookID string
 // }
 
-// func (t webhookTrigger) setup(collector *Collector, env Environment) error {
+// func (t webhookTrigger) setup(collector *Collector) error {
 // 	normalizedID := url.PathEscape(t.webhookID)
 
 // 	if normalizedID == "" {
@@ -94,7 +94,7 @@ func OnSchedule(crontab string) Trigger {
 // 	stateKind, stateID string
 // }
 
-// func (t stateTrigger) setup(collector *Collector, env Environment) error {
+// func (t stateTrigger) setup(collector *Collector) error {
 // 	normalizedKind := url.PathEscape(t.stateKind)
 // 	// normalizedID := url.PathEscape(t.stateID)
 

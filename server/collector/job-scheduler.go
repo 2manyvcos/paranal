@@ -1,6 +1,8 @@
 package collector
 
-import "sync"
+import (
+	"sync"
+)
 
 type JobScheduler[TriggerType any] struct {
 	triggers                chan TriggerType

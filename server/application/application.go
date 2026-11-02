@@ -12,6 +12,7 @@ type App struct {
 		AppName    string
 		CORSOrigin string
 		PublicAPI  string
+		ScriptPath string
 
 		Server struct {
 			Protocol string
@@ -22,7 +23,7 @@ type App struct {
 		}
 	}
 
-	Scheduler gocron.Scheduler
+	CronScheduler gocron.Scheduler
 }
 
 func New() (app *App, err error) {
@@ -31,6 +32,7 @@ func New() (app *App, err error) {
 	app.Config.AppName = utils.LoadConfigValue("PARANAL_APP_NAME", "Paranal")
 	app.Config.CORSOrigin = utils.LoadConfigValue("PARANAL_CORS_ORIGIN", "")
 	app.Config.PublicAPI = strings.TrimSuffix(utils.LoadConfigValue("PARANAL_PUBLIC_API", "/api"), "/")
+	app.Config.ScriptPath = utils.LoadConfigValue("PARANAL_SCRIPT_PATH", "/etc/paranal/scripts")
 
 	app.Config.Server.Protocol = utils.LoadConfigValue("PARANAL_SERVER_PROTOCOL", "http")
 	app.Config.Server.Address = utils.LoadConfigValue("PARANAL_SERVER_ADDRESS", "0.0.0.0")
@@ -38,7 +40,7 @@ func New() (app *App, err error) {
 	app.Config.Server.CertFile = utils.LoadConfigValue("PARANAL_SERVER_CERT_FILE", "cert.pem")
 	app.Config.Server.KeyFile = utils.LoadConfigValue("PARANAL_SERVER_KEY_FILE", "key.pem")
 
-	app.Scheduler, err = gocron.NewScheduler()
+	app.CronScheduler, err = gocron.NewScheduler()
 	if err != nil {
 		// app.Shutdown()
 		return nil, err
@@ -48,7 +50,7 @@ func New() (app *App, err error) {
 }
 
 func (app *App) Shutdown() {
-	if app.Scheduler != nil {
-		app.Scheduler.Shutdown()
+	if app.CronScheduler != nil {
+		app.CronScheduler.Shutdown()
 	}
 }

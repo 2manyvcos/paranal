@@ -1,15 +1,16 @@
 package collector
 
 import (
-	"github.com/go-co-op/gocron/v2"
+	"encoding/json"
+	"fmt"
+
+	"github.com/2manyvcos/paranal/server/application"
 	"github.com/jplorg/jpl/go/v2/jpl"
 )
 
-type Environment interface {
-	CronScheduler() gocron.Scheduler
-}
-
 type Collector struct {
+	app       *application.App
+	program   jpl.JPLProgram
 	scheduler *JobScheduler[any]
 	done      chan struct{}
 }
@@ -21,21 +22,53 @@ func (c *Collector) Shutdown() {
 }
 
 func (p *Collector) run(triggers []any) {
-	// results, err := p.program.Run([]any{nil}, nil)
+	results, programErr := p.program.Run([]any{nil}, &jpl.JPLProgramConfig{
+		Runtime: jpl.JPLRuntimeOptions{
+			Vars: map[string]any{
+				"script":   FuncScript(p.app),
+				"triggers": FuncTriggers(triggers),
+			},
+		},
+	})
+	if programErr != nil {
+		// TODO: handle error
+		fmt.Println(programErr)
+		return
+	}
 
-	// TODO:
+	// TODO: handle results
+	json, err := json.Marshal(results)
+	fmt.Println(string(json), err)
 }
 
-func NewCollector(env Environment, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+func NewCollector(app *application.App, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
 	var c Collector
+	c.app = app
+	c.program = program
 	c.scheduler = NewJobScheduler(c.run)
 	c.done = make(chan struct{})
 
+	ok := true
+
+	if len(triggers) == 0 {
+		ok = false
+		// TODO: handle error
+	}
+
 	for _, trigger := range triggers {
-		err := trigger.setup(&c, env)
+		err := trigger.setup(&c)
 		if err != nil {
-			return nil, err
+			ok = false
+			// TODO: handle error
+			fmt.Println(err)
+			break
 		}
+	}
+
+	if !ok {
+		c.Shutdown()
+
+		return nil, fmt.Errorf("setting up collector failed")
 	}
 
 	c.scheduler.Start()

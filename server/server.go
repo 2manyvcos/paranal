@@ -27,7 +27,7 @@ func Run() {
 	}
 	defer app.Shutdown()
 
-	app.Scheduler.Start()
+	app.CronScheduler.Start()
 
 	apiHandler := api.New()
 	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, helper.OmitTrailingSlash(helper.WithApp(app, helper.WithCORS(apiHandler)))))
