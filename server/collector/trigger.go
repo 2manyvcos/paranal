@@ -88,30 +88,26 @@ func OnSchedule(crontab string) Trigger {
 // 	}
 // }
 
-// var _ Trigger = (*stateTrigger)(nil)
+// var _ Trigger = (*eventTrigger)(nil)
 
-// type stateTrigger struct {
-// 	stateKind, stateID string
+// type eventTrigger struct {
+// 	eventPath string
 // }
 
-// func (t stateTrigger) setup(collector *Collector) error {
-// 	normalizedKind := url.PathEscape(t.stateKind)
-// 	// normalizedID := url.PathEscape(t.stateID)
-
-// 	if normalizedKind == "" {
-// 		return fmt.Errorf("missing state kind")
+// func (t eventTrigger) setup(collector *Collector) error {
+// if normalizedEventPath == "" {
+// 		return fmt.Errorf("missing event path")
 // 	}
 
-// 	// TODO: register event handler (also handle missing IDs)
+// 	// TODO: register event handler (also handle wildcards)
 
 // // TODO: add cleanup handler that removes the event handler
 
 // 	return nil
 // }
 
-// func OnState(stateKind, stateID string) Trigger {
-// 	return stateTrigger{
-// 		stateKind: stateKind,
-// 		stateID:   stateID,
+// func OnEvent(eventPath string) Trigger {
+// 	return eventTrigger{
+// 		eventPath: eventPath,
 // 	}
 // }
