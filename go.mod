@@ -1,6 +1,6 @@
 module github.com/2manyvcos/paranal
 
-go 1.25.0
+go 1.26.0
 
 ignore (
 	./api/reference
@@ -18,6 +18,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/jplorg/jpl/go/v2 v2.1.0
 	github.com/spf13/cobra v1.10.2
+	golang.org/x/crypto v0.58.0
 )
 
 require (
@@ -26,4 +27,5 @@ require (
 	github.com/jonboulle/clockwork v0.5.0 // indirect
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 )

@@ -25,7 +25,9 @@ func (p *Collector) run(triggers []any) {
 	results, programErr := p.program.Run([]any{nil}, &jpl.JPLProgramConfig{
 		Runtime: jpl.JPLRuntimeOptions{
 			Vars: map[string]any{
+				"http":     FuncHTTP(),
 				"script":   FuncScript(p.app),
+				"ssh":      FuncSSH(),
 				"triggers": FuncTriggers(triggers),
 			},
 		},

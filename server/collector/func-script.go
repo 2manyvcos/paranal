@@ -1,8 +1,11 @@
 package collector
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,9 +20,9 @@ import (
 )
 
 type ScriptOptions struct {
-	Input   string             `mapstructure:"input"`
-	Env     map[string]*string `mapstructure:"env"`
-	Timeout int                `mapstructure:"timeout"`
+	Env           map[string]*string `mapstructure:"env"`
+	Timeout       int                `mapstructure:"timeout"`
+	DetailedError bool               `mapstructure:"detailedError"`
 }
 
 func FuncScript(app *application.App) jpl.JPLFunc {
@@ -31,6 +34,23 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 			return nil, fmt.Errorf("not enough arguments")
 		} else if argCount > 2 {
 			return nil, fmt.Errorf("too many arguments")
+		}
+
+		strippedInput, err := library.StripJSON(input)
+		if err != nil {
+			return nil, err
+		}
+		var stdin io.Reader
+		switch v := strippedInput.(type) {
+		case nil:
+		case string:
+			stdin = strings.NewReader(v)
+		default:
+			serializedStdin, err := json.Marshal(v)
+			if err != nil {
+				return nil, fmt.Errorf("error parsing stdin")
+			}
+			stdin = bytes.NewReader(serializedStdin)
 		}
 
 		unwrappedArg, err := library.UnwrapValue(args[0])
@@ -90,7 +110,7 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 		unsub := signal.Subscribe(cancel)
 		defer unsub()
 		cmd := exec.CommandContext(ctx, commandPath, command[1:]...)
-		cmd.Stdin = strings.NewReader(options.Input)
+		cmd.Stdin = stdin
 		var stdout strings.Builder
 		cmd.Stdout = &stdout
 		var stderr strings.Builder
@@ -106,6 +126,17 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 		cmd.WaitDelay = 5 * time.Second
 		err = cmd.Run()
 		if err != nil {
+			if options.DetailedError {
+				status := -1
+				if exitErr, ok := err.(*exec.ExitError); ok {
+					status = exitErr.ExitCode()
+				}
+				return nil, library.ThrowAny(library.NewRuntimeError(map[string]any{
+					"status": float64(status),
+					"output": stdout.String(),
+					"error":  stderr.String(),
+				}))
+			}
 			return nil, fmt.Errorf("error running command: %s\n\n%s", err, stderr.String())
 		}
 		return []any{stdout.String()}, nil
