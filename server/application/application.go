@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/2manyvcos/paranal/utils"
+	"github.com/go-co-op/gocron/v2"
 )
 
 type App struct {
@@ -20,6 +21,8 @@ type App struct {
 			KeyFile  string
 		}
 	}
+
+	Scheduler gocron.Scheduler
 }
 
 func New() (app *App, err error) {
@@ -35,8 +38,17 @@ func New() (app *App, err error) {
 	app.Config.Server.CertFile = utils.LoadConfigValue("PARANAL_SERVER_CERT_FILE", "cert.pem")
 	app.Config.Server.KeyFile = utils.LoadConfigValue("PARANAL_SERVER_KEY_FILE", "key.pem")
 
+	app.Scheduler, err = gocron.NewScheduler()
+	if err != nil {
+		// app.Shutdown()
+		return nil, err
+	}
+
 	return
 }
 
-func (app *App) Close() {
+func (app *App) Shutdown() {
+	if app.Scheduler != nil {
+		app.Scheduler.Shutdown()
+	}
 }

@@ -25,7 +25,9 @@ func Run() {
 	if err != nil {
 		log.Fatalf("Setup failure - %s\n", err)
 	}
-	defer app.Close()
+	defer app.Shutdown()
+
+	app.Scheduler.Start()
 
 	apiHandler := api.New()
 	http.Handle(API_PATH+"/", http.StripPrefix(API_PATH, helper.OmitTrailingSlash(helper.WithApp(app, helper.WithCORS(apiHandler)))))
