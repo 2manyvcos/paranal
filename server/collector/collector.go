@@ -15,6 +15,10 @@ type Collector struct {
 	done      chan struct{}
 }
 
+func (c *Collector) Start() {
+	c.scheduler.Start()
+}
+
 func (c *Collector) Shutdown() {
 	close(c.done)
 
@@ -72,8 +76,6 @@ func NewCollector(app *application.App, program jpl.JPLProgram, triggers ...Trig
 
 		return nil, fmt.Errorf("setting up collector failed")
 	}
-
-	c.scheduler.Start()
 
 	return &c, nil
 }
