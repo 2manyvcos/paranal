@@ -5,13 +5,14 @@ import (
 	"fmt"
 
 	"github.com/2manyvcos/paranal/server/application"
+	"github.com/2manyvcos/paranal/utils"
 	"github.com/jplorg/jpl/go/v2/jpl"
 )
 
 type Collector struct {
 	app       *application.App
 	program   jpl.JPLProgram
-	scheduler *JobScheduler[any]
+	scheduler *utils.JobScheduler[any]
 	done      chan struct{}
 }
 
@@ -51,7 +52,7 @@ func NewCollector(app *application.App, program jpl.JPLProgram, triggers ...Trig
 	var c Collector
 	c.app = app
 	c.program = program
-	c.scheduler = NewJobScheduler(c.run)
+	c.scheduler = utils.NewJobScheduler(c.run)
 	c.done = make(chan struct{})
 
 	ok := true

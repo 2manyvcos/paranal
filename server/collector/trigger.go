@@ -1,8 +1,10 @@
 package collector
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/2manyvcos/paranal/server/event"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -49,7 +51,6 @@ func (t scheduleTrigger) setup(collector *Collector) error {
 
 	go func() {
 		<-collector.done
-
 		collector.app.CronScheduler.RemoveJob(job.ID())
 	}()
 
@@ -88,26 +89,39 @@ func OnSchedule(crontab string) Trigger {
 // 	}
 // }
 
-// var _ Trigger = (*eventTrigger)(nil)
+var _ Trigger = (*changeTrigger)(nil)
 
-// type eventTrigger struct {
-// 	eventPath string
-// }
+type changeTrigger struct {
+	pathPattern string
+}
 
-// func (t eventTrigger) setup(collector *Collector) error {
-// if normalizedEventPath == "" {
-// 		return fmt.Errorf("missing event path")
-// 	}
+func (t changeTrigger) setup(collector *Collector) error {
+	if t.pathPattern == "" {
+		return fmt.Errorf("missing path pattern")
+	}
 
-// 	// TODO: register event handler (also handle wildcards)
+	go func() {
+		for e := range collector.app.Events.Subscribe(collector.done) {
+			switch e.Event() {
+			case "change":
+				path := e.Data()
 
-// // TODO: add cleanup handler that removes the event handler
+				if event.MatchEvent(t.pathPattern, path) {
+					collector.scheduler.Schedule(map[string]any{
+						"type": "change",
+						"path": path,
+						"time": time.Now().UTC().Format(time.RFC3339Nano),
+					})
+				}
+			}
+		}
+	}()
 
-// 	return nil
-// }
+	return nil
+}
 
-// func OnEvent(eventPath string) Trigger {
-// 	return eventTrigger{
-// 		eventPath: eventPath,
-// 	}
-// }
+func OnChange(pathPattern string) Trigger {
+	return changeTrigger{
+		pathPattern: pathPattern,
+	}
+}

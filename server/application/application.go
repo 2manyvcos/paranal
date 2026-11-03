@@ -3,6 +3,7 @@ package application
 import (
 	"strings"
 
+	"github.com/2manyvcos/paranal/server/event"
 	"github.com/2manyvcos/paranal/utils"
 	"github.com/go-co-op/gocron/v2"
 )
@@ -24,6 +25,8 @@ type App struct {
 	}
 
 	CronScheduler gocron.Scheduler
+
+	Events *utils.Broker[event.Event]
 }
 
 func New() (app *App, err error) {
@@ -46,11 +49,17 @@ func New() (app *App, err error) {
 		return nil, err
 	}
 
+	app.Events = utils.NewBroker[event.Event]()
+
 	return
 }
 
 func (app *App) Shutdown() {
 	if app.CronScheduler != nil {
 		app.CronScheduler.Shutdown()
+	}
+
+	if app.Events != nil {
+		app.Events.Shutdown()
 	}
 }
