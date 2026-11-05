@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/2manyvcos/paranal/server/application"
+	"github.com/2manyvcos/paranal/server/config"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/shlex"
 	"github.com/jplorg/jpl/go/v2/jpl"
@@ -25,7 +25,7 @@ type ScriptOptions struct {
 	DetailedError bool               `mapstructure:"detailedError"`
 }
 
-func FuncScript(app *application.App) jpl.JPLFunc {
+func FuncScript(cfg *config.Config) jpl.JPLFunc {
 	return enclose(func(runtime jpl.JPLRuntime, signal jpl.JPLRuntimeSignal, input any, args ...any) ([]any, error) {
 		var err error
 
@@ -48,7 +48,7 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 		default:
 			serializedStdin, err := json.Marshal(v)
 			if err != nil {
-				return nil, fmt.Errorf("error parsing stdin")
+				return nil, fmt.Errorf("parsing stdin")
 			}
 			stdin = bytes.NewReader(serializedStdin)
 		}
@@ -63,7 +63,7 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 		}
 		command, err := shlex.Split(commandStr)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing command: %s", err)
+			return nil, fmt.Errorf("parsing command: %v", err)
 		}
 		if len(command) < 1 {
 			return nil, fmt.Errorf("invalid command")
@@ -78,26 +78,26 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 			}
 			decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &options})
 			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
+				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
 			}
 			err = decoder.Decode(strippedArg)
 			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
+				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
 			}
 		}
 
-		scriptsPath, err := filepath.Abs(app.Config.ScriptPath)
+		scriptsPath, err := filepath.Abs(cfg.ScriptDir)
 		if err != nil {
-			return nil, fmt.Errorf("error resolving script: %s", err)
+			return nil, fmt.Errorf("resolving script: %v", err)
 		}
-		commandPath, err := filepath.Abs(filepath.Join(app.Config.ScriptPath, command[0]))
+		commandPath, err := filepath.Abs(filepath.Join(cfg.ScriptDir, command[0]))
 		if err != nil {
-			return nil, fmt.Errorf("error resolving script: %s", err)
+			return nil, fmt.Errorf("resolving script: %v", err)
 		}
 		if rel, err := filepath.Rel(scriptsPath, commandPath); err != nil {
-			return nil, fmt.Errorf("error resolving script: %s", err)
+			return nil, fmt.Errorf("resolving script: %v", err)
 		} else if strings.HasPrefix(rel, ".."+string(os.PathSeparator)) || rel == ".." || rel == "." {
-			return nil, fmt.Errorf("error resolving script: invalid script location")
+			return nil, fmt.Errorf("resolving script: invalid script location")
 		}
 		var ctx context.Context
 		var cancel context.CancelFunc
@@ -137,7 +137,7 @@ func FuncScript(app *application.App) jpl.JPLFunc {
 					"error":  stderr.String(),
 				}))
 			}
-			return nil, fmt.Errorf("error running command: %s\n\n%s", err, stderr.String())
+			return nil, fmt.Errorf("running command: %v\n\n%v", err, stderr.String())
 		}
 		return []any{stdout.String()}, nil
 	})

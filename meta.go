@@ -17,6 +17,6 @@ var Meta struct {
 func init() {
 	err := json.Unmarshal([]byte(rawPackage), &Meta)
 	if err != nil {
-		panic(fmt.Sprintf("reading package metadata failed - %s\n", err))
+		panic(fmt.Sprintf("reading package metadata failed: %v\n", err))
 	}
 }

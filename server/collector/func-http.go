@@ -47,7 +47,7 @@ func FuncHTTP() jpl.JPLFunc {
 		default:
 			serializedBody, err := json.Marshal(v)
 			if err != nil {
-				return nil, fmt.Errorf("error parsing request body")
+				return nil, fmt.Errorf("parsing request body")
 			}
 			body = bytes.NewReader(serializedBody)
 			detectedContentType = "application/json"
@@ -76,11 +76,11 @@ func FuncHTTP() jpl.JPLFunc {
 			}
 			decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &options})
 			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
+				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
 			}
 			err = decoder.Decode(strippedArg)
 			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
+				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
 			}
 		}
 
@@ -95,7 +95,7 @@ func FuncHTTP() jpl.JPLFunc {
 		defer unsub()
 		req, err := http.NewRequestWithContext(ctx, options.Method, url, body)
 		if err != nil {
-			return nil, fmt.Errorf("error sending HTTP request: %s", err)
+			return nil, fmt.Errorf("sending HTTP request: %v", err)
 		}
 		for key, value := range options.Headers {
 			if value == nil {
@@ -106,7 +106,7 @@ func FuncHTTP() jpl.JPLFunc {
 		}
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return nil, fmt.Errorf("error sending HTTP request: %s", err)
+			return nil, fmt.Errorf("sending HTTP request: %v", err)
 		}
 		defer resp.Body.Close()
 
@@ -123,7 +123,7 @@ func FuncHTTP() jpl.JPLFunc {
 
 		result, err := getResponsePayload(resp)
 		if err != nil {
-			return nil, fmt.Errorf("error reading HTTP response: %s", err)
+			return nil, fmt.Errorf("reading HTTP response: %v", err)
 		}
 
 		return []any{result}, nil

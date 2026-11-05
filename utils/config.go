@@ -18,7 +18,7 @@ func LoadConfigValue(name string, defaultValue string) (result string) {
 func LoadRequiredConfigValue(name string) (result string, err error) {
 	result = LoadConfigValue(name, "")
 	if result == "" {
-		err = fmt.Errorf("required environment variable %s is not set", name)
+		err = fmt.Errorf("missing required environment variable %v", name)
 	}
 	return
 }

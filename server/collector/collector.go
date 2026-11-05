@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/2manyvcos/paranal/server/application"
+	"github.com/2manyvcos/paranal/server/config"
 	"github.com/2manyvcos/paranal/utils"
 	"github.com/jplorg/jpl/go/v2/jpl"
 )
 
 type Collector struct {
-	app       *application.App
+	config    *config.Config
 	program   jpl.JPLProgram
 	scheduler *utils.JobScheduler[any]
 	done      chan struct{}
@@ -31,7 +31,7 @@ func (p *Collector) run(triggers []any) {
 		Runtime: jpl.JPLRuntimeOptions{
 			Vars: map[string]any{
 				"http":     FuncHTTP(),
-				"script":   FuncScript(p.app),
+				"script":   FuncScript(p.config),
 				"ssh":      FuncSSH(),
 				"triggers": FuncTriggers(triggers),
 			},
@@ -48,9 +48,9 @@ func (p *Collector) run(triggers []any) {
 	fmt.Println(string(json), err)
 }
 
-func NewCollector(app *application.App, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+func New(cfg *config.Config, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
 	var c Collector
-	c.app = app
+	c.config = cfg
 	c.program = program
 	c.scheduler = utils.NewJobScheduler(c.run)
 	c.done = make(chan struct{})
@@ -75,7 +75,7 @@ func NewCollector(app *application.App, program jpl.JPLProgram, triggers ...Trig
 	if !ok {
 		c.Shutdown()
 
-		return nil, fmt.Errorf("setting up collector failed")
+		return nil, fmt.Errorf("setting up collector")
 	}
 
 	return &c, nil

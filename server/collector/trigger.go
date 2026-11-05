@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/2manyvcos/paranal/server/event"
+	"github.com/2manyvcos/paranal/utils"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -32,11 +33,12 @@ func OnStart() Trigger {
 var _ Trigger = (*scheduleTrigger)(nil)
 
 type scheduleTrigger struct {
-	crontab string
+	cronScheduler gocron.Scheduler
+	crontab       string
 }
 
 func (t scheduleTrigger) setup(collector *Collector) error {
-	job, err := collector.app.CronScheduler.NewJob(
+	job, err := t.cronScheduler.NewJob(
 		gocron.CronJob(t.crontab, true),
 		gocron.NewTask(func() {
 			collector.scheduler.Schedule(map[string]any{
@@ -51,15 +53,16 @@ func (t scheduleTrigger) setup(collector *Collector) error {
 
 	go func() {
 		<-collector.done
-		collector.app.CronScheduler.RemoveJob(job.ID())
+		t.cronScheduler.RemoveJob(job.ID())
 	}()
 
 	return nil
 }
 
-func OnSchedule(crontab string) Trigger {
+func OnSchedule(cronScheduler gocron.Scheduler, crontab string) Trigger {
 	return scheduleTrigger{
-		crontab: crontab,
+		cronScheduler: cronScheduler,
+		crontab:       crontab,
 	}
 }
 
@@ -92,6 +95,7 @@ func OnSchedule(crontab string) Trigger {
 var _ Trigger = (*changeTrigger)(nil)
 
 type changeTrigger struct {
+	eventBroker *utils.Broker[event.Event]
 	pathPattern string
 }
 
@@ -101,7 +105,7 @@ func (t changeTrigger) setup(collector *Collector) error {
 	}
 
 	go func() {
-		for e := range collector.app.Events.Subscribe(collector.done) {
+		for e := range t.eventBroker.Subscribe(collector.done) {
 			switch e.Event() {
 			case "change":
 				path := e.Data()
@@ -120,8 +124,9 @@ func (t changeTrigger) setup(collector *Collector) error {
 	return nil
 }
 
-func OnChange(pathPattern string) Trigger {
+func OnChange(eventBroker *utils.Broker[event.Event], pathPattern string) Trigger {
 	return changeTrigger{
+		eventBroker: eventBroker,
 		pathPattern: pathPattern,
 	}
 }

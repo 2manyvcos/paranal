@@ -15,6 +15,6 @@ func init() {
 	var err error
 	ClientFiles, err = fs.Sub(rawClientFiles, "dist")
 	if err != nil {
-		panic(fmt.Sprintf("forking client FS failed - %s\n", err))
+		panic(fmt.Sprintf("forking client FS failed: %v\n", err))
 	}
 }

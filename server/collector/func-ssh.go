@@ -53,7 +53,7 @@ func FuncSSH() jpl.JPLFunc {
 		default:
 			serializedStdin, err := json.Marshal(v)
 			if err != nil {
-				return nil, fmt.Errorf("error parsing stdin")
+				return nil, fmt.Errorf("parsing stdin")
 			}
 			stdin = bytes.NewReader(serializedStdin)
 		}
@@ -65,18 +65,18 @@ func FuncSSH() jpl.JPLFunc {
 		var config SSHConfig
 		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &config})
 		if err != nil {
-			return nil, fmt.Errorf("invalid argument \"config\": %s", err)
+			return nil, fmt.Errorf("invalid argument \"config\": %v", err)
 		}
 		err = decoder.Decode(strippedArg)
 		if err != nil {
-			return nil, fmt.Errorf("invalid argument \"config\": %s", err)
+			return nil, fmt.Errorf("invalid argument \"config\": %v", err)
 		}
 
 		if config.Address == "" {
 			return nil, fmt.Errorf("invalid address")
 		}
 		if len(config.HostKeys) < 1 {
-			return nil, fmt.Errorf("config has no host key")
+			return nil, fmt.Errorf("missing host key")
 		}
 
 		unwrappedArg, err := library.UnwrapValue(args[1])
@@ -96,11 +96,11 @@ func FuncSSH() jpl.JPLFunc {
 			}
 			decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &options})
 			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
+				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
 			}
 			err = decoder.Decode(strippedArg)
 			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %s", err)
+				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
 			}
 		}
 
@@ -108,7 +108,7 @@ func FuncSSH() jpl.JPLFunc {
 		for i, key := range config.HostKeys {
 			hostKeys[i], _, _, _, err = ssh.ParseAuthorizedKey([]byte(key))
 			if err != nil {
-				return nil, fmt.Errorf("error parsing public key: %s", err)
+				return nil, fmt.Errorf("parsing host key: %v", err)
 			}
 		}
 		sshConfig := &ssh.ClientConfig{
@@ -119,7 +119,7 @@ func FuncSSH() jpl.JPLFunc {
 						return nil
 					}
 				}
-				return fmt.Errorf("ssh: host key mismatch")
+				return fmt.Errorf("host key mismatch")
 			},
 		}
 		if config.Password != "" {
@@ -128,18 +128,18 @@ func FuncSSH() jpl.JPLFunc {
 		if config.PrivateKey != "" {
 			signer, err := ssh.ParsePrivateKey([]byte(config.PrivateKey))
 			if err != nil {
-				return nil, fmt.Errorf("error parsing private key: %s", err)
+				return nil, fmt.Errorf("parsing private key: %v", err)
 			}
 			sshConfig.Auth = append(sshConfig.Auth, ssh.PublicKeys(signer))
 		}
 		client, err := ssh.Dial("tcp", config.Address, sshConfig)
 		if err != nil {
-			return nil, fmt.Errorf("error connecting to host: %s", err)
+			return nil, fmt.Errorf("connecting to host: %v", err)
 		}
 		defer client.Close()
 		session, err := client.NewSession()
 		if err != nil {
-			return nil, fmt.Errorf("error creating remote session: %s", err)
+			return nil, fmt.Errorf("creating remote session: %v", err)
 		}
 		defer session.Close()
 		var ctx context.Context
@@ -169,7 +169,7 @@ func FuncSSH() jpl.JPLFunc {
 				err = session.Setenv(key, *value)
 			}
 			if err != nil {
-				return nil, fmt.Errorf("error setting remote env: %s", err)
+				return nil, fmt.Errorf("setting remote env: %v", err)
 			}
 		}
 		err = session.Run(command)
@@ -185,7 +185,7 @@ func FuncSSH() jpl.JPLFunc {
 					"error":  stderr.String(),
 				}))
 			}
-			return nil, fmt.Errorf("error running command: %s\n\n%s", err, stderr.String())
+			return nil, fmt.Errorf("running command: %v\n\n%v", err, stderr.String())
 		}
 		return []any{stdout.String()}, nil
 	})
