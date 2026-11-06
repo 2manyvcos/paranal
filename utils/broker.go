@@ -1,14 +1,17 @@
 package utils
 
+import "sync"
+
 type subscription[MessageType any] struct {
 	sub  chan<- MessageType
 	done <-chan struct{}
 }
 
 type Broker[MessageType any] struct {
-	sub  chan subscription[MessageType]
-	pub  chan MessageType
-	done chan struct{}
+	sub      chan subscription[MessageType]
+	pub      chan MessageType
+	done     chan struct{}
+	doneOnce sync.Once
 }
 
 func (b *Broker[MessageType]) Subscribe(done <-chan struct{}) chan MessageType {
@@ -18,11 +21,16 @@ func (b *Broker[MessageType]) Subscribe(done <-chan struct{}) chan MessageType {
 }
 
 func (b *Broker[MessageType]) Publish(msg MessageType) {
-	b.pub <- msg
+	select {
+	case b.pub <- msg:
+	case <-b.done:
+	}
 }
 
 func (b *Broker[MessageType]) Shutdown() {
-	close(b.done)
+	b.doneOnce.Do(func() {
+		close(b.done)
+	})
 }
 
 func (b *Broker[MessageType]) handle() {

@@ -4,8 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/2manyvcos/paranal/server/event"
-	"github.com/2manyvcos/paranal/utils"
+	"github.com/2manyvcos/paranal/server/events"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -18,9 +17,11 @@ var _ Trigger = (*startTrigger)(nil)
 type startTrigger struct{}
 
 func (t startTrigger) setup(collector *Collector) error {
+	time := time.Now().UTC().Format(time.RFC3339Nano)
+
 	collector.scheduler.Schedule(map[string]any{
 		"type": "start",
-		"time": time.Now().UTC().Format(time.RFC3339Nano),
+		"time": time,
 	})
 
 	return nil
@@ -41,9 +42,11 @@ func (t scheduleTrigger) setup(collector *Collector) error {
 	job, err := t.cronScheduler.NewJob(
 		gocron.CronJob(t.crontab, true),
 		gocron.NewTask(func() {
+			time := time.Now().UTC().Format(time.RFC3339Nano)
+
 			collector.scheduler.Schedule(map[string]any{
 				"type": "schedule",
-				"time": time.Now().UTC().Format(time.RFC3339Nano),
+				"time": time,
 			})
 		}),
 	)
@@ -52,7 +55,7 @@ func (t scheduleTrigger) setup(collector *Collector) error {
 	}
 
 	go func() {
-		<-collector.done
+		<-collector.Done()
 		t.cronScheduler.RemoveJob(job.ID())
 	}()
 
@@ -95,7 +98,7 @@ func OnSchedule(cronScheduler gocron.Scheduler, crontab string) Trigger {
 var _ Trigger = (*changeTrigger)(nil)
 
 type changeTrigger struct {
-	eventBroker *utils.Broker[event.Event]
+	eventBroker *events.EventBroker
 	pathPattern string
 }
 
@@ -105,26 +108,33 @@ func (t changeTrigger) setup(collector *Collector) error {
 	}
 
 	go func() {
-		for e := range t.eventBroker.Subscribe(collector.done) {
-			switch e.Event() {
-			case "change":
-				path := e.Data()
+		for eventBundle := range t.eventBroker.Subscribe(collector.Done()) {
+			time := time.Now().UTC().Format(time.RFC3339Nano)
 
-				if event.MatchEvent(t.pathPattern, path) {
-					collector.scheduler.Schedule(map[string]any{
-						"type": "change",
-						"path": path,
-						"time": time.Now().UTC().Format(time.RFC3339Nano),
-					})
+			triggers := make([]any, 0, len(eventBundle))
+			for _, event := range eventBundle {
+				switch event.Event() {
+				case "change":
+					path := event.Data()
+
+					if events.MatchEvent(t.pathPattern, path) {
+						triggers = append(triggers, map[string]any{
+							"type": "change",
+							"path": path,
+							"time": time,
+						})
+					}
 				}
 			}
+
+			collector.scheduler.Schedule(triggers...)
 		}
 	}()
 
 	return nil
 }
 
-func OnChange(eventBroker *utils.Broker[event.Event], pathPattern string) Trigger {
+func OnChange(eventBroker *events.EventBroker, pathPattern string) Trigger {
 	return changeTrigger{
 		eventBroker: eventBroker,
 		pathPattern: pathPattern,

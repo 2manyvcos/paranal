@@ -1,8 +1,10 @@
 package collector
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
 
 	"github.com/2manyvcos/paranal/server/config"
 	"github.com/2manyvcos/paranal/utils"
@@ -14,14 +16,21 @@ type Collector struct {
 	program   jpl.JPLProgram
 	scheduler *utils.JobScheduler[any]
 	done      chan struct{}
+	doneOnce  sync.Once
 }
 
 func (c *Collector) Start() {
 	c.scheduler.Start()
 }
 
+func (c *Collector) Done() <-chan struct{} {
+	return c.done
+}
+
 func (c *Collector) Shutdown() {
-	close(c.done)
+	c.doneOnce.Do(func() {
+		close(c.done)
+	})
 
 	c.scheduler.ShutdownSync()
 }
@@ -79,4 +88,22 @@ func New(cfg *config.Config, program jpl.JPLProgram, triggers ...Trigger) (*Coll
 	}
 
 	return &c, nil
+}
+
+func NewContext(ctx context.Context, cfg *config.Config, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+	c, err := New(cfg, program, triggers...)
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		select {
+		case <-ctx.Done():
+			c.Shutdown()
+
+		case <-c.Done():
+		}
+	}()
+
+	return c, nil
 }

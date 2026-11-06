@@ -5,7 +5,7 @@ import (
 )
 
 type JobScheduler[TriggerType any] struct {
-	triggers                chan TriggerType
+	triggers                chan []TriggerType
 	ready, shutdown, done   chan struct{}
 	readyOnce, shutdownOnce sync.Once
 	job                     func(triggers []TriggerType)
@@ -20,9 +20,13 @@ func (s *JobScheduler[TriggerType]) Start() {
 
 // Schedule registers a trigger for a job execution.
 // Jobs can already be scheduled before calling Start, but only run after calling Start.
-func (s *JobScheduler[TriggerType]) Schedule(trigger TriggerType) {
+func (s *JobScheduler[TriggerType]) Schedule(triggers ...TriggerType) {
+	if len(triggers) == 0 {
+		return
+	}
+
 	select {
-	case s.triggers <- trigger:
+	case s.triggers <- triggers:
 	case <-s.shutdown:
 	}
 }
@@ -67,8 +71,8 @@ func (s *JobScheduler[TriggerType]) handle() {
 
 	for shutdown != nil || done != nil {
 		select {
-		case trigger := <-triggers:
-			pending = append(pending, trigger)
+		case nextTriggers := <-triggers:
+			pending = append(pending, nextTriggers...)
 
 			if ready == nil && done == nil {
 				run()
@@ -117,7 +121,7 @@ func (s *JobScheduler[TriggerType]) handle() {
 // The job function runs in its own goroutine.
 func NewJobScheduler[TriggerType any](job func(triggers []TriggerType)) *JobScheduler[TriggerType] {
 	var s JobScheduler[TriggerType]
-	s.triggers = make(chan TriggerType)
+	s.triggers = make(chan []TriggerType)
 	s.ready = make(chan struct{})
 	s.shutdown = make(chan struct{})
 	s.done = make(chan struct{})

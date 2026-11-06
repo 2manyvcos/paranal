@@ -3,17 +3,25 @@ package storage
 import (
 	"github.com/2manyvcos/paranal/server/config"
 	"github.com/2manyvcos/paranal/server/db"
+	"github.com/2manyvcos/paranal/server/events"
 )
 
 type Storage struct {
-	db db.DB
+	db             db.DB
+	eventBroker    *events.EventBroker
+	stateScheduler *stateScheduler
+}
+
+func (s *Storage) PutCollectorStates(collector string, states []State) error {
+	return s.stateScheduler.PutCollectorStates(collector, states)
 }
 
 func (s *Storage) Shutdown() {
+	s.stateScheduler.Shutdown()
 	s.db.Shutdown()
 }
 
-func New(cfg *config.Config) (*Storage, error) {
+func New(cfg *config.Config, eventBroker *events.EventBroker) (*Storage, error) {
 	var s Storage
 
 	var err error
@@ -22,22 +30,7 @@ func New(cfg *config.Config) (*Storage, error) {
 		return nil, err
 	}
 
+	s.stateScheduler = newStateScheduler(s.db, eventBroker)
+
 	return &s, nil
 }
-
-/*
-TODO:
-- single goroutine for updating states
-- validation happens outside
-- error / success is notified back and then handled outside
-- the following happens inside:
-  - hashing (rev building)
-  - updating existing entries and creating new entries
-  - deleting old entries
-  - sending events (in batch)
-- first, a rev bundle for all IDs for the collector are fetched
-- unchanged revs are removed from both the update batch as well as the rev bundle
-- all remaining entries in the update batch are upserted into the database
-- all entries in the rev bundle that are missing in the update batch are removed from the database
-- change events for all entries in the update batch + rev bundle are send
-*/

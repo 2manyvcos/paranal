@@ -1,4 +1,4 @@
-package event
+package events
 
 type Event interface {
 	Event() string
@@ -11,12 +11,12 @@ type ChangeEvent struct {
 	path string
 }
 
-func (u ChangeEvent) Event() string {
+func (e ChangeEvent) Event() string {
 	return "change"
 }
 
-func (u ChangeEvent) Data() string {
-	return u.path
+func (e ChangeEvent) Data() string {
+	return e.path
 }
 
 func NewChangeEvent(path string) Event {
