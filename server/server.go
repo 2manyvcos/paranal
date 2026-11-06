@@ -28,11 +28,11 @@ func Run(ctx context.Context) error {
 	eventBroker := events.NewEventBroker()
 	defer eventBroker.Shutdown()
 
-	storage, err := storage.New(cfg, eventBroker)
+	store, err := storage.New(cfg, eventBroker)
 	if err != nil {
 		return err
 	}
-	defer storage.Shutdown()
+	defer store.Shutdown()
 
 	// TODO: add additional setup code here
 	// TODO: use collector.NewContext(ctx, …) so that collectors are stopped early on signal instead of waiting for the HTTP server to exit

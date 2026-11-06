@@ -6,9 +6,8 @@ type StateID struct {
 }
 
 type State struct {
-	Registry  string
-	ID        string
-	Rev       string
-	Collector string
-	Data      []byte
+	Registry string
+	ID       string
+	Rev      string
+	Data     []byte
 }

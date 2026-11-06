@@ -52,6 +52,7 @@ func (s *stateScheduler) handleInstruction(collector string, states []State) err
 	dedupedStates := utils.DedupeEnd(states, stateDedupeKey)
 	records := make([]db.State, len(dedupedStates))
 	for i, state := range dedupedStates {
+		// TODO: If rev is also used outside (for E-Tags), this can be kept here. Otherwise, this logic should be moved into the db package.
 		rev, err := utils.HashJSONValue(stateRev{
 			Collector: collector,
 			Data:      state.Data,
@@ -66,11 +67,10 @@ func (s *stateScheduler) handleInstruction(collector string, states []State) err
 		}
 
 		records[i] = db.State{
-			Registry:  state.Registry,
-			ID:        state.ID,
-			Rev:       rev,
-			Collector: collector,
-			Data:      data,
+			Registry: state.Registry,
+			ID:       state.ID,
+			Rev:      rev,
+			Data:     data,
 		}
 	}
 
@@ -83,7 +83,6 @@ func (s *stateScheduler) handleInstruction(collector string, states []State) err
 	for i, modifiedState := range modifiedStates {
 		eventBundle[i] = events.NewChangeEvent(fmt.Sprintf("v1/registries/%s/%s", url.PathEscape(modifiedState.Registry), url.PathEscape(modifiedState.ID)))
 	}
-
 	s.eventBroker.Publish(eventBundle...)
 
 	return nil
