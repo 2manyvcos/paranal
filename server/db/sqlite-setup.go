@@ -1,6 +1,9 @@
 package db
 
 func (db *sqliteDB) setup() error {
+	db.Lock()
+	defer db.Unlock()
+
 	_, err := db.Exec(
 		`
       CREATE TABLE IF NOT EXISTS states (

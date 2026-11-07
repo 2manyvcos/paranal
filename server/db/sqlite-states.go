@@ -6,6 +6,9 @@ import (
 )
 
 func (db *sqliteDB) PutCollectorStates(collector string, states []State) (modifiedStates []StateID, err error) {
+	db.Lock()
+	defer db.Unlock()
+
 	if collector == "" {
 		return nil, fmt.Errorf("missing collector")
 	}

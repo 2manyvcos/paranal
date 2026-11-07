@@ -2,17 +2,22 @@ package collector
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/2manyvcos/paranal/server/config"
+	"github.com/2manyvcos/paranal/server/storage"
 	"github.com/2manyvcos/paranal/utils"
+	"github.com/go-viper/mapstructure/v2"
 	"github.com/jplorg/jpl/go/v2/jpl"
 )
 
 type Collector struct {
 	config    *config.Config
+	store     *storage.Storage
+	id        string
 	program   jpl.JPLProgram
 	scheduler *utils.JobScheduler[any]
 	done      chan struct{}
@@ -35,63 +40,107 @@ func (c *Collector) Shutdown() {
 	c.scheduler.ShutdownSync()
 }
 
-func (p *Collector) run(triggers []any) {
-	results, programErr := p.program.Run([]any{nil}, &jpl.JPLProgramConfig{
+func (c *Collector) run(triggers []any) error {
+	facts, programErr := c.program.Run([]any{nil}, &jpl.JPLProgramConfig{
 		Runtime: jpl.JPLRuntimeOptions{
 			Vars: map[string]any{
 				"http":     FuncHTTP(),
-				"script":   FuncScript(p.config),
+				"script":   FuncScript(c.config),
 				"ssh":      FuncSSH(),
 				"triggers": FuncTriggers(triggers),
 			},
 		},
 	})
 	if programErr != nil {
-		// TODO: handle error
-		fmt.Println(programErr)
-		return
+		return programErr
 	}
 
-	// TODO: handle results
-	json, err := json.Marshal(results)
-	fmt.Println(string(json), err)
+	states := make([]storage.State, 0, len(facts))
+
+	for _, fact := range facts {
+		var f genericFact
+		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnset: true, Result: &f})
+		if err != nil {
+			return fmt.Errorf("invalid fact: %w", err)
+		}
+		err = decoder.Decode(fact)
+		if err != nil {
+			return fmt.Errorf("invalid fact: %w", err)
+		}
+
+		switch f.Kind {
+		case "state":
+			s, err := parseState(fact)
+			if err != nil {
+				return fmt.Errorf("invalid state: %w", err)
+			}
+
+			states = append(states, storage.State{
+				Registry: s.Registry,
+				ID:       s.ID,
+				Data:     s.Data,
+			})
+
+		default:
+			return fmt.Errorf("invalid fact: unknown kind %q", f.Kind)
+		}
+	}
+
+	err := c.store.PutCollectorStates(c.id, states)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func New(cfg *config.Config, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+func (c *Collector) handle(triggers []any) {
+	log.Printf("running collector %q\n", c.id)
+
+	err := c.run(triggers)
+	if err != nil {
+		log.Printf("running collector %q: %v\n", c.id, err)
+	}
+}
+
+func New(cfg *config.Config, store *storage.Storage, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+	if id == "" {
+		return nil, fmt.Errorf("missing ID")
+	}
+
 	var c Collector
 	c.config = cfg
+	c.store = store
+	c.id = id
 	c.program = program
-	c.scheduler = utils.NewJobScheduler(c.run)
+	c.scheduler = utils.NewJobScheduler(c.handle)
 	c.done = make(chan struct{})
 
-	ok := true
+	var triggerErrors []error
 
 	if len(triggers) == 0 {
-		ok = false
-		// TODO: handle error
+		triggerErrors = append(triggerErrors, fmt.Errorf("no triggers provided"))
 	}
 
 	for _, trigger := range triggers {
 		err := trigger.setup(&c)
 		if err != nil {
-			ok = false
-			// TODO: handle error
-			fmt.Println(err)
+			triggerErrors = append(triggerErrors, fmt.Errorf("setting up trigger: %w", err))
 			break
 		}
 	}
 
-	if !ok {
+	if len(triggerErrors) > 0 {
 		c.Shutdown()
 
-		return nil, fmt.Errorf("setting up collector")
+		return nil, errors.Join(triggerErrors...)
 	}
 
 	return &c, nil
 }
 
-func NewContext(ctx context.Context, cfg *config.Config, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
-	c, err := New(cfg, program, triggers...)
+func NewContext(ctx context.Context, cfg *config.Config, store *storage.Storage, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+	c, err := New(cfg, store, id, program, triggers...)
 	if err != nil {
 		return nil, err
 	}

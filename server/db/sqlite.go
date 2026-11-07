@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"sync"
 
 	"github.com/2manyvcos/paranal/utils"
 	_ "modernc.org/sqlite"
@@ -12,7 +13,10 @@ import (
 
 var _ DB = (*sqliteDB)(nil)
 
-type sqliteDB struct{ *sql.DB }
+type sqliteDB struct {
+	*sql.DB
+	sync.Mutex
+}
 
 func (db *sqliteDB) Shutdown() {
 	db.Close()
@@ -27,7 +31,6 @@ func NewSQLite(path string) (DB, error) {
 	}
 
 	var db sqliteDB
-
 	db.DB, err = sql.Open("sqlite", path)
 	if err != nil {
 		return nil, fmt.Errorf("opening SQLite database: %v", err)
