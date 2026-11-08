@@ -13,13 +13,14 @@ ignore (
 )
 
 require (
+	github.com/adrg/xdg v0.5.3
 	github.com/go-co-op/gocron/v2 v2.23.0
 	github.com/go-viper/mapstructure/v2 v2.5.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/jplorg/jpl/go/v2 v2.1.0
 	github.com/spf13/cobra v1.10.2
 	golang.org/x/crypto v0.58.0
-	modernc.org/sqlite v1.61.1
+	modernc.org/sqlite v1.62.0
 )
 
 require (

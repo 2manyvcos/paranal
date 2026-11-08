@@ -12,6 +12,7 @@ type Config struct {
 	AppName    string
 	CORSOrigin string
 	PublicAPI  string
+	ConfigDir  string
 	ScriptDir  string
 
 	Server struct {
@@ -28,14 +29,24 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	defaultConfigDir, err := utils.ConfigDir("paranal")
+	defaultConfigRoot, err := utils.ConfigDir("paranal")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("locating user config directory: %w", err)
 	}
 
-	configDir, err := filepath.Abs(utils.LoadConfigValue("PARANAL_CONFIG_DIR", defaultConfigDir))
+	configRoot, err := filepath.Abs(utils.LoadConfigValue("PARANAL_CONFIG_ROOT", defaultConfigRoot))
 	if err != nil {
-		return nil, fmt.Errorf("resolving config directory: %v", err)
+		return nil, fmt.Errorf("resolving config directory: %w", err)
+	}
+
+	defaultDataRoot, err := utils.DataDir("paranal")
+	if err != nil {
+		return nil, fmt.Errorf("locating user data directory: %w", err)
+	}
+
+	dataRoot, err := filepath.Abs(utils.LoadConfigValue("PARANAL_DATA_ROOT", defaultDataRoot))
+	if err != nil {
+		return nil, fmt.Errorf("resolving data directory: %w", err)
 	}
 
 	var config Config
@@ -43,15 +54,16 @@ func Load() (*Config, error) {
 	config.AppName = utils.LoadConfigValue("PARANAL_APP_NAME", "Paranal")
 	config.CORSOrigin = utils.LoadConfigValue("PARANAL_CORS_ORIGIN", "")
 	config.PublicAPI = strings.TrimSuffix(utils.LoadConfigValue("PARANAL_PUBLIC_API", "/api"), "/")
-	config.ScriptDir = utils.LoadConfigValue("PARANAL_SCRIPT_DIR", filepath.Join(configDir, "scripts"))
+	config.ConfigDir = utils.LoadConfigValue("PARANAL_CONFIG_DIR", filepath.Join(configRoot, "config"))
+	config.ScriptDir = utils.LoadConfigValue("PARANAL_SCRIPT_DIR", filepath.Join(configRoot, "scripts"))
 
 	config.Server.Protocol = utils.LoadConfigValue("PARANAL_SERVER_PROTOCOL", "http")
 	config.Server.Address = utils.LoadConfigValue("PARANAL_SERVER_ADDRESS", "0.0.0.0")
 	config.Server.Port = utils.LoadConfigValue("PARANAL_SERVER_PORT", "8080")
-	config.Server.CertFile = utils.LoadConfigValue("PARANAL_SERVER_CERT_FILE", filepath.Join(configDir, "tls", "cert.pem"))
-	config.Server.KeyFile = utils.LoadConfigValue("PARANAL_SERVER_KEY_FILE", filepath.Join(configDir, "tls", "key.pem"))
+	config.Server.CertFile = utils.LoadConfigValue("PARANAL_SERVER_CERT_FILE", filepath.Join(configRoot, "tls", "cert.pem"))
+	config.Server.KeyFile = utils.LoadConfigValue("PARANAL_SERVER_KEY_FILE", filepath.Join(configRoot, "tls", "key.pem"))
 
-	config.DB.File = utils.LoadConfigValue("PARANAL_DB_FILE", filepath.Join(configDir, "paranal.db"))
+	config.DB.File = utils.LoadConfigValue("PARANAL_DB_FILE", filepath.Join(dataRoot, "paranal.db"))
 
 	return &config, nil
 }

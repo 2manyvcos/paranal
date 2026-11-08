@@ -1,35 +1,28 @@
 package utils
 
 import (
-	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
+
+	"github.com/adrg/xdg"
 )
 
 func ConfigDir(appName string) (string, error) {
-	base, err := os.UserConfigDir()
-	if err != nil {
-		home, homeErr := os.UserHomeDir()
-		if homeErr != nil {
-			return "", fmt.Errorf("locating config directory: %w", errors.Join(err, homeErr))
-		}
-		base = filepath.Join(home, ".config")
-	}
-
-	dir := filepath.Join(base, appName)
+	dir := filepath.Join(xdg.ConfigHome, appName)
 
 	if !filepath.IsAbs(dir) {
-		return "", fmt.Errorf("config directory %q is not an absolute path", dir)
+		return "", fmt.Errorf("%q is not an absolute path", dir)
 	}
 
 	return dir, nil
 }
 
-func MkdirConfig(path string) error {
-	if err := os.MkdirAll(path, 0o700); err != nil {
-		return fmt.Errorf("creating config directory: %w", err)
+func DataDir(appName string) (string, error) {
+	dir := filepath.Join(xdg.DataHome, appName)
+
+	if !filepath.IsAbs(dir) {
+		return "", fmt.Errorf("%q is not an absolute path", dir)
 	}
 
-	return nil
+	return dir, nil
 }

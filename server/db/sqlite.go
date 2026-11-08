@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 	"sync"
 
-	"github.com/2manyvcos/paranal/utils"
 	_ "modernc.org/sqlite"
 )
 
@@ -25,7 +25,7 @@ func (db *sqliteDB) Shutdown() {
 func NewSQLite(path string) (DB, error) {
 	log.Printf("configuring SQLite database at %q\n", path)
 
-	err := utils.MkdirConfig(filepath.Dir(path))
+	err := os.MkdirAll(filepath.Dir(path), 0o700)
 	if err != nil {
 		return nil, err
 	}
