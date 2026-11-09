@@ -16,6 +16,13 @@ func (s *Storage) PutCollectorStates(collector string, states []State) error {
 	return s.stateScheduler.PutCollectorStates(collector, states)
 }
 
+// CleanupCollectorStates removes stale states for collectors that do not exist anymore.
+// Do not call this after starting any collector.
+func (s *Storage) CleanupCollectorStates(collectors []string) error {
+	_, err := s.db.CleanupCollectorStates(collectors)
+	return err
+}
+
 func (s *Storage) Shutdown() {
 	s.stateScheduler.Shutdown()
 	s.db.Shutdown()

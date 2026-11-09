@@ -3,10 +3,13 @@ package server
 import (
 	"context"
 	"log"
+	"time"
 
 	meta "github.com/2manyvcos/paranal"
 	"github.com/2manyvcos/paranal/server/config"
+	"github.com/2manyvcos/paranal/server/dynamicconfig"
 	"github.com/2manyvcos/paranal/server/events"
+	"github.com/2manyvcos/paranal/server/runtime"
 	"github.com/2manyvcos/paranal/server/storage"
 	"github.com/go-co-op/gocron/v2"
 )
@@ -34,9 +37,19 @@ func Run(ctx context.Context) error {
 	}
 	defer store.Shutdown()
 
-	// TODO: add additional setup code here
-	// TODO: use collector.NewContext(ctx, …) so that collectors are stopped early on signal instead of waiting for the HTTP server to exit
+	dynamicConfigChanges := make(chan []dynamicconfig.ConfigChange)
+	configLoader, dynamicConfigs, err := dynamicconfig.NewLoader(cfg.ConfigDir, 100*time.Millisecond, dynamicConfigChanges)
+	if err != nil {
+		return err
+	}
+	defer configLoader.Shutdown()
 
+	_, err = runtime.NewRuntimeData(ctx, cfg, cronScheduler, eventBroker, store, dynamicConfigs, dynamicConfigChanges)
+	if err != nil {
+		return err
+	}
+
+	configLoader.Watch()
 	cronScheduler.Start()
 
 	return Serve(ctx, cfg)

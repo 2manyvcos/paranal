@@ -70,11 +70,19 @@ func (c *Collector) run(triggers []any) error {
 
 		switch f.Kind {
 		case "state":
-			s, err := parseState(fact)
+			var s state
+			decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &s})
 			if err != nil {
 				return fmt.Errorf("invalid state: %w", err)
 			}
-
+			err = decoder.Decode(fact)
+			if err != nil {
+				return fmt.Errorf("invalid state: %w", err)
+			}
+			err = s.Validate()
+			if err != nil {
+				return fmt.Errorf("invalid state: %w", err)
+			}
 			states = append(states, storage.State{
 				Registry: s.Registry,
 				ID:       s.ID,
@@ -82,7 +90,7 @@ func (c *Collector) run(triggers []any) error {
 			})
 
 		default:
-			return fmt.Errorf("invalid fact: unknown kind %q", f.Kind)
+			return fmt.Errorf("invalid fact: unsupported kind %q", f.Kind)
 		}
 	}
 

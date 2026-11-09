@@ -2,8 +2,57 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"strings"
 )
+
+func (db *sqliteDB) CleanupCollectorStates(collectors []string) (modifiedStates []StateID, err error) {
+	db.Lock()
+	defer db.Unlock()
+
+	var rows *sql.Rows
+	if len(collectors) == 0 {
+		rows, err = db.Query(
+			`
+        DELETE FROM states
+        WHERE collector != ''
+        RETURNING registry, id
+      `,
+		)
+	} else {
+		args := make([]any, len(collectors))
+		for i, v := range collectors {
+			args[i] = v
+		}
+		rows, err = db.Query(
+			`
+        DELETE FROM states
+        WHERE
+          collector != ''
+          AND collector NOT IN (`+strings.TrimSuffix(strings.Repeat("?, ", len(collectors)), ", ")+`)
+        RETURNING registry, id
+      `,
+			args...,
+		)
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var registry, id string
+		if err := rows.Scan(&registry, &id); err != nil {
+			return nil, err
+		}
+		modifiedStates = append(modifiedStates, StateID{Registry: registry, ID: id})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return modifiedStates, nil
+}
 
 func (db *sqliteDB) PutCollectorStates(collector string, states []State) (modifiedStates []StateID, err error) {
 	db.Lock()
