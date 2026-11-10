@@ -11,4 +11,43 @@ externalDocs:
   url: https://2manyvcos.github.io/paranal
 servers:
   - url: '{{ .api }}/v1'
-paths: {}
+tags:
+  - name: Events
+    description: Get events
+paths:
+  /events:
+    get:
+      tags: [Events]
+      summary: Get events
+      operationId: getEvents
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/event-stream:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ChangeEvent'
+                discriminator:
+                  propertyName: event
+                  mapping:
+                    update: '#/components/schemas/ChangeEvent'
+        default:
+          description: Unexpected error
+components:
+  schemas:
+    ChangeEvent:
+      title: Change Event
+      description: Event that indicates that a resource has changed
+      type: object
+      required: [event, data]
+      properties:
+        event:
+          description: Type of event
+          type: string
+          enum: [change]
+        data:
+          description: Event details
+          type: string
+          format: uri
+          example: v1/registries/demo-registry/demo-state

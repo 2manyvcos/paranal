@@ -7,5 +7,7 @@ import (
 func New() http.Handler {
 	api := http.NewServeMux()
 
+	api.Handle("GET /v1/events", http.HandlerFunc(GetEvents))
+
 	return api
 }
