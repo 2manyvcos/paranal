@@ -26,6 +26,8 @@ func stateDedupeKey(s collector_spec.State) (key struct{ Registry, ID string }) 
 }
 
 type stateRevPayload struct {
+	Registry  string `json:"registry"`
+	ID        string `json:"id"`
 	Collector string `json:"collector"`
 	Data      any    `json:"data"`
 }
@@ -37,8 +39,9 @@ func (s *Storage) PutCollectorStates(collector string, states []collector_spec.S
 	dedupedStates := utils.DedupeEnd(states, stateDedupeKey)
 	records := make([]db.State, len(dedupedStates))
 	for i, state := range dedupedStates {
-		// TODO: If rev is also used outside (for E-Tags), this can be kept here. Otherwise, this logic should be moved into the db package.
 		rev, err := utils.HashJSONValue(stateRevPayload{
+			Registry:  state.Registry,
+			ID:        state.ID,
 			Collector: collector,
 			Data:      state.Data,
 		})
