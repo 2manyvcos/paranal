@@ -75,7 +75,7 @@ func (l *Loader) applyConfigs(configs []Config) ([]ConfigChange, error) {
 	collectorRevs := make(map[string]collectorWithRev, len(configs))
 
 	for _, config := range configs {
-		switch config.Config() {
+		switch config.Kind() {
 		case "collector":
 			collectorConfig := config.(CollectorConfig)
 			id := url.QueryEscape(collectorConfig.ID) + "@file"
@@ -89,7 +89,7 @@ func (l *Loader) applyConfigs(configs []Config) ([]ConfigChange, error) {
 			collectorRevs[id] = collectorWithRev{collectorConfig, rev}
 
 		default:
-			return nil, fmt.Errorf("unsupported config %q", config.Config())
+			return nil, fmt.Errorf("unsupported kind %q", config.Kind())
 		}
 	}
 

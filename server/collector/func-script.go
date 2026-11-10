@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/2manyvcos/paranal/server/config"
+	"github.com/2manyvcos/paranal/server/staticconfig"
 	"github.com/go-viper/mapstructure/v2"
 	"github.com/google/shlex"
 	"github.com/jplorg/jpl/go/v2/jpl"
@@ -25,7 +25,7 @@ type ScriptOptions struct {
 	DetailedError bool               `mapstructure:"detailedError"`
 }
 
-func FuncScript(cfg *config.Config) jpl.JPLFunc {
+func FuncScript(cfg *staticconfig.Config) jpl.JPLFunc {
 	return enclose(func(runtime jpl.JPLRuntime, signal jpl.JPLRuntimeSignal, input any, args ...any) ([]any, error) {
 		var err error
 

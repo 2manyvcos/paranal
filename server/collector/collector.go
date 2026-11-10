@@ -7,17 +7,19 @@ import (
 	"log"
 	"sync"
 
-	"github.com/2manyvcos/paranal/server/config"
+	"github.com/2manyvcos/paranal/server/spec"
+	collector_spec "github.com/2manyvcos/paranal/server/spec/collector"
+	"github.com/2manyvcos/paranal/server/staticconfig"
 	"github.com/2manyvcos/paranal/server/storage"
 	"github.com/2manyvcos/paranal/utils"
-	"github.com/go-viper/mapstructure/v2"
 	"github.com/jplorg/jpl/go/v2/jpl"
 )
 
 type Collector struct {
-	config    *config.Config
+	config    *staticconfig.Config
 	store     *storage.Storage
 	id        string
+	parser    collector_spec.CollectorSpecParser
 	program   jpl.JPLProgram
 	scheduler *utils.JobScheduler[any]
 	done      chan struct{}
@@ -41,7 +43,7 @@ func (c *Collector) Shutdown() {
 }
 
 func (c *Collector) run(triggers []any) error {
-	facts, programErr := c.program.Run([]any{nil}, &jpl.JPLProgramConfig{
+	results, programErr := c.program.Run([]any{nil}, &jpl.JPLProgramConfig{
 		Runtime: jpl.JPLRuntimeOptions{
 			Vars: map[string]any{
 				"http":     FuncHTTP(),
@@ -55,34 +57,16 @@ func (c *Collector) run(triggers []any) error {
 		return programErr
 	}
 
-	states := make([]storage.State, 0, len(facts))
-
-	for _, fact := range facts {
-		var f genericFact
-		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnset: true, Result: &f})
+	states := make([]storage.State, 0, len(results))
+	for _, result := range results {
+		fact, err := c.parser.ParseFact(result)
 		if err != nil {
-			return fmt.Errorf("invalid fact: %w", err)
-		}
-		err = decoder.Decode(fact)
-		if err != nil {
-			return fmt.Errorf("invalid fact: %w", err)
+			return fmt.Errorf("parsing fact: %w", err)
 		}
 
-		switch f.Kind {
+		switch fact.Kind() {
 		case "state":
-			var s state
-			decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &s})
-			if err != nil {
-				return fmt.Errorf("invalid state: %w", err)
-			}
-			err = decoder.Decode(fact)
-			if err != nil {
-				return fmt.Errorf("invalid state: %w", err)
-			}
-			err = s.Validate()
-			if err != nil {
-				return fmt.Errorf("invalid state: %w", err)
-			}
+			s := fact.(collector_spec.State)
 			states = append(states, storage.State{
 				Registry: s.Registry,
 				ID:       s.ID,
@@ -90,7 +74,7 @@ func (c *Collector) run(triggers []any) error {
 			})
 
 		default:
-			return fmt.Errorf("invalid fact: unsupported kind %q", f.Kind)
+			return fmt.Errorf("unsupported kind %q", fact.Kind)
 		}
 	}
 
@@ -111,15 +95,21 @@ func (c *Collector) handle(triggers []any) {
 	}
 }
 
-func New(cfg *config.Config, store *storage.Storage, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+func New(cfg *staticconfig.Config, store *storage.Storage, version string, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
 	if id == "" {
 		return nil, fmt.Errorf("missing ID")
+	}
+
+	parser, err := spec.CollectionParser(version)
+	if err != nil {
+		return nil, err
 	}
 
 	var c Collector
 	c.config = cfg
 	c.store = store
 	c.id = id
+	c.parser = parser
 	c.program = program
 	c.scheduler = utils.NewJobScheduler(c.handle)
 	c.done = make(chan struct{})
@@ -147,8 +137,8 @@ func New(cfg *config.Config, store *storage.Storage, id string, program jpl.JPLP
 	return &c, nil
 }
 
-func NewContext(ctx context.Context, cfg *config.Config, store *storage.Storage, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
-	c, err := New(cfg, store, id, program, triggers...)
+func NewContext(ctx context.Context, cfg *staticconfig.Config, store *storage.Storage, version string, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+	c, err := New(cfg, store, version, id, program, triggers...)
 	if err != nil {
 		return nil, err
 	}

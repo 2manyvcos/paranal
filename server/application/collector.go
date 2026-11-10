@@ -1,4 +1,4 @@
-package runtime
+package application
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	gojpl "github.com/jplorg/jpl/go/v2"
 )
 
-func (d *RuntimeData) createCollectorFromDynamicConfig(id string, config dynamicconfig.CollectorConfig) (*collector.Collector, error) {
+func (a *App) createCollectorFromDynamicConfig(id string, config dynamicconfig.CollectorConfig) (*collector.Collector, error) {
 	program, jplErr := gojpl.Parse(config.Source, nil)
 	if jplErr != nil {
 		return nil, jplErr
@@ -21,15 +21,15 @@ func (d *RuntimeData) createCollectorFromDynamicConfig(id string, config dynamic
 			triggers[i] = collector.OnStart()
 
 		case "schedule":
-			triggers[i] = collector.OnSchedule(d.cronScheduler, t.Crontab)
+			triggers[i] = collector.OnSchedule(a.CronScheduler, t.Crontab)
 
 		case "change":
-			triggers[i] = collector.OnChange(d.eventBroker, t.PathPattern)
+			triggers[i] = collector.OnChange(a.EventBroker, t.PathPattern)
 
 		default:
 			return nil, fmt.Errorf("unsupported trigger %q", t.Trigger)
 		}
 	}
 
-	return collector.NewContext(d.ctx, d.cfg, d.store, id, program, triggers...)
+	return collector.NewContext(a.ctx, a.Config, a.Store, config.Version, id, program, triggers...)
 }

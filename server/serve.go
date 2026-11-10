@@ -15,31 +15,29 @@ import (
 	apischema "github.com/2manyvcos/paranal/api"
 	"github.com/2manyvcos/paranal/client"
 	"github.com/2manyvcos/paranal/server/api"
-	"github.com/2manyvcos/paranal/server/config"
+	"github.com/2manyvcos/paranal/server/application"
 )
 
 const API_PATH = "/api"
 
-func Serve(ctx context.Context, cfg *config.Config) error {
-	app := api.NewApp(cfg)
-
+func Serve(ctx context.Context, app *application.App) error {
 	mux := http.NewServeMux()
 
 	apiHandler := api.New()
 	mux.Handle(API_PATH+"/", http.StripPrefix(API_PATH, api.OmitTrailingSlash(api.WithApp(app, api.WithCORS(apiHandler)))))
 
 	mux.Handle("/", http.FileServer(api.FileRewrite(api.FileTemplates(client.ClientFiles, map[string]any{
-		"appName": cfg.AppName,
-		"api":     cfg.PublicAPI,
+		"appName": app.Config.AppName,
+		"api":     app.Config.PublicAPI,
 	}, "index.html", "manifest.json"), "index.html")))
 
 	mux.Handle("/api/reference/", http.FileServer(api.FileTemplates(client.ClientFiles, map[string]any{
-		"api": cfg.PublicAPI,
+		"api": app.Config.PublicAPI,
 	}, "api/reference/index.html")))
 
 	apiSchemaFiles, _ := fs.Glob(apischema.SchemaFiles, "*.yaml")
 	apiSchemaServer := api.WithApp(app, api.WithCORS(http.FileServer(api.FileTemplates(apischema.SchemaFiles, map[string]any{
-		"api": cfg.PublicAPI,
+		"api": app.Config.PublicAPI,
 	}, apiSchemaFiles...))))
 	mux.Handle("/api/schema/", http.StripPrefix("/api/schema/", http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		if ext := filepath.Ext(req.URL.Path); ext == ".yaml" || ext == ".yml" {
@@ -49,13 +47,13 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	})))
 
 	srv := &http.Server{
-		Addr:        fmt.Sprintf("%v:%v", cfg.Server.Address, cfg.Server.Port),
+		Addr:        fmt.Sprintf("%v:%v", app.Config.Server.Address, app.Config.Server.Port),
 		Handler:     mux,
 		BaseContext: func(net.Listener) context.Context { return ctx },
 	}
 
 	var serve func() error
-	switch strings.ToLower(cfg.Server.Protocol) {
+	switch strings.ToLower(app.Config.Server.Protocol) {
 	case "http":
 		serve = func() error {
 			log.Printf("listening at http://%v\n", srv.Addr)
@@ -65,11 +63,11 @@ func Serve(ctx context.Context, cfg *config.Config) error {
 	case "https":
 		serve = func() error {
 			log.Printf("listening at https://%v\n", srv.Addr)
-			return srv.ListenAndServeTLS(cfg.Server.CertFile, cfg.Server.KeyFile)
+			return srv.ListenAndServeTLS(app.Config.Server.CertFile, app.Config.Server.KeyFile)
 		}
 
 	default:
-		return fmt.Errorf("unsupported protocol %q", cfg.Server.Protocol)
+		return fmt.Errorf("unsupported protocol %q", app.Config.Server.Protocol)
 	}
 
 	serveErr := make(chan error, 1)

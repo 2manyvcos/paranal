@@ -6,10 +6,10 @@ import (
 	"time"
 
 	meta "github.com/2manyvcos/paranal"
-	"github.com/2manyvcos/paranal/server/config"
+	"github.com/2manyvcos/paranal/server/application"
 	"github.com/2manyvcos/paranal/server/dynamicconfig"
 	"github.com/2manyvcos/paranal/server/events"
-	"github.com/2manyvcos/paranal/server/runtime"
+	"github.com/2manyvcos/paranal/server/staticconfig"
 	"github.com/2manyvcos/paranal/server/storage"
 	"github.com/go-co-op/gocron/v2"
 )
@@ -17,7 +17,7 @@ import (
 func Run(ctx context.Context) error {
 	log.Printf("welcome to %v (version %v)\n", meta.Meta.Name, meta.Meta.Version)
 
-	cfg, err := config.Load()
+	cfg, err := staticconfig.Load()
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func Run(ctx context.Context) error {
 	}
 	defer configLoader.Shutdown()
 
-	_, err = runtime.NewRuntimeData(ctx, cfg, cronScheduler, eventBroker, store, dynamicConfigs, dynamicConfigChanges)
+	app, err := application.New(ctx, cfg, cronScheduler, eventBroker, store, dynamicConfigs, dynamicConfigChanges)
 	if err != nil {
 		return err
 	}
@@ -55,5 +55,5 @@ func Run(ctx context.Context) error {
 
 	cronScheduler.Start()
 
-	return Serve(ctx, cfg)
+	return Serve(ctx, app)
 }

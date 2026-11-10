@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"github.com/2manyvcos/paranal/server/config"
+	"github.com/2manyvcos/paranal/server/staticconfig"
 	"github.com/2manyvcos/paranal/server/db"
 	"github.com/2manyvcos/paranal/server/events"
 )
@@ -28,7 +28,7 @@ func (s *Storage) Shutdown() {
 	s.db.Shutdown()
 }
 
-func New(cfg *config.Config, eventBroker *events.EventBroker) (*Storage, error) {
+func New(cfg *staticconfig.Config, eventBroker *events.EventBroker) (*Storage, error) {
 	var s Storage
 
 	var err error
