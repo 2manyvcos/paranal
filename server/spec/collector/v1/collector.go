@@ -2,6 +2,7 @@ package collector_spec_v1
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 
 	collector_spec "github.com/2manyvcos/paranal/server/spec/collector"
@@ -20,7 +21,7 @@ type trigger struct {
 	Payload map[string]any `mapstructure:",remain"`
 }
 
-func (CollectorParserV1) ParseCollector(input any) (collector_spec.Collector, error) {
+func (CollectorParserV1) ParseCollector(provider string, input any) (collector_spec.Collector, error) {
 	var c collector
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &c})
 	if err != nil {
@@ -32,8 +33,12 @@ func (CollectorParserV1) ParseCollector(input any) (collector_spec.Collector, er
 	}
 
 	var result collector_spec.Collector
-	result.Version = "v1"
-	result.ID = c.ID
+	result.Version = Version
+
+	if c.ID == "" {
+		return collector_spec.Collector{}, fmt.Errorf("missing \"id\"")
+	}
+	result.ID = fmt.Sprintf("%v@%v", url.QueryEscape(c.ID), url.QueryEscape(provider))
 
 	result.Triggers = make([]collector_spec.Trigger, len(c.Triggers))
 	for i, trigger := range c.Triggers {
@@ -52,6 +57,10 @@ func (CollectorParserV1) ParseCollector(input any) (collector_spec.Collector, er
 }
 
 func parseTrigger(t trigger) (collector_spec.Trigger, error) {
+	if t.Trigger == "" {
+		return collector_spec.Trigger{}, fmt.Errorf("missing \"trigger\"")
+	}
+
 	switch t.Trigger {
 	case "start":
 		return parseStartTrigger(t.Payload)

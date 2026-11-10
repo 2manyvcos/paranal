@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
-	"net/url"
 	"path/filepath"
 	"sync"
 	"time"
@@ -78,15 +77,14 @@ func (l *Loader) applyConfigs(configs []Config) ([]ConfigChange, error) {
 		switch config.Kind() {
 		case "collector":
 			collectorConfig := config.(CollectorConfig)
-			id := url.QueryEscape(collectorConfig.ID) + "@file"
-			if _, ok := collectorRevs[id]; ok {
-				return nil, fmt.Errorf("duplicate collector %q", id)
+			if _, ok := collectorRevs[collectorConfig.ID]; ok {
+				return nil, fmt.Errorf("duplicate collector %q", collectorConfig.ID)
 			}
 			rev, err := utils.HashJSONValue(collectorConfig)
 			if err != nil {
 				return nil, fmt.Errorf("deriving collector revision: %w", err)
 			}
-			collectorRevs[id] = collectorWithRev{collectorConfig, rev}
+			collectorRevs[collectorConfig.ID] = collectorWithRev{collectorConfig, rev}
 
 		default:
 			return nil, fmt.Errorf("unsupported kind %q", config.Kind())
@@ -179,6 +177,7 @@ func NewLoader(path string, debounceDuration time.Duration, changes chan<- []Con
 	if err != nil {
 		return nil, nil, err
 	}
+
 	_, err = l.applyConfigs(configs)
 	if err != nil {
 		return nil, nil, fmt.Errorf("applying config: %w", err)

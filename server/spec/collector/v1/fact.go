@@ -23,6 +23,10 @@ func (CollectorParserV1) ParseFact(input any) (collector_spec.Fact, error) {
 		return nil, err
 	}
 
+	if f.Kind == "" {
+		return nil, fmt.Errorf("missing \"kind\"")
+	}
+
 	switch f.Kind {
 	case "state":
 		result, err := parseState(f.Payload)

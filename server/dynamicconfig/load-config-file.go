@@ -43,7 +43,7 @@ func loadConfigFile(path string) ([]Config, error) {
 
 	configs := make([]Config, len(entries))
 	for i, entry := range entries {
-		config, err := parseConfig(entry)
+		config, err := parseConfig("file", entry)
 		if err != nil {
 			return nil, err
 		}
@@ -54,10 +54,14 @@ func loadConfigFile(path string) ([]Config, error) {
 	return configs, nil
 }
 
-func parseConfig(config configEntry) (Config, error) {
+func parseConfig(provider string, config configEntry) (Config, error) {
+	if config.Kind == "" {
+		return nil, fmt.Errorf("missing \"kind\"")
+	}
+
 	switch config.Kind {
 	case "collector":
-		result, err := parseCollector(config)
+		result, err := parseCollector(provider, config)
 		if err != nil {
 			return nil, fmt.Errorf("parsing collector: %w", err)
 		}
@@ -68,7 +72,10 @@ func parseConfig(config configEntry) (Config, error) {
 	}
 }
 
-func parseCollector(config configEntry) (Config, error) {
+func parseCollector(provider string, config configEntry) (Config, error) {
+	if config.Version == "" {
+		return nil, fmt.Errorf("missing \"version\"")
+	}
 	version := "v" + config.Version
 	if !semver.IsValid(version) || semver.MajorMinor(version) != version {
 		return nil, fmt.Errorf("invalid version %q", version)
@@ -79,7 +86,7 @@ func parseCollector(config configEntry) (Config, error) {
 		return nil, err
 	}
 
-	c, err := parser.ParseCollector(config.Config)
+	c, err := parser.ParseCollector(provider, config.Config)
 	if err != nil {
 		return nil, err
 	}

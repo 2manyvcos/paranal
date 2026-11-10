@@ -57,7 +57,7 @@ func (c *Collector) run(triggers []any) error {
 		return programErr
 	}
 
-	states := make([]storage.State, 0, len(results))
+	states := make([]collector_spec.State, 0, len(results))
 	for _, result := range results {
 		fact, err := c.parser.ParseFact(result)
 		if err != nil {
@@ -66,15 +66,10 @@ func (c *Collector) run(triggers []any) error {
 
 		switch fact.Kind() {
 		case "state":
-			s := fact.(collector_spec.State)
-			states = append(states, storage.State{
-				Registry: s.Registry,
-				ID:       s.ID,
-				Data:     s.Data,
-			})
+			states = append(states, fact.(collector_spec.State))
 
 		default:
-			return fmt.Errorf("unsupported kind %q", fact.Kind)
+			return fmt.Errorf("unsupported kind %q", fact.Kind())
 		}
 	}
 

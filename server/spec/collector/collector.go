@@ -30,6 +30,6 @@ func (State) Kind() string {
 }
 
 type CollectorSpecParser interface {
-	ParseCollector(input any) (Collector, error)
+	ParseCollector(provider string, input any) (Collector, error)
 	ParseFact(input any) (Fact, error)
 }
