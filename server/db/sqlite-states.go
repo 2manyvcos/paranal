@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -160,4 +161,75 @@ func (db *sqliteDB) PutCollectorStates(collector string, states []State) (modifi
 	return modifiedStates, nil
 }
 
-// TODO: use it like `SELECT json(data) FROM states …`
+func (db *sqliteDB) ListStates(registry string) ([]State, error) {
+	db.Lock()
+	defer db.Unlock()
+
+	if registry == "" {
+		return nil, fmt.Errorf("missing registry")
+	}
+
+	rows, err := db.Query(
+		`
+      SELECT registry, id, rev, json(data)
+      FROM states
+      WHERE registry = ?
+      ORDER BY registry, id
+    `,
+		registry,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var records []State
+	for rows.Next() {
+		var record State
+		var data string
+		if err := rows.Scan(&record.Registry, &record.ID, &record.Rev, &data); err != nil {
+			return nil, err
+		}
+		record.Data = []byte(data)
+		records = append(records, record)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return records, nil
+}
+
+func (db *sqliteDB) GetState(registry string, id string) (State, error) {
+	db.Lock()
+	defer db.Unlock()
+
+	if registry == "" {
+		return State{}, fmt.Errorf("missing registry")
+	}
+	if id == "" {
+		return State{}, fmt.Errorf("missing ID")
+	}
+
+	var record State
+	var data string
+	err := db.QueryRow(
+		`
+      SELECT registry, id, rev, json(data)
+      FROM states
+      WHERE
+        registry = ?
+        AND id = ?
+    `,
+		registry, id,
+	).Scan(&record.Registry, &record.ID, &record.Rev, &data)
+	if errors.Is(err, sql.ErrNoRows) {
+		return State{}, ErrNotFound
+	}
+	if err != nil {
+		return State{}, err
+	}
+
+	record.Data = []byte(data)
+
+	return record, nil
+}

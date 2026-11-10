@@ -1,4 +1,4 @@
-openapi: 3.1.1
+openapi: 3.2.1
 info:
   title: Paranal API
   description: This documentation describes the Paranal API.
@@ -14,6 +14,8 @@ servers:
 tags:
   - name: Events
     description: Get events
+  - name: States
+    description: Manage states
 paths:
   /events:
     get:
@@ -31,7 +33,62 @@ paths:
                 discriminator:
                   propertyName: event
                   mapping:
-                    update: '#/components/schemas/ChangeEvent'
+                    change: '#/components/schemas/ChangeEvent'
+        default:
+          description: Unexpected error
+  /registries/{registryName}/states:
+    parameters:
+      - in: path
+        name: registryName
+        description: Registry name
+        required: true
+        schema:
+          type: string
+          example: services
+    get:
+      tags: [States]
+      summary: List states in a registry
+      operationId: getRegistriesByNameStates
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/State'
+        default:
+          description: Unexpected error
+  /registries/{registryName}/states/{stateID}:
+    parameters:
+      - in: path
+        name: registryName
+        description: Registry name
+        required: true
+        schema:
+          type: string
+          example: services
+      - in: path
+        name: stateID
+        description: State ID
+        required: true
+        schema:
+          type: string
+          example: paranal
+    get:
+      tags: [States]
+      summary: Get a state in a registry
+      operationId: getRegistriesByNameStatesByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/State'
+        '404':
+          description: Not found
         default:
           description: Unexpected error
 components:
@@ -50,4 +107,24 @@ components:
           description: Event details
           type: string
           format: uri
-          example: v1/registries/demo-registry/demo-state
+          example: v1/registries/services/paranal
+    State:
+      title: State
+      description: Arbitrary set of information
+      type: object
+      properties:
+        registry:
+          description: Registry name
+          type: string
+          example: services
+        id:
+          description: State ID
+          type: string
+          example: paranal
+        data:
+          description: Data
+          type: object
+          additionalProperties: true
+          example:
+            name: Paranal
+            status: healthy

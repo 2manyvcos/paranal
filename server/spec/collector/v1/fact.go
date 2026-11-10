@@ -41,9 +41,9 @@ func (CollectorParserV1) ParseFact(input any) (collector_spec.Fact, error) {
 }
 
 type state struct {
-	Registry string `mapstructure:"registry"`
-	ID       string `mapstructure:"id"`
-	Data     any    `mapstructure:"data"`
+	Registry string         `mapstructure:"registry"`
+	ID       string         `mapstructure:"id"`
+	Data     map[string]any `mapstructure:"data"`
 }
 
 func parseState(input any) (collector_spec.Fact, error) {
@@ -71,9 +71,6 @@ func parseState(input any) (collector_spec.Fact, error) {
 
 	if s.Data == nil {
 		return nil, fmt.Errorf("missing \"data\"")
-	}
-	if _, ok := s.Data.(map[string]any); !ok {
-		return nil, fmt.Errorf("\"data\" must be an object")
 	}
 	result.Data = s.Data
 

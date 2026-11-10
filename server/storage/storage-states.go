@@ -75,3 +75,44 @@ func (s *Storage) PutCollectorStates(collector string, states []collector_spec.S
 
 	return nil
 }
+
+func (s *Storage) ListStates(registry string) ([]collector_spec.State, error) {
+	records, err := s.db.ListStates(registry)
+	if err != nil {
+		return nil, err
+	}
+
+	states := make([]collector_spec.State, len(records))
+	for i, record := range records {
+		var state collector_spec.State
+		state.Registry = record.Registry
+		state.ID = record.ID
+
+		err := json.Unmarshal(record.Data, &state.Data)
+		if err != nil {
+			return nil, fmt.Errorf("parsing state data: %w", err)
+		}
+
+		states[i] = state
+	}
+
+	return states, nil
+}
+
+func (s *Storage) GetState(registry string, id string) (collector_spec.State, error) {
+	record, err := s.db.GetState(registry, id)
+	if err != nil {
+		return collector_spec.State{}, err
+	}
+
+	var state collector_spec.State
+	state.Registry = record.Registry
+	state.ID = record.ID
+
+	err = json.Unmarshal(record.Data, &state.Data)
+	if err != nil {
+		return collector_spec.State{}, fmt.Errorf("parsing state data: %w", err)
+	}
+
+	return state, nil
+}

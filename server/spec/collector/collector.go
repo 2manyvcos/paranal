@@ -22,7 +22,7 @@ var _ Fact = (*State)(nil)
 type State struct {
 	Registry string
 	ID       string
-	Data     any
+	Data     map[string]any
 }
 
 func (State) Kind() string {
