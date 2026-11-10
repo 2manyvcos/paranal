@@ -49,7 +49,10 @@ func Run(ctx context.Context) error {
 		return err
 	}
 
-	configLoader.Watch()
+	if cfg.WatchConfigDir {
+		configLoader.Watch()
+	}
+
 	cronScheduler.Start()
 
 	return Serve(ctx, cfg)
