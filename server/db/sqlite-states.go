@@ -75,7 +75,9 @@ func (db *sqliteDB) PutCollectorStates(collector string, states []State) (modifi
 		`
       SELECT registry, id, rev
       FROM states
-      WHERE collector = ?
+      WHERE
+        collector != ''
+        AND collector = ?
     `,
 		collector,
 	)

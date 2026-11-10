@@ -14,7 +14,11 @@ func (db *sqliteDB) setup() error {
         data BLOB NOT NULL CHECK (json_valid(data, 8)),
         PRIMARY KEY (registry, id)
       )
-      WITHOUT ROWID
+      WITHOUT ROWID;
+
+      CREATE INDEX IF NOT EXISTS idx_states_collector
+      ON states(collector)
+      WHERE collector != '';
     `,
 	)
 	return err
