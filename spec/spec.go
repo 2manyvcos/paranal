@@ -3,8 +3,8 @@ package spec
 import (
 	"fmt"
 
-	collector_spec "github.com/2manyvcos/paranal/server/spec/collector"
-	collector_spec_v1 "github.com/2manyvcos/paranal/server/spec/collector/v1"
+	collector_spec "github.com/2manyvcos/paranal/spec/collector"
+	collector_spec_v1 "github.com/2manyvcos/paranal/spec/collector/v1"
 	"golang.org/x/mod/semver"
 )
 

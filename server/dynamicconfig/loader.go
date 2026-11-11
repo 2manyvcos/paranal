@@ -12,8 +12,13 @@ import (
 	"github.com/bep/debounce"
 )
 
-type collectorWithRev struct {
-	CollectorConfig
+type configRevKey struct {
+	Kind string
+	ID   string
+}
+
+type configRev struct {
+	Config
 	Rev string
 }
 
@@ -23,7 +28,7 @@ type Loader struct {
 	watcher          *utils.FileWatcher
 	watchOnce        sync.Once
 	lock             sync.Mutex
-	collectorRevs    map[string]collectorWithRev
+	revs             map[configRevKey]configRev
 	changes          chan<- []ConfigChange
 	done             chan struct{}
 	doneOnce         sync.Once
@@ -71,39 +76,33 @@ func (l *Loader) loadConfigs() ([]Config, error) {
 }
 
 func (l *Loader) applyConfigs(configs []Config) ([]ConfigChange, error) {
-	collectorRevs := make(map[string]collectorWithRev, len(configs))
+	revs := make(map[configRevKey]configRev, len(configs))
 
 	for _, config := range configs {
-		switch config.Kind() {
-		case "collector":
-			collectorConfig := config.(CollectorConfig)
-			if _, ok := collectorRevs[collectorConfig.ID]; ok {
-				return nil, fmt.Errorf("duplicate collector %q", collectorConfig.ID)
-			}
-			rev, err := utils.HashJSONValue(collectorConfig)
-			if err != nil {
-				return nil, fmt.Errorf("deriving collector revision: %w", err)
-			}
-			collectorRevs[collectorConfig.ID] = collectorWithRev{collectorConfig, rev}
+		key := configRevKey{Kind: config.Kind(), ID: config.ID()}
+		if _, ok := revs[key]; ok {
+			return nil, fmt.Errorf("duplicate %q config %q", config.Kind(), config.ID())
+		}
+		rev, err := utils.HashJSONValue(config)
+		if err != nil {
+			return nil, fmt.Errorf("deriving config revision: %w", err)
+		}
+		revs[key] = configRev{config, rev}
+	}
 
-		default:
-			return nil, fmt.Errorf("unsupported kind %q", config.Kind())
+	changes := make([]ConfigChange, 0, len(revs)+len(l.revs))
+	for key, rev := range revs {
+		if prev, ok := l.revs[key]; !ok || prev.Rev != rev.Rev {
+			changes = append(changes, ConfigChange{Config: rev.Config})
+		}
+	}
+	for key, rev := range l.revs {
+		if _, ok := revs[key]; !ok {
+			changes = append(changes, ConfigChange{Config: rev.Config, Removed: true})
 		}
 	}
 
-	changes := make([]ConfigChange, 0, len(collectorRevs)+len(l.collectorRevs))
-	for id, c := range collectorRevs {
-		if prev, ok := l.collectorRevs[id]; !ok || prev.Rev != c.Rev {
-			changes = append(changes, ConfigChange{Config: c.CollectorConfig})
-		}
-	}
-	for id, c := range l.collectorRevs {
-		if _, ok := collectorRevs[id]; !ok {
-			changes = append(changes, ConfigChange{Config: c.CollectorConfig, Removed: true})
-		}
-	}
-
-	l.collectorRevs = collectorRevs
+	l.revs = revs
 
 	return changes, nil
 }
@@ -169,7 +168,6 @@ func NewLoader(path string, debounceDuration time.Duration, changes chan<- []Con
 	var l Loader
 	l.path = path
 	l.debounceDuration = debounceDuration
-	l.collectorRevs = make(map[string]collectorWithRev)
 	l.changes = changes
 	l.done = make(chan struct{})
 

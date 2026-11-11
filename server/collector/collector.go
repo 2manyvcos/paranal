@@ -7,10 +7,10 @@ import (
 	"log"
 	"sync"
 
-	"github.com/2manyvcos/paranal/server/spec"
-	collector_spec "github.com/2manyvcos/paranal/server/spec/collector"
 	"github.com/2manyvcos/paranal/server/staticconfig"
 	"github.com/2manyvcos/paranal/server/storage"
+	"github.com/2manyvcos/paranal/spec"
+	collector_spec "github.com/2manyvcos/paranal/spec/collector"
 	"github.com/2manyvcos/paranal/utils"
 	"github.com/jplorg/jpl/go/v2/jpl"
 )

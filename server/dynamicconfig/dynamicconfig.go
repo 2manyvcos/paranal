@@ -1,20 +1,27 @@
 package dynamicconfig
 
-import collector_spec "github.com/2manyvcos/paranal/server/spec/collector"
+import (
+	collector_spec "github.com/2manyvcos/paranal/spec/collector"
+)
 
 type ConfigChange struct {
-	Config  Config
+	Config
 	Removed bool
 }
 
 type Config interface {
 	Kind() string
+	ID() string
 }
 
 var _ Config = (*CollectorConfig)(nil)
 
-type CollectorConfig collector_spec.Collector
+type CollectorConfig struct{ collector_spec.Collector }
 
 func (CollectorConfig) Kind() string {
 	return "collector"
+}
+
+func (c CollectorConfig) ID() string {
+	return c.Collector.ID
 }

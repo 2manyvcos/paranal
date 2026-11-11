@@ -3,7 +3,7 @@ package collector_spec_v1
 import (
 	"fmt"
 
-	collector_spec "github.com/2manyvcos/paranal/server/spec/collector"
+	collector_spec "github.com/2manyvcos/paranal/spec/collector"
 	"github.com/go-viper/mapstructure/v2"
 )
 
@@ -12,7 +12,7 @@ type fact struct {
 	Payload map[string]any `mapstructure:",remain"`
 }
 
-func (CollectorParserV1) ParseFact(input any) (collector_spec.Fact, error) {
+func (collectorParser) ParseFact(input any) (collector_spec.Fact, error) {
 	var f fact
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &f})
 	if err != nil {

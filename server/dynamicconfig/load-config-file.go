@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/2manyvcos/paranal/server/spec"
+	"github.com/2manyvcos/paranal/spec"
 	"go.yaml.in/yaml/v4"
 	"golang.org/x/mod/semver"
 )
@@ -72,13 +72,21 @@ func parseConfig(provider string, config configEntry) (Config, error) {
 	}
 }
 
-func parseCollector(provider string, config configEntry) (Config, error) {
-	if config.Version == "" {
-		return nil, fmt.Errorf("missing \"version\"")
+func parseVersion(input string) (string, error) {
+	if input == "" {
+		return "", fmt.Errorf("missing \"version\"")
 	}
-	version := "v" + config.Version
+	version := "v" + input
 	if !semver.IsValid(version) || semver.MajorMinor(version) != version {
-		return nil, fmt.Errorf("invalid version %q", version)
+		return "", fmt.Errorf("invalid version %q", version)
+	}
+	return version, nil
+}
+
+func parseCollector(provider string, config configEntry) (Config, error) {
+	version, err := parseVersion(config.Version)
+	if err != nil {
+		return nil, err
 	}
 
 	parser, err := spec.CollectionParser(version)
@@ -86,10 +94,10 @@ func parseCollector(provider string, config configEntry) (Config, error) {
 		return nil, err
 	}
 
-	c, err := parser.ParseCollector(provider, config.Config)
+	result, err := parser.ParseCollector(provider, config.Config)
 	if err != nil {
 		return nil, err
 	}
 
-	return CollectorConfig(c), nil
+	return CollectorConfig{result}, nil
 }

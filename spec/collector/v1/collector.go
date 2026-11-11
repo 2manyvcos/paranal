@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"time"
 
-	collector_spec "github.com/2manyvcos/paranal/server/spec/collector"
+	collector_spec "github.com/2manyvcos/paranal/spec/collector"
 	"github.com/go-co-op/gocron/v2"
 	"github.com/go-viper/mapstructure/v2"
 )
@@ -21,7 +21,7 @@ type trigger struct {
 	Payload map[string]any `mapstructure:",remain"`
 }
 
-func (CollectorParserV1) ParseCollector(provider string, input any) (collector_spec.Collector, error) {
+func (collectorParser) ParseCollector(provider string, input any) (collector_spec.Collector, error) {
 	var c collector
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &c})
 	if err != nil {

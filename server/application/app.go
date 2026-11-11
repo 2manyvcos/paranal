@@ -32,22 +32,22 @@ func (a *App) setup(dynamicConfigs []dynamicconfig.Config) error {
 	for _, config := range dynamicConfigs {
 		switch config.Kind() {
 		case "collector":
-			collectorConfig := config.(dynamicconfig.CollectorConfig)
-			if c, ok := a.collectors[collectorConfig.ID]; ok {
+			id := config.ID()
+			if c, ok := a.collectors[id]; ok {
 				if c != nil {
 					c.Shutdown()
 				}
-				delete(a.collectors, collectorConfig.ID)
+				delete(a.collectors, id)
 			}
-			delete(newCollectors, collectorConfig.ID)
-			c, err := a.createCollectorFromDynamicConfig(collectorConfig.ID, collectorConfig)
+			delete(newCollectors, id)
+			c, err := a.createCollectorFromDynamicConfig(id, config.(dynamicconfig.CollectorConfig))
 			if err != nil {
-				log.Printf("setting up collector %q: %v\n", collectorConfig.ID, err)
-				a.collectors[collectorConfig.ID] = nil
+				log.Printf("setting up collector %q: %v\n", id, err)
+				a.collectors[id] = nil
 				continue
 			}
-			a.collectors[collectorConfig.ID] = c
-			newCollectors[collectorConfig.ID] = c
+			a.collectors[id] = c
+			newCollectors[id] = c
 
 		default:
 			return fmt.Errorf("unsupported kind %q", config.Kind())
@@ -76,27 +76,27 @@ func (a *App) applyChanges(changes []dynamicconfig.ConfigChange) {
 	for _, change := range changes {
 		switch change.Config.Kind() {
 		case "collector":
-			collectorConfig := change.Config.(dynamicconfig.CollectorConfig)
-			if c, ok := a.collectors[collectorConfig.ID]; ok {
+			id := change.ID()
+			if c, ok := a.collectors[id]; ok {
 				if c != nil {
 					c.Shutdown()
 				}
-				delete(a.collectors, collectorConfig.ID)
+				delete(a.collectors, id)
 			}
-			delete(removedCollectors, collectorConfig.ID)
-			delete(newCollectors, collectorConfig.ID)
+			delete(removedCollectors, id)
+			delete(newCollectors, id)
 			if change.Removed {
-				removedCollectors[collectorConfig.ID] = struct{}{}
+				removedCollectors[id] = struct{}{}
 				continue
 			}
-			c, err := a.createCollectorFromDynamicConfig(collectorConfig.ID, collectorConfig)
+			c, err := a.createCollectorFromDynamicConfig(id, change.Config.(dynamicconfig.CollectorConfig))
 			if err != nil {
-				log.Printf("applying config change: setting up collector %q: %v\n", collectorConfig.ID, err)
-				a.collectors[collectorConfig.ID] = nil
+				log.Printf("applying config change: setting up collector %q: %v\n", id, err)
+				a.collectors[id] = nil
 				continue
 			}
-			a.collectors[collectorConfig.ID] = c
-			newCollectors[collectorConfig.ID] = c
+			a.collectors[id] = c
+			newCollectors[id] = c
 
 		default:
 			log.Printf("applying config change: unsupported kind %q", change.Config.Kind())

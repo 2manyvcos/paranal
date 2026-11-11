@@ -7,7 +7,7 @@ import (
 
 	"github.com/2manyvcos/paranal/server/db"
 	"github.com/2manyvcos/paranal/server/events"
-	collector_spec "github.com/2manyvcos/paranal/server/spec/collector"
+	collector_spec "github.com/2manyvcos/paranal/spec/collector"
 	"github.com/2manyvcos/paranal/utils"
 )
 
