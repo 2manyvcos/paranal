@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"maps"
+	"net/url"
 	"slices"
 	"sync"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/2manyvcos/paranal/server/events"
 	"github.com/2manyvcos/paranal/server/staticconfig"
 	"github.com/2manyvcos/paranal/server/storage"
+	dashboard_spec "github.com/2manyvcos/paranal/spec/dashboard"
 	"github.com/go-co-op/gocron/v2"
 )
 
@@ -24,13 +26,14 @@ type App struct {
 	ctx           context.Context
 	lock          sync.Mutex
 	collectors    map[string]*collector.Collector
+	dashboards    map[string]dashboard_spec.Dashboard
 }
 
 func (a *App) setup(dynamicConfigs []dynamicconfig.Config) error {
 	newCollectors := make(map[string]*collector.Collector, len(dynamicConfigs))
 
 	for _, config := range dynamicConfigs {
-		switch config.Kind() {
+		switch config.Type() {
 		case "collector":
 			id := config.ID()
 			if c, ok := a.collectors[id]; ok {
@@ -49,12 +52,16 @@ func (a *App) setup(dynamicConfigs []dynamicconfig.Config) error {
 			a.collectors[id] = c
 			newCollectors[id] = c
 
+		case "dashboard":
+			id := config.ID()
+			a.dashboards[id] = config.(dynamicconfig.DashboardConfig).Dashboard
+
 		default:
-			return fmt.Errorf("unsupported kind %q", config.Kind())
+			return fmt.Errorf("unsupported type %q", config.Type())
 		}
 	}
 
-	err := a.Store.CleanupCollectorStates(slices.Collect(maps.Keys(a.collectors)))
+	_, err := a.Store.CleanupCollectorStates(slices.Collect(maps.Keys(a.collectors)))
 	if err != nil {
 		return fmt.Errorf("cleaning up states: %w", err)
 	}
@@ -72,9 +79,10 @@ func (a *App) applyChanges(changes []dynamicconfig.ConfigChange) {
 
 	removedCollectors := make(map[string]struct{}, len(changes))
 	newCollectors := make(map[string]*collector.Collector, len(changes))
+	changedDashboards := make(map[string]struct{}, len(changes))
 
 	for _, change := range changes {
-		switch change.Config.Kind() {
+		switch change.Config.Type() {
 		case "collector":
 			id := change.ID()
 			if c, ok := a.collectors[id]; ok {
@@ -98,17 +106,37 @@ func (a *App) applyChanges(changes []dynamicconfig.ConfigChange) {
 			a.collectors[id] = c
 			newCollectors[id] = c
 
+		case "dashboard":
+			id := change.ID()
+			changedDashboards[id] = struct{}{}
+			if change.Removed {
+				delete(a.dashboards, id)
+				continue
+			}
+			a.dashboards[id] = change.Config.(dynamicconfig.DashboardConfig).Dashboard
+
 		default:
-			log.Printf("applying config change: unsupported kind %q", change.Config.Kind())
+			log.Printf("applying config change: unsupported type %q", change.Config.Type())
 		}
 	}
 
+	var eventBundle []events.Event
+
 	for id := range removedCollectors {
-		err := a.Store.PutCollectorStates(id, nil)
+		events, err := a.Store.PutCollectorStates(id, nil)
 		if err != nil {
 			log.Printf("cleaning up states: %v", err)
 		}
+
+		eventBundle = append(eventBundle, events...)
 	}
+
+	eventBundle = slices.Grow(eventBundle, len(changedDashboards))
+	for id := range changedDashboards {
+		eventBundle = append(eventBundle, events.NewChangeEvent(fmt.Sprintf("v1/dashboards/%s", url.PathEscape(id))))
+	}
+
+	a.EventBroker.Publish(eventBundle...)
 
 	for _, c := range newCollectors {
 		c.Start()
@@ -144,6 +172,7 @@ func New(
 	a.Store = store
 	a.ctx = ctx
 	a.collectors = make(map[string]*collector.Collector)
+	a.dashboards = make(map[string]dashboard_spec.Dashboard)
 
 	err := a.setup(dynamicConfigs)
 	if err != nil {

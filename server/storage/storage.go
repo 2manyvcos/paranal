@@ -4,23 +4,20 @@ import (
 	"sync"
 
 	"github.com/2manyvcos/paranal/server/db"
-	"github.com/2manyvcos/paranal/server/events"
 	"github.com/2manyvcos/paranal/server/staticconfig"
 )
 
 type Storage struct {
-	eventBroker *events.EventBroker
-	db          db.DB
-	stateLock   sync.Mutex
+	db        db.DB
+	stateLock sync.Mutex
 }
 
 func (s *Storage) Shutdown() {
 	s.db.Shutdown()
 }
 
-func New(cfg *staticconfig.Config, eventBroker *events.EventBroker) (*Storage, error) {
+func New(cfg *staticconfig.Config) (*Storage, error) {
 	var s Storage
-	s.eventBroker = eventBroker
 
 	var err error
 	s.db, err = db.NewSQLite(cfg.DB.File)

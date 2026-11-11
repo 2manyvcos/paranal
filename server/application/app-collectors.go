@@ -31,5 +31,5 @@ func (a *App) createCollectorFromDynamicConfig(id string, config dynamicconfig.C
 		}
 	}
 
-	return collector.NewContext(a.ctx, a.Config, a.Store, config.Version, id, program, triggers...)
+	return collector.NewContext(a.ctx, a.Config, a.EventBroker, a.Store, config.Version, id, program, triggers...)
 }

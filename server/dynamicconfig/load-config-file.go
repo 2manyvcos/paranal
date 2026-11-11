@@ -12,7 +12,7 @@ import (
 )
 
 type configEntry struct {
-	Kind    string         `yaml:"kind"`
+	Type    string         `yaml:"type"`
 	Version string         `yaml:"version"`
 	Config  map[string]any `yaml:",inline"`
 }
@@ -55,11 +55,11 @@ func loadConfigFile(path string) ([]Config, error) {
 }
 
 func parseConfig(provider string, config configEntry) (Config, error) {
-	if config.Kind == "" {
-		return nil, fmt.Errorf("missing \"kind\"")
+	if config.Type == "" {
+		return nil, fmt.Errorf("missing \"type\"")
 	}
 
-	switch config.Kind {
+	switch config.Type {
 	case "collector":
 		result, err := parseCollector(provider, config)
 		if err != nil {
@@ -67,8 +67,15 @@ func parseConfig(provider string, config configEntry) (Config, error) {
 		}
 		return result, nil
 
+	case "dashboard":
+		result, err := parseDashboard(provider, config)
+		if err != nil {
+			return nil, fmt.Errorf("parsing dashboard: %w", err)
+		}
+		return result, nil
+
 	default:
-		return nil, fmt.Errorf("unsupported kind %q", config.Kind)
+		return nil, fmt.Errorf("unsupported type %q", config.Type)
 	}
 }
 
@@ -100,4 +107,23 @@ func parseCollector(provider string, config configEntry) (Config, error) {
 	}
 
 	return CollectorConfig{result}, nil
+}
+
+func parseDashboard(provider string, config configEntry) (Config, error) {
+	version, err := parseVersion(config.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	parser, err := spec.DashboardParser(version)
+	if err != nil {
+		return nil, err
+	}
+
+	result, err := parser.ParseDashboard(provider, config.Config)
+	if err != nil {
+		return nil, err
+	}
+
+	return DashboardConfig{result}, nil
 }

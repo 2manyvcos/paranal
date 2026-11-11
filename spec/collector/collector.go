@@ -14,7 +14,7 @@ type Trigger struct {
 }
 
 type Fact interface {
-	Kind() string
+	Type() string
 }
 
 var _ Fact = (*State)(nil)
@@ -25,7 +25,7 @@ type State struct {
 	Data     map[string]any
 }
 
-func (State) Kind() string {
+func (State) Type() string {
 	return "state"
 }
 

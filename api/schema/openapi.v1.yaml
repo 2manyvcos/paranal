@@ -13,9 +13,11 @@ servers:
   - url: '{{ .api }}/v1'
 tags:
   - name: Events
-    description: Get events
+    # description:
+  - name: Dashboards
+    # description:
   - name: States
-    description: Manage states
+    # description:
 paths:
   /events:
     get:
@@ -34,6 +36,46 @@ paths:
                   propertyName: event
                   mapping:
                     change: '#/components/schemas/ChangeEvent'
+        default:
+          description: Unexpected error
+  /dashboards:
+    get:
+      tags: [Dashboards]
+      summary: List dashboards
+      operationId: getDashboards
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Dashboard'
+        default:
+          description: Unexpected error
+  /dashboards/{dashboardID}:
+    parameters:
+      - in: path
+        name: dashboardID
+        description: Dashboard ID
+        required: true
+        schema:
+          type: string
+          example: service-overview
+    get:
+      tags: [Dashboards]
+      summary: Get a dashboard
+      operationId: getDashboardsByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '404':
+          description: Not found
         default:
           description: Unexpected error
   /registries/{registryName}/states:
@@ -108,10 +150,107 @@ components:
           type: string
           format: uri
           example: v1/registries/services/paranal
+    Dashboard:
+      title: Dashboard
+      description: Dashboard definition
+      type: object
+      required: [version, id]
+      properties:
+        version:
+          description: Dashboard specification version
+          type: string
+          example: v1.0
+        id:
+          description: Dashboard ID
+          type: string
+          example: service-overview
+        routes:
+          description: Dashboard routes
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardRoute'
+        theme:
+          $ref: '#/components/schemas/DashboardTheme'
+        vars:
+          description: Dashboard variables
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DashboardVariable'
+        defaultLayout:
+          description: Default dashboard layout
+          $ref: '#/components/schemas/DashboardLayoutNode'
+        layout:
+          description: Dashboard layout
+          $ref: '#/components/schemas/DashboardLayoutNode'
+        content:
+          description: Dashboard content
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardTileNode'
+        scripts:
+          description: Dashboard scripts
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            my-script: "error->('not implemented')"
+    DashboardLayoutNode:
+      title: Dashboard Layout Node
+      description: Dashboard layout node
+      type: object
+      additionalProperties: true
+      example:
+        type: 'grid'
+    DashboardRoute:
+      title: Dashboard Route
+      description: Dashboard route
+      type: object
+      required: [path]
+      properties:
+        host:
+          description: Host
+          type: string
+          example: services.example.com
+        path:
+          description: Path
+          type: string
+          example: /
+    DashboardTheme:
+      title: Dashboard Theme
+      description: Dashboard theme
+      type: object
+      additionalProperties: true
+      example:
+        palette:
+          primary:
+            main: '#ff9900'
+    DashboardTileNode:
+      title: Dashboard Tile Node
+      description: Dashboard tile node
+      type: object
+      additionalProperties: true
+      example:
+        type: 'script'
+        src: "error->('not implemented')"
+    DashboardVariable:
+      title: Dashboard Variable
+      description: Dashboard variable
+      type: object
+      properties:
+        value:
+          description: Value
+          examples:
+            - text
+            - 42
+            - a: 1
+        exposed:
+          description: Indicates whether the value is exposed or not
+          type: boolean
     State:
       title: State
       description: Arbitrary set of information
       type: object
+      required: [registry, id, data]
       properties:
         registry:
           description: Registry name

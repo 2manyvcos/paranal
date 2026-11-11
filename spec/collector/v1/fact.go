@@ -8,7 +8,7 @@ import (
 )
 
 type fact struct {
-	Kind    string         `mapstructure:"kind"`
+	Type    string         `mapstructure:"type"`
 	Payload map[string]any `mapstructure:",remain"`
 }
 
@@ -23,11 +23,11 @@ func (collectorParser) ParseFact(input any) (collector_spec.Fact, error) {
 		return nil, err
 	}
 
-	if f.Kind == "" {
-		return nil, fmt.Errorf("missing \"kind\"")
+	if f.Type == "" {
+		return nil, fmt.Errorf("missing \"type\"")
 	}
 
-	switch f.Kind {
+	switch f.Type {
 	case "state":
 		result, err := parseState(f.Payload)
 		if err != nil {
@@ -36,7 +36,7 @@ func (collectorParser) ParseFact(input any) (collector_spec.Fact, error) {
 		return result, nil
 
 	default:
-		return nil, fmt.Errorf("unsupported kind %q", f.Kind)
+		return nil, fmt.Errorf("unsupported type %q", f.Type)
 	}
 }
 

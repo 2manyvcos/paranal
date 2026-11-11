@@ -7,6 +7,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/2manyvcos/paranal/server/events"
 	"github.com/2manyvcos/paranal/server/staticconfig"
 	"github.com/2manyvcos/paranal/server/storage"
 	"github.com/2manyvcos/paranal/spec"
@@ -16,14 +17,15 @@ import (
 )
 
 type Collector struct {
-	config    *staticconfig.Config
-	store     *storage.Storage
-	id        string
-	parser    collector_spec.CollectorSpecParser
-	program   jpl.JPLProgram
-	scheduler *utils.JobScheduler[any]
-	done      chan struct{}
-	doneOnce  sync.Once
+	config      *staticconfig.Config
+	eventBroker *events.EventBroker
+	store       *storage.Storage
+	id          string
+	parser      collector_spec.CollectorSpecParser
+	program     jpl.JPLProgram
+	scheduler   *utils.JobScheduler[any]
+	done        chan struct{}
+	doneOnce    sync.Once
 }
 
 func (c *Collector) Start() {
@@ -64,19 +66,21 @@ func (c *Collector) run(triggers []any) error {
 			return fmt.Errorf("parsing fact: %w", err)
 		}
 
-		switch fact.Kind() {
+		switch fact.Type() {
 		case "state":
 			states = append(states, fact.(collector_spec.State))
 
 		default:
-			return fmt.Errorf("unsupported kind %q", fact.Kind())
+			return fmt.Errorf("unsupported type %q", fact.Type())
 		}
 	}
 
-	err := c.store.PutCollectorStates(c.id, states)
+	eventBundle, err := c.store.PutCollectorStates(c.id, states)
 	if err != nil {
 		return err
 	}
+
+	c.eventBroker.Publish(eventBundle...)
 
 	return nil
 }
@@ -90,7 +94,7 @@ func (c *Collector) handle(triggers []any) {
 	}
 }
 
-func New(cfg *staticconfig.Config, store *storage.Storage, version string, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+func New(cfg *staticconfig.Config, eventBroker *events.EventBroker, store *storage.Storage, version string, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
 	if id == "" {
 		return nil, fmt.Errorf("missing ID")
 	}
@@ -102,6 +106,7 @@ func New(cfg *staticconfig.Config, store *storage.Storage, version string, id st
 
 	var c Collector
 	c.config = cfg
+	c.eventBroker = eventBroker
 	c.store = store
 	c.id = id
 	c.parser = parser
@@ -132,8 +137,8 @@ func New(cfg *staticconfig.Config, store *storage.Storage, version string, id st
 	return &c, nil
 }
 
-func NewContext(ctx context.Context, cfg *staticconfig.Config, store *storage.Storage, version string, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
-	c, err := New(cfg, store, version, id, program, triggers...)
+func NewContext(ctx context.Context, cfg *staticconfig.Config, eventBroker *events.EventBroker, store *storage.Storage, version string, id string, program jpl.JPLProgram, triggers ...Trigger) (*Collector, error) {
+	c, err := New(cfg, eventBroker, store, version, id, program, triggers...)
 	if err != nil {
 		return nil, err
 	}

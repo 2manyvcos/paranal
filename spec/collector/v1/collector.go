@@ -40,6 +40,9 @@ func (collectorParser) ParseCollector(provider string, input any) (collector_spe
 	}
 	result.ID = fmt.Sprintf("%v@%v", url.QueryEscape(c.ID), url.QueryEscape(provider))
 
+	if len(c.Triggers) == 0 {
+		return collector_spec.Collector{}, fmt.Errorf("missing \"triggers\"")
+	}
 	result.Triggers = make([]collector_spec.Trigger, len(c.Triggers))
 	for i, trigger := range c.Triggers {
 		result.Triggers[i], err = parseTrigger(trigger)
@@ -56,23 +59,23 @@ func (collectorParser) ParseCollector(provider string, input any) (collector_spe
 	return result, nil
 }
 
-func parseTrigger(t trigger) (collector_spec.Trigger, error) {
-	if t.Trigger == "" {
+func parseTrigger(input trigger) (collector_spec.Trigger, error) {
+	if input.Trigger == "" {
 		return collector_spec.Trigger{}, fmt.Errorf("missing \"trigger\"")
 	}
 
-	switch t.Trigger {
+	switch input.Trigger {
 	case "start":
-		return parseStartTrigger(t.Payload)
+		return parseStartTrigger(input.Payload)
 
 	case "schedule":
-		return parseScheduleTrigger(t.Payload)
+		return parseScheduleTrigger(input.Payload)
 
 	case "change":
-		return parseChangeTrigger(t.Payload)
+		return parseChangeTrigger(input.Payload)
 
 	default:
-		return collector_spec.Trigger{}, fmt.Errorf("unsupported trigger %q", t.Trigger)
+		return collector_spec.Trigger{}, fmt.Errorf("unsupported trigger %q", input.Trigger)
 	}
 }
 

@@ -11,28 +11,19 @@ import (
 	"github.com/2manyvcos/paranal/utils"
 )
 
-func (s *Storage) CleanupCollectorStates(collectors []string) error {
+func (s *Storage) CleanupCollectorStates(collectors []string) ([]events.Event, error) {
 	s.stateLock.Lock()
 	defer s.stateLock.Unlock()
 
-	_, err := s.db.CleanupCollectorStates(collectors)
-	return err
+	modifiedRecords, err := s.db.CleanupCollectorStates(collectors)
+	if err != nil {
+		return nil, err
+	}
+
+	return stateEvents(modifiedRecords), nil
 }
 
-func stateDedupeKey(s collector_spec.State) (key struct{ Registry, ID string }) {
-	key.Registry = s.Registry
-	key.ID = s.ID
-	return
-}
-
-type stateRevPayload struct {
-	Registry  string `json:"registry"`
-	ID        string `json:"id"`
-	Collector string `json:"collector"`
-	Data      any    `json:"data"`
-}
-
-func (s *Storage) PutCollectorStates(collector string, states []collector_spec.State) error {
+func (s *Storage) PutCollectorStates(collector string, states []collector_spec.State) ([]events.Event, error) {
 	s.stateLock.Lock()
 	defer s.stateLock.Unlock()
 
@@ -46,12 +37,12 @@ func (s *Storage) PutCollectorStates(collector string, states []collector_spec.S
 			Data:      state.Data,
 		})
 		if err != nil {
-			return fmt.Errorf("deriving state revision: %w", err)
+			return nil, fmt.Errorf("deriving state revision: %w", err)
 		}
 
 		data, err := json.Marshal(state.Data)
 		if err != nil {
-			return fmt.Errorf("serializing state data: %w", err)
+			return nil, fmt.Errorf("serializing state data: %w", err)
 		}
 
 		records[i] = db.State{
@@ -62,18 +53,12 @@ func (s *Storage) PutCollectorStates(collector string, states []collector_spec.S
 		}
 	}
 
-	modifiedStates, err := s.db.PutCollectorStates(collector, records)
+	modifiedRecords, err := s.db.PutCollectorStates(collector, records)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	eventBundle := make([]events.Event, len(modifiedStates))
-	for i, modifiedState := range modifiedStates {
-		eventBundle[i] = events.NewChangeEvent(fmt.Sprintf("v1/registries/%s/%s", url.PathEscape(modifiedState.Registry), url.PathEscape(modifiedState.ID)))
-	}
-	s.eventBroker.Publish(eventBundle...)
-
-	return nil
+	return stateEvents(modifiedRecords), nil
 }
 
 func (s *Storage) ListStates(registry string) ([]collector_spec.State, error) {
@@ -115,4 +100,26 @@ func (s *Storage) GetState(registry string, id string) (collector_spec.State, er
 	}
 
 	return state, nil
+}
+
+func stateDedupeKey(s collector_spec.State) (key struct{ Registry, ID string }) {
+	key.Registry = s.Registry
+	key.ID = s.ID
+	return
+}
+
+type stateRevPayload struct {
+	Registry  string `json:"registry"`
+	ID        string `json:"id"`
+	Collector string `json:"collector"`
+	Data      any    `json:"data"`
+}
+
+func stateEvents(records []db.StateID) []events.Event {
+	eventBundle := make([]events.Event, len(records))
+	for i, record := range records {
+		eventBundle[i] = events.NewChangeEvent(fmt.Sprintf("v1/registries/%s/%s", url.PathEscape(record.Registry), url.PathEscape(record.ID)))
+	}
+
+	return eventBundle
 }

@@ -13,7 +13,7 @@ import (
 )
 
 type configRevKey struct {
-	Kind string
+	Type string
 	ID   string
 }
 
@@ -79,9 +79,9 @@ func (l *Loader) applyConfigs(configs []Config) ([]ConfigChange, error) {
 	revs := make(map[configRevKey]configRev, len(configs))
 
 	for _, config := range configs {
-		key := configRevKey{Kind: config.Kind(), ID: config.ID()}
+		key := configRevKey{Type: config.Type(), ID: config.ID()}
 		if _, ok := revs[key]; ok {
-			return nil, fmt.Errorf("duplicate %q config %q", config.Kind(), config.ID())
+			return nil, fmt.Errorf("duplicate %q config %q", config.Type(), config.ID())
 		}
 		rev, err := utils.HashJSONValue(config)
 		if err != nil {
@@ -150,7 +150,7 @@ func (l *Loader) watch() {
 
 				err := l.loadChanges()
 				if err != nil {
-					log.Printf("config watcher: %v\n", err)
+					log.Println(err)
 				}
 			})
 

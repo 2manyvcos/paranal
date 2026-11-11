@@ -31,7 +31,7 @@ func Run(ctx context.Context) error {
 	eventBroker := events.NewEventBroker()
 	defer eventBroker.Shutdown()
 
-	store, err := storage.New(cfg, eventBroker)
+	store, err := storage.New(cfg)
 	if err != nil {
 		return err
 	}
