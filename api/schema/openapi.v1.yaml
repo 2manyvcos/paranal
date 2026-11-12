@@ -51,7 +51,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Dashboard'
+                  $ref: '#/components/schemas/DashboardSummary'
         default:
           description: Unexpected error
   /dashboards/{dashboardID}:
@@ -215,6 +215,25 @@ components:
           description: Path
           type: string
           example: /
+    DashboardSummary:
+      title: Dashboard Summary
+      description: Dashboard summary
+      type: object
+      required: [version, id]
+      properties:
+        version:
+          description: Dashboard specification version
+          type: string
+          example: v1.0
+        id:
+          description: Dashboard ID
+          type: string
+          example: service-overview
+        routes:
+          description: Dashboard routes
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardRoute'
     DashboardTheme:
       title: Dashboard Theme
       description: Dashboard theme

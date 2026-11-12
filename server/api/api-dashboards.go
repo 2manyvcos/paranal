@@ -22,15 +22,9 @@ func GetDashboards(res http.ResponseWriter, req *http.Request) {
 	records := app.ListDashboards()
 
 	responsePayload := make([]struct {
-		Version       string                  `json:"version"`
-		ID            string                  `json:"id"`
-		Routes        []dashboardRoute        `json:"routes,omitempty"`
-		Theme         map[string]any          `json:"theme,omitempty"`
-		Vars          map[string]dashboardVar `json:"vars,omitempty"`
-		DefaultLayout map[string]any          `json:"defaultLayout,omitempty"`
-		Layout        map[string]any          `json:"layout,omitempty"`
-		Content       []map[string]any        `json:"content,omitempty"`
-		Scripts       map[string]string       `json:"scripts,omitempty"`
+		Version string           `json:"version"`
+		ID      string           `json:"id"`
+		Routes  []dashboardRoute `json:"routes,omitempty"`
 	}, len(records))
 	for i, record := range records {
 		responsePayload[i].Version = record.Version
@@ -40,18 +34,6 @@ func GetDashboards(res http.ResponseWriter, req *http.Request) {
 			responsePayload[i].Routes[j].Host = route.Host
 			responsePayload[i].Routes[j].Path = route.Path
 		}
-		responsePayload[i].Theme = record.Theme
-		responsePayload[i].Vars = make(map[string]dashboardVar, len(record.Vars))
-		for name, _var := range record.Vars {
-			responsePayload[i].Vars[name] = dashboardVar{
-				Value:   _var.Value,
-				Exposed: _var.Exposed,
-			}
-		}
-		responsePayload[i].DefaultLayout = record.DefaultLayout
-		responsePayload[i].Layout = record.Layout
-		responsePayload[i].Content = record.Content
-		responsePayload[i].Scripts = record.Scripts
 	}
 	res.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(res).Encode(responsePayload)
