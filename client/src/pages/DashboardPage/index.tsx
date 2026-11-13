@@ -25,6 +25,8 @@ export default function DashboardPage({ id }: DashboardPageProps) {
     return <LoadingPage />;
   }
 
+  // TODO: dashboard.data?.theme
+
   return (
     <Dashboard
       vars={dashboard.data?.vars}
