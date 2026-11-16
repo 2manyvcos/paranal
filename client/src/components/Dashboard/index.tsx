@@ -21,7 +21,7 @@ import {
   type ComponentType,
   type PropsWithChildren,
 } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useParams, useSearchParams } from 'react-router';
 import ExposeVars from './ExposeVars';
 
 function CustomError({ error }: ErrorDashboardNode) {
@@ -79,6 +79,8 @@ export default function Dashboard({
   content = defaultContent,
   scripts,
 }: DashboardProps) {
+  const location = useLocation();
+  const pathParams = useParams();
   const [searchParams] = useSearchParams();
   const [target] = useState(() => new DashboardEventTarget());
 
@@ -87,6 +89,35 @@ export default function Dashboard({
 
     const worker = new DashboardWorker();
     attachWorker(target, worker, { signal: controller.signal });
+
+    // TODO: use in worker event handler
+
+    document.addEventListener(
+      'visibilitychange',
+      () => {
+        target.dispatchFact(
+          'documentVisibilityState',
+          document.visibilityState,
+        );
+      },
+      { signal: controller.signal },
+    );
+
+    window.addEventListener(
+      'online',
+      () => {
+        target.dispatchFact('connectivityState', 'online');
+      },
+      { signal: controller.signal },
+    );
+
+    window.addEventListener(
+      'offline',
+      () => {
+        target.dispatchFact('connectivityState', 'offline');
+      },
+      { signal: controller.signal },
+    );
 
     return () => {
       controller.abort();
@@ -115,22 +146,35 @@ export default function Dashboard({
     };
   }, [vars, searchParams]);
 
-  const initialFacts = useMemo(() => {
-    return Object.fromEntries(
-      Object.entries(scripts ?? {}).map(([name, src]) => [
-        `scripts/${encodeURIComponent(name)}`,
-        { value: src },
-      ]),
-    );
-  }, [scripts]);
+  const facts = useMemo(() => {
+    return {
+      location: {
+        value: {
+          pathname: location.pathname,
+          params: pathParams,
+          hash: location.hash,
+        },
+      },
+      ...Object.fromEntries(
+        Object.entries(scripts ?? {}).map(([name, src]) => [
+          `scripts/${encodeURIComponent(name)}`,
+          { value: src },
+        ]),
+      ),
+    };
+  }, [location, pathParams, scripts]);
 
-  // TODO: either update when facts / vars change in the definition, or don't subscribe to events at all
+  useEffect(() => {
+    Object.entries(facts).forEach(([name, { value }]) => {
+      target.dispatchFact(name, value);
+    });
+  }, [target, facts]);
 
   return (
     <RotorDashboard
       target={target}
       initialVars={initialVars}
-      initialFacts={initialFacts}
+      initialFacts={facts}
       layouts={layouts}
       defaultLayout={defaultLayoutProp}
       tiles={tiles}

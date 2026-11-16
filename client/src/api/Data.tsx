@@ -34,6 +34,14 @@ const allocateEventSource = () => {
     },
     { signal: sourceController.signal },
   );
+  document.addEventListener(
+    'visibilitychange',
+    () => {
+      if (document.visibilityState !== 'hidden') return;
+      eventSource.close();
+    },
+    { signal: sourceController.signal },
+  );
   window.addEventListener(
     'beforeunload',
     () => {
@@ -92,6 +100,12 @@ const eventReceiver = new ParanalReceiver(allocateEventSource(), {
         throw new Error(`unsupported event type "${type}"`);
     }
   },
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') return;
+  eventReceiver.setEventSource(allocateEventSource());
+  dataProvider.notify(undefined);
 });
 
 window.addEventListener('online', () => {

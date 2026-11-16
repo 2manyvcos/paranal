@@ -10,6 +10,7 @@ export default function ExposeVars() {
     const nextSearchParams = new URLSearchParams();
     Object.entries(vars).forEach(([name, { value, exposed }]) => {
       if (exposed) nextSearchParams.set(name, JSON.stringify(value));
+      else nextSearchParams.delete(name);
     });
 
     setSearchParams(nextSearchParams);

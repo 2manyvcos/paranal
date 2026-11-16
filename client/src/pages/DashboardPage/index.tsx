@@ -3,6 +3,7 @@ import Dashboard from '@/components/Dashboard';
 import LoadingPage from '@/pages/LoadingPage';
 import UnexpectedErrorPage from '@/pages/UnexpectedErrorPage';
 import { useEffect } from 'react';
+import { useLocation } from 'react-router';
 
 export type DashboardPageProps = {
   version: string;
@@ -10,6 +11,8 @@ export type DashboardPageProps = {
 };
 
 export default function DashboardPage({ id }: DashboardPageProps) {
+  const location = useLocation();
+
   const dashboard = useDashboard(id);
   const dashboardLoading = dashboard.isLoading && dashboard.isInitial;
 
@@ -29,6 +32,7 @@ export default function DashboardPage({ id }: DashboardPageProps) {
 
   return (
     <Dashboard
+      key={location.pathname}
       vars={dashboard.data?.vars}
       defaultLayout={dashboard.data?.defaultLayout}
       layout={dashboard.data?.layout}
