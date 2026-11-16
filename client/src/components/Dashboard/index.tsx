@@ -148,13 +148,11 @@ export default function Dashboard({
 
   const facts = useMemo(() => {
     return {
-      location: {
-        value: {
-          pathname: location.pathname,
-          params: pathParams,
-          hash: location.hash,
-        },
+      connectivityState: {
+        value: window.navigator.onLine ? 'online' : 'offline',
       },
+      documentVisibilityState: { value: document.visibilityState },
+      location: { value: { pathname: location.pathname, params: pathParams } },
       ...Object.fromEntries(
         Object.entries(scripts ?? {}).map(([name, src]) => [
           `scripts/${encodeURIComponent(name)}`,
