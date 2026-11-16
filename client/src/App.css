@@ -1,0 +1,55 @@
+@import url('@fontsource/material-icons');
+@import url('@fontsource/roboto/300.css');
+@import url('@fontsource/roboto/400.css');
+@import url('@fontsource/roboto/500.css');
+@import url('@fontsource/roboto/700.css');
+@import url('@fortawesome/fontawesome-free/css/all.css');
+
+html,
+body {
+  min-width: 100%;
+  min-height: 100%;
+}
+
+#root {
+  min-width: 100%;
+  min-height: 100%;
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px; /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
+.MuiIcon-root.fa-solid,
+.MuiIcon-root.fa-regular,
+.MuiIcon-root.fa-brands,
+.MuiIcon-root.fa-classic,
+.MuiIcon-root.fas,
+.MuiIcon-root.far,
+.MuiIcon-root.fab,
+.MuiIcon-root.fa {
+  box-sizing: content-box;
+  padding: 3px !important;
+  font-size: 0.875rem !important;
+}

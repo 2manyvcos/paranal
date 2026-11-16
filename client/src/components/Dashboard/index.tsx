@@ -1,11 +1,16 @@
 // eslint-disable-next-line import-x/default
 import DashboardWorker from '@/workers/DashboardWorker?worker';
+import { CssBaseline } from '@mui/material';
+import {
+  createTheme,
+  ThemeProvider,
+  type ThemeOptions,
+} from '@mui/material/styles';
 import {
   DashboardEventTarget,
   type DashboardLayoutNode,
   type DashboardTileNode,
   type DashboardVar,
-  type ErrorDashboardNode,
 } from '@rotorjs/dashboard';
 import { jplLayouts, jplTiles } from '@rotorjs/jpl-react';
 import {
@@ -13,92 +18,35 @@ import {
   type DashboardLayoutMap,
   type DashboardTileMap,
 } from '@rotorjs/react';
+import commonLayouts from '@rotorjs/react-tiles/presets/layouts';
+import commonTiles from '@rotorjs/react-tiles/presets/tiles';
 import { attachWorker } from '@rotorjs/state';
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type ComponentType,
-  type PropsWithChildren,
-} from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router';
 import ExposeVars from './ExposeVars';
 
-// TODO: replace with MUI variant
-function DumpLayout({
-  type: _0,
-  children: _1,
-  ...props
-}: PropsWithChildren<DashboardLayoutNode>) {
-  return (
-    <div
-      style={{
-        minWidth: 100,
-        minHeight: 100,
-        textAlign: 'start',
-        border: '1px dashed black',
-        boxSizing: 'border-box',
-        borderRadius: 10,
-        padding: 10,
-      }}
-    >
-      <pre>{JSON.stringify(props, null, 2)}</pre>
-    </div>
-  );
-}
-
-// TODO: replace with MUI variant
-function DumpTile({ type: _0, ...props }: DashboardTileNode) {
-  return (
-    <div
-      style={{
-        minWidth: 100,
-        minHeight: 100,
-        textAlign: 'start',
-        border: '1px dashed black',
-        boxSizing: 'border-box',
-        borderRadius: 10,
-        padding: 10,
-      }}
-    >
-      <pre>{JSON.stringify(props, null, 2)}</pre>
-    </div>
-  );
-}
-
-// TODO: replace with MUI variant
-function CustomError({ error }: ErrorDashboardNode) {
-  return (
-    <div
-      style={{
-        minWidth: 100,
-        minHeight: 100,
-        color: 'red',
-        textAlign: 'start',
-        border: '1px dashed red',
-        boxSizing: 'border-box',
-        borderRadius: 10,
-        padding: 10,
-      }}
-    >
-      Error:
-      <pre>{(error as Error)?.message ?? error?.toString()}</pre>
-    </div>
-  );
-}
-
-const layouts: DashboardLayoutMap = {
-  ...jplLayouts,
-  dump: DumpLayout,
-  error: CustomError as ComponentType<PropsWithChildren<DashboardLayoutNode>>,
+const defaultTheme: ThemeOptions = {
+  colorSchemes: {
+    dark: true,
+  },
+  shape: {
+    borderRadius: 16,
+  },
 };
 
-const defaultLayout: DashboardLayoutNode = { type: 'grid' };
+const layouts: DashboardLayoutMap = {
+  ...commonLayouts,
+  ...jplLayouts,
+};
+
+const defaultLayout: DashboardLayoutNode = {
+  type: 'grid',
+  style: { margin: 2 },
+};
 
 const tiles: DashboardTileMap = {
+  ...commonTiles,
   ...jplTiles,
-  dump: DumpTile,
-  error: CustomError as ComponentType<DashboardTileNode>,
 };
 
 const defaultContent: DashboardTileNode[] = [];
@@ -108,6 +56,7 @@ function approveNavigation(): boolean {
 }
 
 export type DashboardProps = {
+  theme?: ThemeOptions;
   vars?: Record<string, DashboardVar>;
   defaultLayout?: DashboardLayoutNode;
   layout?: DashboardLayoutNode;
@@ -116,8 +65,9 @@ export type DashboardProps = {
 };
 
 export default function Dashboard({
+  theme: themeProp,
   vars,
-  defaultLayout: defaultLayoutProp = defaultLayout,
+  defaultLayout: defaultLayoutProp,
   layout,
   content = defaultContent,
   scripts,
@@ -126,6 +76,10 @@ export default function Dashboard({
   const pathParams = useParams();
   const [searchParams] = useSearchParams();
   const [target] = useState(() => new DashboardEventTarget());
+
+  const theme = useMemo(() => {
+    return createTheme(themeProp ?? defaultTheme);
+  }, [themeProp]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -210,19 +164,23 @@ export default function Dashboard({
   }, [target, facts]);
 
   return (
-    <RotorDashboard
-      target={target}
-      initialVars={initialVars}
-      initialFacts={facts}
-      layouts={layouts}
-      defaultLayout={defaultLayoutProp}
-      tiles={tiles}
-      layout={layout}
-      content={content}
-      // approveUserAction={}
-      approveNavigation={approveNavigation}
-    >
-      <ExposeVars />
-    </RotorDashboard>
+    <ThemeProvider theme={theme}>
+      <CssBaseline enableColorScheme />
+
+      <RotorDashboard
+        target={target}
+        initialVars={initialVars}
+        initialFacts={facts}
+        layouts={layouts}
+        defaultLayout={defaultLayoutProp ?? defaultLayout}
+        tiles={tiles}
+        layout={layout}
+        content={content}
+        // approveUserAction={}
+        approveNavigation={approveNavigation}
+      >
+        <ExposeVars />
+      </RotorDashboard>
+    </ThemeProvider>
   );
 }

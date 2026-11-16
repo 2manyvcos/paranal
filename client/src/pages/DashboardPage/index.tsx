@@ -28,11 +28,10 @@ export default function DashboardPage({ id }: DashboardPageProps) {
     return <LoadingPage />;
   }
 
-  // TODO: use dashboard.data?.theme
-
   return (
     <Dashboard
       key={location.pathname}
+      theme={dashboard.data?.theme}
       vars={dashboard.data?.vars}
       defaultLayout={dashboard.data?.defaultLayout}
       layout={dashboard.data?.layout}

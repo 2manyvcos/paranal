@@ -6,6 +6,8 @@ import LoadingPage from './pages/LoadingPage';
 import NotFoundPage from './pages/NotFoundPage';
 import UnexpectedErrorPage from './pages/UnexpectedErrorPage';
 
+import './App.css';
+
 export default function App() {
   const host = window.location.host;
 
