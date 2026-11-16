@@ -1,5 +1,5 @@
 export default function LoadingPage() {
-  // TODO:
+  // TODO: add UI
 
   return <div>Loading…</div>;
 }

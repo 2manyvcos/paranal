@@ -24,9 +24,50 @@ import {
 import { useLocation, useParams, useSearchParams } from 'react-router';
 import ExposeVars from './ExposeVars';
 
-function CustomError({ error }: ErrorDashboardNode) {
-  // TODO:
+// TODO: replace with MUI variant
+function DumpLayout({
+  type: _0,
+  children: _1,
+  ...props
+}: PropsWithChildren<DashboardLayoutNode>) {
+  return (
+    <div
+      style={{
+        minWidth: 100,
+        minHeight: 100,
+        textAlign: 'start',
+        border: '1px dashed black',
+        boxSizing: 'border-box',
+        borderRadius: 10,
+        padding: 10,
+      }}
+    >
+      <pre>{JSON.stringify(props, null, 2)}</pre>
+    </div>
+  );
+}
 
+// TODO: replace with MUI variant
+function DumpTile({ type: _0, ...props }: DashboardTileNode) {
+  return (
+    <div
+      style={{
+        minWidth: 100,
+        minHeight: 100,
+        textAlign: 'start',
+        border: '1px dashed black',
+        boxSizing: 'border-box',
+        borderRadius: 10,
+        padding: 10,
+      }}
+    >
+      <pre>{JSON.stringify(props, null, 2)}</pre>
+    </div>
+  );
+}
+
+// TODO: replace with MUI variant
+function CustomError({ error }: ErrorDashboardNode) {
   return (
     <div
       style={{
@@ -48,6 +89,7 @@ function CustomError({ error }: ErrorDashboardNode) {
 
 const layouts: DashboardLayoutMap = {
   ...jplLayouts,
+  dump: DumpLayout,
   error: CustomError as ComponentType<PropsWithChildren<DashboardLayoutNode>>,
 };
 
@@ -55,6 +97,7 @@ const defaultLayout: DashboardLayoutNode = { type: 'grid' };
 
 const tiles: DashboardTileMap = {
   ...jplTiles,
+  dump: DumpTile,
   error: CustomError as ComponentType<DashboardTileNode>,
 };
 
@@ -89,8 +132,6 @@ export default function Dashboard({
 
     const worker = new DashboardWorker();
     attachWorker(target, worker, { signal: controller.signal });
-
-    // TODO: use in worker event handler
 
     document.addEventListener(
       'visibilitychange',

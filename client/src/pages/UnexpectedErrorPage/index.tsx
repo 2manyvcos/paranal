@@ -1,5 +1,5 @@
 export default function UnexpectedErrorPage() {
-  // TODO:
+  // TODO: add UI
 
   return <div>Something went wrong</div>;
 }

@@ -7,13 +7,15 @@ import jplLocation from './jpl/jplLocation';
 
 const target = new DashboardEventTarget();
 attachWorker(target, self);
-// TODO: cleanup?
+
 const _engine = new DashboardEngine(target, {
   script: createJPLStateReducerConfig({
     vars: {
       ...varsPresets,
       import: jplImport,
       location: jplLocation,
+      // TODO: add http function
+      // TODO: add state resolver function; use documentVisibilityState and connectivityState facts for event handler (or send change events via DashboardEventTarget)
     },
   }),
 });

@@ -1,5 +1,5 @@
 export default function NotFoundPage() {
-  // TODO:
+  // TODO: add UI
 
   return <div>Not found</div>;
 }
