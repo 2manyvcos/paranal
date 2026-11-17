@@ -55,7 +55,7 @@ func Load() (*Config, error) {
 	config.AppName = utils.LoadConfigValue("PARANAL_APP_NAME", "Paranal")
 	config.CORSOrigin = utils.LoadConfigValue("PARANAL_CORS_ORIGIN", "")
 	config.PublicAPI = strings.TrimSuffix(utils.LoadConfigValue("PARANAL_PUBLIC_API", "/api"), "/")
-	config.ConfigDir = utils.LoadConfigValue("PARANAL_CONFIG_DIR", filepath.Join(configRoot, "config"))
+	config.ConfigDir = utils.LoadConfigValue("PARANAL_CONFIG_DIR", filepath.Join(configRoot, "configs"))
 	config.WatchConfigDir = utils.LoadConfigBool("PARANAL_WATCH_CONFIG_DIR", true)
 	config.ScriptDir = utils.LoadConfigValue("PARANAL_SCRIPT_DIR", filepath.Join(configRoot, "scripts"))
 
