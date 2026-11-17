@@ -1,4 +1,4 @@
-openapi: 3.1.1
+openapi: 3.2.1
 info:
   title: Paranal API
   description: This documentation describes the Paranal API.
@@ -11,4 +11,278 @@ externalDocs:
   url: https://2manyvcos.github.io/paranal
 servers:
   - url: '{{ .api }}/v1'
-paths: {}
+tags:
+  - name: Events
+    # description:
+  - name: Dashboards
+    # description:
+  - name: States
+    # description:
+paths:
+  /events:
+    get:
+      tags: [Events]
+      summary: Get events
+      operationId: getEvents
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/event-stream:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ChangeEvent'
+                discriminator:
+                  propertyName: event
+                  mapping:
+                    change: '#/components/schemas/ChangeEvent'
+        default:
+          description: Unexpected error
+  /dashboards:
+    get:
+      tags: [Dashboards]
+      summary: List dashboards
+      operationId: getDashboards
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DashboardSummary'
+        default:
+          description: Unexpected error
+  /dashboards/{dashboardID}:
+    parameters:
+      - in: path
+        name: dashboardID
+        description: Dashboard ID
+        required: true
+        schema:
+          type: string
+          example: service-overview
+    get:
+      tags: [Dashboards]
+      summary: Get a dashboard
+      operationId: getDashboardsByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dashboard'
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+  /registries/{registryName}/states:
+    parameters:
+      - in: path
+        name: registryName
+        description: Registry name
+        required: true
+        schema:
+          type: string
+          example: services
+    get:
+      tags: [States]
+      summary: List states in a registry
+      operationId: getRegistriesByNameStates
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/State'
+        default:
+          description: Unexpected error
+  /registries/{registryName}/states/{stateID}:
+    parameters:
+      - in: path
+        name: registryName
+        description: Registry name
+        required: true
+        schema:
+          type: string
+          example: services
+      - in: path
+        name: stateID
+        description: State ID
+        required: true
+        schema:
+          type: string
+          example: paranal
+    get:
+      tags: [States]
+      summary: Get a state in a registry
+      operationId: getRegistriesByNameStatesByID
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/State'
+        '404':
+          description: Not found
+        default:
+          description: Unexpected error
+components:
+  schemas:
+    ChangeEvent:
+      title: Change Event
+      description: Event that indicates that a resource has changed
+      type: object
+      required: [event, data]
+      properties:
+        event:
+          description: Type of event
+          type: string
+          enum: [change]
+        data:
+          description: Event details
+          type: string
+          format: uri
+          example: v1/registries/services/states/paranal
+    Dashboard:
+      title: Dashboard
+      description: Dashboard definition
+      type: object
+      required: [version, id]
+      properties:
+        version:
+          description: Dashboard specification version
+          type: string
+          example: v1.0
+        id:
+          description: Dashboard ID
+          type: string
+          example: service-overview
+        routes:
+          description: Dashboard routes
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardRoute'
+        theme:
+          $ref: '#/components/schemas/DashboardTheme'
+        vars:
+          description: Dashboard variables
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/DashboardVariable'
+        defaultLayout:
+          description: Default dashboard layout
+          $ref: '#/components/schemas/DashboardLayoutNode'
+        layout:
+          description: Dashboard layout
+          $ref: '#/components/schemas/DashboardLayoutNode'
+        content:
+          description: Dashboard content
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardTileNode'
+        scripts:
+          description: Dashboard scripts
+          type: object
+          additionalProperties:
+            type: string
+          example:
+            my-script: "error->('not implemented')"
+    DashboardLayoutNode:
+      title: Dashboard Layout Node
+      description: Dashboard layout node
+      type: object
+      additionalProperties: true
+      example:
+        type: 'grid'
+    DashboardRoute:
+      title: Dashboard Route
+      description: Dashboard route
+      type: object
+      required: [path]
+      properties:
+        host:
+          description: Host
+          type: string
+          example: services.example.com
+        path:
+          description: Path
+          type: string
+          example: /
+    DashboardSummary:
+      title: Dashboard Summary
+      description: Dashboard summary
+      type: object
+      required: [version, id]
+      properties:
+        version:
+          description: Dashboard specification version
+          type: string
+          example: v1.0
+        id:
+          description: Dashboard ID
+          type: string
+          example: service-overview
+        routes:
+          description: Dashboard routes
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardRoute'
+    DashboardTheme:
+      title: Dashboard Theme
+      description: Dashboard theme
+      type: object
+      additionalProperties: true
+      example:
+        palette:
+          primary:
+            main: '#ff9900'
+    DashboardTileNode:
+      title: Dashboard Tile Node
+      description: Dashboard tile node
+      type: object
+      additionalProperties: true
+      example:
+        type: 'script'
+        src: "error->('not implemented')"
+    DashboardVariable:
+      title: Dashboard Variable
+      description: Dashboard variable
+      type: object
+      properties:
+        value:
+          description: Value
+          examples:
+            - text
+            - 42
+            - a: 1
+        exposed:
+          description: Indicates whether the value is exposed or not
+          type: boolean
+    State:
+      title: State
+      description: Arbitrary set of information
+      type: object
+      required: [registry, id, data]
+      properties:
+        registry:
+          description: Registry name
+          type: string
+          example: services
+        id:
+          description: State ID
+          type: string
+          example: paranal
+        data:
+          description: Data
+          type: object
+          additionalProperties: true
+          example:
+            name: Paranal
+            status: healthy
