@@ -36,9 +36,6 @@ func loadConfigFile(path string) ([]Config, error) {
 		if err != nil {
 			return nil, err
 		}
-
-	default:
-		return nil, fmt.Errorf("unsupported format %q", ext)
 	}
 
 	configs := make([]Config, len(entries))
