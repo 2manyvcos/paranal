@@ -1,6 +1,6 @@
 {
   "name": "paranal",
-  "version": "0.0.0",
+  "version": "0.1.4",
   "description": "Self hosted, fully customizable dashboard. Keep track of the things you actually care about.",
   "author": {
     "name": "Aaron Burmeister"
@@ -24,7 +24,8 @@
     "docs:preview": "vitepress preview docs",
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
-    "prettify": "prettier . --write"
+    "prettify": "prettier . --write",
+    "postversion": "git commit -am$npm_package_version"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
