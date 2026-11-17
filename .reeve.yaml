@@ -29,7 +29,7 @@ steps:
 
 ---
 type: pipeline
-name: deploy paranal documentation
+name: deploy page - 2manyvcos.github.io/paranal
 
 when:
   workerGroup: { include: [soldier@midgar] }
@@ -37,7 +37,7 @@ when:
   action: { include: [pages:2manyvcos.github.io/paranal:deploy] }
 
 steps:
-  - name: deploy
+  - name: deploy page - 2manyvcos.github.io/paranal
     task: '@reeve/npm-cli'
     params:
       GIT_USER_EMAIL: { env: forgejo/aaron/paranal/email }
