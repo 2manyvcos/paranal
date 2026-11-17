@@ -29,5 +29,6 @@
       "@/*": ["./client/src/*"]
     }
   },
-  "include": ["./client/src", "./api/reference/src"]
+  "include": ["./client/src", "./api/reference/src"],
+  "exclude": ["./client/src/workers"]
 }

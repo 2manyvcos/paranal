@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	meta "github.com/2manyvcos/paranal"
 	"github.com/2manyvcos/paranal/server"
@@ -18,14 +20,19 @@ var rootCmd = &cobra.Command{
 
 	Args: cobra.NoArgs,
 
-	Run: func(cmd *cobra.Command, args []string) {
-		server.Run()
+	RunE: func(cmd *cobra.Command, args []string) error {
+		cmd.SilenceUsage = true
+
+		return server.Run(cmd.Context())
 	},
 }
 
 func main() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	err := rootCmd.ExecuteContext(ctx)
+	if err != nil {
 		os.Exit(1)
 	}
 }

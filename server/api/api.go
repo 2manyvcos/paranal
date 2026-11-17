@@ -7,5 +7,13 @@ import (
 func New() http.Handler {
 	api := http.NewServeMux()
 
+	api.Handle("GET /v1/events", http.HandlerFunc(GetEvents))
+
+	api.Handle("GET /v1/dashboards", http.HandlerFunc(GetDashboards))
+	api.Handle("GET /v1/dashboards/{dashboardID}", http.HandlerFunc(GetDashboardsByID))
+
+	api.Handle("GET /v1/registries/{registryName}/states", http.HandlerFunc(GetRegistriesByNameStates))
+	api.Handle("GET /v1/registries/{registryName}/states/{stateID}", http.HandlerFunc(GetRegistriesByNameStatesByID))
+
 	return api
 }

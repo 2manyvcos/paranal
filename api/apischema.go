@@ -15,6 +15,6 @@ func init() {
 	var err error
 	SchemaFiles, err = fs.Sub(rawSchemaFiles, "schema")
 	if err != nil {
-		panic(fmt.Sprintf("forking schema FS failed - %s\n", err))
+		panic(fmt.Sprintf("forking schema FS failed: %v\n", err))
 	}
 }

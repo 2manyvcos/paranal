@@ -1,5 +1,34 @@
 ---
 type: pipeline
+name: build image - docker.io/2manyvcos/paranal
+
+when:
+  workerGroup: { include: [soldier@midgar] }
+  trigger: { include: [commit, action] }
+  file:
+    include:
+      - config.env
+      - .reeve.yaml
+  action: { include: [images:docker.io/2manyvcos/paranal:build] }
+
+steps:
+  - name: load env
+    task: '@reeve/load-env-file'
+    params:
+      FILES: config.env
+      LOAD_ALL: 'true'
+
+  - name: build image - docker.io/2manyvcos/paranal
+    task: '@docker/build'
+    params:
+      DOCKER_LOGIN_REGISTRIES: { env: docker/hub/2manyvcos/login }
+      NAME: docker.io/2manyvcos/paranal
+      TAG: { var: PARANAL_VERSION }
+      PLATFORM: amd64,arm64
+      BUILD_DRIVER: docker-container
+
+---
+type: pipeline
 name: deploy page - 2manyvcos.github.io/paranal
 
 when:
