@@ -149,7 +149,7 @@ components:
           description: Event details
           type: string
           format: uri
-          example: v1/registries/services/paranal
+          example: v1/registries/services/states/paranal
     Dashboard:
       title: Dashboard
       description: Dashboard definition

@@ -11,18 +11,16 @@ import {
 } from '@rotorjs/dashboard';
 import { assertType } from './utils';
 
-const programCache: { [src: string]: JPLProgram } = {};
+const programCache: Record<string, JPLProgram> = {};
 
 export default function jplImport(reducer: DashboardStateReducer) {
-  const requestedScripts = new Set<string>();
+  const requestedInterests = new Set<string>();
 
   return (): JPLFunc => {
-    requestedScripts.forEach((scriptName) => {
-      reducer.removeInterest(
-        dashboardFactInterest(`scripts/${encodeURIComponent(scriptName)}`),
-      );
+    requestedInterests.forEach((interest) => {
+      reducer.removeInterest(interest);
     });
-    requestedScripts.clear();
+    requestedInterests.clear();
 
     return async (
       runtime: JPLRuntime,
@@ -36,13 +34,13 @@ export default function jplImport(reducer: DashboardStateReducer) {
         ['string'],
         '%s (%*<100v) cannot be used as a script name',
       );
-      const factName = `scripts/${encodeURIComponent(scriptName)}`;
+      const scriptFact = `scripts/${encodeURIComponent(scriptName)}`;
 
-      requestedScripts.add(scriptName);
-      reducer.addInterest(dashboardFactInterest(factName));
+      const scriptInterest = dashboardFactInterest(scriptFact);
+      requestedInterests.add(scriptInterest);
+      reducer.addInterest(scriptInterest);
 
-      const script = reducer.engine.getFact(factName);
-
+      const script = reducer.engine.getFact(scriptFact);
       if (script == null || typeof script.value !== 'string') {
         throw new Error(`unknown script "${scriptName}"`);
       }

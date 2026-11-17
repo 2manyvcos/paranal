@@ -118,7 +118,7 @@ type stateRevPayload struct {
 func stateEvents(records []db.StateID) []events.Event {
 	eventBundle := make([]events.Event, len(records))
 	for i, record := range records {
-		eventBundle[i] = events.NewChangeEvent(fmt.Sprintf("v1/registries/%s/%s", url.PathEscape(record.Registry), url.PathEscape(record.ID)))
+		eventBundle[i] = events.NewChangeEvent(fmt.Sprintf("v1/registries/%s/states/%s", url.PathEscape(record.Registry), url.PathEscape(record.ID)))
 	}
 
 	return eventBundle

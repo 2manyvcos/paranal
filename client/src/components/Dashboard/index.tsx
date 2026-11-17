@@ -1,5 +1,13 @@
-// eslint-disable-next-line import-x/default
-import DashboardWorker from '@/workers/DashboardWorker?worker';
+import { getAPIURL, matchEvent, normalizePath } from '@/api/api';
+import {
+  paranalReconnectInterest,
+  paranalStateInterest,
+  paranalStatesInterest,
+} from '@/api/interests';
+import type { ParanalProviderType } from '@/api/ParanalProvider';
+import type { ParanalReceiverType } from '@/api/ParanalReceiver';
+import { useConfigContext } from '@civet/core';
+import { useConfigContext as useEventConfigContext } from '@civet/events';
 import { CssBaseline } from '@mui/material';
 import {
   createTheme,
@@ -24,6 +32,9 @@ import { attachWorker } from '@rotorjs/state';
 import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useParams, useSearchParams } from 'react-router';
 import ExposeVars from './ExposeVars';
+
+// eslint-disable-next-line import-x/default
+import DashboardWorker from '@/workers/DashboardWorker?worker';
 
 const defaultTheme: ThemeOptions = {
   colorSchemes: {
@@ -76,6 +87,8 @@ export default function Dashboard({
   const pathParams = useParams();
   const [searchParams] = useSearchParams();
   const [target] = useState(() => new DashboardEventTarget());
+  const { dataProvider } = useConfigContext<ParanalProviderType>();
+  const { eventReceiver } = useEventConfigContext<ParanalReceiverType>();
 
   const theme = useMemo(() => {
     return createTheme(themeProp ?? defaultTheme);
@@ -86,33 +99,6 @@ export default function Dashboard({
 
     const worker = new DashboardWorker();
     attachWorker(target, worker, { signal: controller.signal });
-
-    document.addEventListener(
-      'visibilitychange',
-      () => {
-        target.dispatchFact(
-          'documentVisibilityState',
-          document.visibilityState,
-        );
-      },
-      { signal: controller.signal },
-    );
-
-    window.addEventListener(
-      'online',
-      () => {
-        target.dispatchFact('connectivityState', 'online');
-      },
-      { signal: controller.signal },
-    );
-
-    window.addEventListener(
-      'offline',
-      () => {
-        target.dispatchFact('connectivityState', 'offline');
-      },
-      { signal: controller.signal },
-    );
 
     return () => {
       controller.abort();
@@ -143,10 +129,7 @@ export default function Dashboard({
 
   const facts = useMemo(() => {
     return {
-      connectivityState: {
-        value: window.navigator.onLine ? 'online' : 'offline',
-      },
-      documentVisibilityState: { value: document.visibilityState },
+      apiURL: { value: getAPIURL().toString() },
       location: { value: { pathname: location.pathname, params: pathParams } },
       ...Object.fromEntries(
         Object.entries(scripts ?? {}).map(([name, src]) => [
@@ -162,6 +145,40 @@ export default function Dashboard({
       target.dispatchFact(name, value);
     });
   }, [target, facts]);
+
+  useEffect(() => {
+    const unsub = dataProvider!.subscribe('', () => {
+      target.dispatchInterest(paranalReconnectInterest());
+    });
+
+    return unsub;
+  }, [target, dataProvider]);
+
+  useEffect(() => {
+    const unsub = eventReceiver!.subscribe(
+      undefined,
+      undefined,
+      (events: MessageEvent[]) => {
+        events.forEach((event) => {
+          switch (event.type) {
+            case 'change': {
+              const eventPath = normalizePath(event.data);
+
+              if (matchEvent('v1/registries/*/states/*', eventPath)) {
+                const [, , registry, , id] = eventPath
+                  .split('/')
+                  .map(decodeURIComponent);
+                target.dispatchInterest(paranalStatesInterest(registry));
+                target.dispatchInterest(paranalStateInterest(registry, id));
+              }
+            }
+          }
+        });
+      },
+    );
+
+    return unsub;
+  }, [target, eventReceiver]);
 
   return (
     <ThemeProvider theme={theme}>

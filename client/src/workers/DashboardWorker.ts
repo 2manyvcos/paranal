@@ -2,8 +2,10 @@ import { DashboardEngine, DashboardEventTarget } from '@rotorjs/dashboard';
 import { createJPLStateReducerConfig } from '@rotorjs/jpl';
 import varsPresets from '@rotorjs/jpl/presets/vars';
 import { attachWorker } from '@rotorjs/state';
-import jplImport from './jpl/jplImport';
-import jplLocation from './jpl/jplLocation';
+import jplImport from './vars/jplImport';
+import jplLocation from './vars/jplLocation';
+import jplState from './vars/jplState';
+import jplStates from './vars/jplStates';
 
 const target = new DashboardEventTarget();
 attachWorker(target, self);
@@ -14,8 +16,9 @@ attachWorker(target, self);
       ...varsPresets,
       import: jplImport,
       location: jplLocation,
+      states: jplStates,
+      state: jplState,
       // TODO: add http function
-      // TODO: add state resolver function; use documentVisibilityState and connectivityState facts for event handler (or send change events via DashboardEventTarget)
     },
   }),
 });

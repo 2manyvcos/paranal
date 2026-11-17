@@ -1,4 +1,3 @@
-import type { FetchProviderType } from '@civet/common';
 import { useResource } from '@civet/core';
 import type { ThemeOptions } from '@mui/material';
 import type {
@@ -6,6 +5,7 @@ import type {
   DashboardTileNode,
   DashboardVar,
 } from '@rotorjs/dashboard';
+import type { ParanalProviderType } from './ParanalProvider';
 import type { ParanalEventOptions } from './ParanalReceiver';
 
 export type Dashboard = {
@@ -34,19 +34,19 @@ export type DashboardSummary = {
 export type DashboardTheme = Record<string, unknown>;
 
 export function useDashboards() {
-  return useResource<FetchProviderType, DashboardSummary[] | undefined>({
+  return useResource<ParanalProviderType, DashboardSummary[] | undefined>({
     name: 'v1/dashboards',
     query: undefined,
     events: {
       options: {
-        pathPattern: 'v1/dashboards/*',
+        pathPatterns: ['v1/dashboards/*'],
       } satisfies ParanalEventOptions,
     },
   });
 }
 
 export function useDashboard(id: string) {
-  return useResource<FetchProviderType, Dashboard | undefined>({
+  return useResource<ParanalProviderType, Dashboard | undefined>({
     name: `v1/dashboards/${encodeURIComponent(id)}`,
     query: undefined,
     events: true,
