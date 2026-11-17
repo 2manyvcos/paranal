@@ -15,8 +15,11 @@ export default defineConfig({
   cleanUrls: true,
 
   head: [
-    ['link', { rel: 'icon', href: '/paranal-simple.svg' }],
-    ['link', { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' }],
+    ['link', { rel: 'icon', href: '/paranal/paranal-simple.svg' }],
+    [
+      'link',
+      { rel: 'apple-touch-icon', href: '/paranal/apple-touch-icon.png' },
+    ],
     ['meta', { property: 'og:type', content: 'website' }],
     ['meta', { property: 'og:site_name', content: 'Paranal' }],
     [
