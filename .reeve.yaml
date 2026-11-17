@@ -7,16 +7,15 @@ when:
   trigger: { include: [commit, action] }
   file:
     include:
-      - config.env
+      - package.json
       - .reeve.yaml
   action: { include: [images:docker.io/2manyvcos/paranal:build] }
 
 steps:
-  - name: load env
-    task: '@reeve/load-env-file'
+  - name: get package version
+    task: '@reeve/node-get-package-version'
     params:
-      FILES: config.env
-      LOAD_ALL: 'true'
+      RESULT_VAR: PARANAL_VERSION
 
   - name: build image - docker.io/2manyvcos/paranal
     task: '@docker/build'
