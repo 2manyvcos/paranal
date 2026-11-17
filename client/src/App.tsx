@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Route, Routes } from 'react-router';
 import { useDashboards } from './api/dataDashboards';
 import DashboardPage from './pages/DashboardPage';
@@ -14,12 +13,8 @@ export default function App() {
   const dashboards = useDashboards();
   const dashboardsLoading = dashboards.isLoading && dashboards.isInitial;
 
-  useEffect(() => {
-    if (dashboards.error) console.error(dashboards.error);
-  }, [dashboards.error]);
-
   if (dashboards.error) {
-    return <UnexpectedErrorPage />;
+    return <UnexpectedErrorPage error={dashboards.error} />;
   }
 
   if (dashboardsLoading) {

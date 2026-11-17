@@ -1,8 +1,8 @@
 import { useDashboard } from '@/api/dataDashboards';
 import Dashboard from '@/components/Dashboard';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import LoadingPage from '@/pages/LoadingPage';
 import UnexpectedErrorPage from '@/pages/UnexpectedErrorPage';
-import { useEffect } from 'react';
 import { useLocation } from 'react-router';
 
 export type DashboardPageProps = {
@@ -16,12 +16,8 @@ export default function DashboardPage({ id }: DashboardPageProps) {
   const dashboard = useDashboard(id);
   const dashboardLoading = dashboard.isLoading && dashboard.isInitial;
 
-  useEffect(() => {
-    if (dashboard.error) console.error(dashboard.error);
-  }, [dashboard.error]);
-
   if (dashboard.error) {
-    return <UnexpectedErrorPage />;
+    return <UnexpectedErrorPage error={dashboard.error} />;
   }
 
   if (dashboardLoading) {
@@ -29,14 +25,19 @@ export default function DashboardPage({ id }: DashboardPageProps) {
   }
 
   return (
-    <Dashboard
-      key={location.pathname}
-      theme={dashboard.data?.theme}
-      vars={dashboard.data?.vars}
-      defaultLayout={dashboard.data?.defaultLayout}
-      layout={dashboard.data?.layout}
-      content={dashboard.data?.content}
-      scripts={dashboard.data?.scripts}
-    />
+    <ErrorBoundary
+      fallback={(error: unknown) => <UnexpectedErrorPage error={error} />}
+      errorKey={dashboard.data}
+    >
+      <Dashboard
+        key={location.pathname}
+        theme={dashboard.data?.theme}
+        vars={dashboard.data?.vars}
+        defaultLayout={dashboard.data?.defaultLayout}
+        layout={dashboard.data?.layout}
+        content={dashboard.data?.content}
+        scripts={dashboard.data?.scripts}
+      />
+    </ErrorBoundary>
   );
 }

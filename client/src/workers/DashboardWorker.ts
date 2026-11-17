@@ -8,7 +8,7 @@ import jplLocation from './jpl/jplLocation';
 const target = new DashboardEventTarget();
 attachWorker(target, self);
 
-const _engine = new DashboardEngine(target, {
+/* const engine = */ new DashboardEngine(target, {
   script: createJPLStateReducerConfig({
     vars: {
       ...varsPresets,

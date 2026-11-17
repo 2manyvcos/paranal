@@ -163,8 +163,6 @@ export default function Dashboard({
     });
   }, [target, facts]);
 
-  // TODO: add error boundary
-
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline enableColorScheme />
