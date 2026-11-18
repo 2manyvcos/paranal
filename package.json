@@ -25,7 +25,7 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "prettify": "prettier . --write",
-    "preversion": "npm run client:build",
+    "preversion": "npm run client:build && git add client/dist",
     "postversion": "git commit -am$npm_package_version"
   },
   "devDependencies": {
