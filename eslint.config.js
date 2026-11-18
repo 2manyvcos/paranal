@@ -10,7 +10,11 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['client/dist']),
+  globalIgnores([
+    'client/dist',
+    'docs/.vitepress/cache',
+    'docs/.vitepress/dist',
+  ]),
   js.configs.recommended,
   tseslint.configs.recommended,
   importX.flatConfigs.recommended,
