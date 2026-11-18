@@ -3,6 +3,8 @@ import Dashboard from '@/components/Dashboard';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import LoadingPage from '@/pages/LoadingPage';
 import UnexpectedErrorPage from '@/pages/UnexpectedErrorPage';
+import objectHash from 'object-hash';
+import { useMemo } from 'react';
 import { useLocation } from 'react-router';
 
 export type DashboardPageProps = {
@@ -15,6 +17,16 @@ export default function DashboardPage({ id }: DashboardPageProps) {
 
   const dashboard = useDashboard(id);
   const dashboardLoading = dashboard.isLoading && dashboard.isInitial;
+
+  const dashboardKey = useMemo(
+    () =>
+      objectHash({
+        pathname: location.pathname,
+        id: dashboard.data?.id ?? '',
+        vars: dashboard.data?.vars ?? {},
+      }),
+    [location.pathname, dashboard.data],
+  );
 
   if (dashboard.error) {
     return <UnexpectedErrorPage error={dashboard.error} />;
@@ -30,7 +42,7 @@ export default function DashboardPage({ id }: DashboardPageProps) {
       errorKey={dashboard.data}
     >
       <Dashboard
-        key={location.pathname}
+        key={dashboardKey}
         theme={dashboard.data?.theme}
         vars={dashboard.data?.vars}
         defaultLayout={dashboard.data?.defaultLayout}
