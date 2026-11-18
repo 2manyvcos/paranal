@@ -1,6 +1,6 @@
 {
   "name": "paranal",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Self hosted, fully customizable dashboard. Keep track of the things you actually care about.",
   "author": {
     "name": "Aaron Burmeister"
@@ -25,6 +25,7 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "npm run lint -- --fix",
     "prettify": "prettier . --write",
+    "preversion": "npm run client:build && git add client/dist",
     "postversion": "git commit -am$npm_package_version"
   },
   "devDependencies": {
@@ -54,7 +55,7 @@
     "@fontsource/material-icons": "^5.3.0",
     "@fontsource/roboto": "^5.3.0",
     "@fortawesome/fontawesome-free": "^7.3.1",
-    "@jplorg/jpl": "^2.3.0",
+    "@jplorg/jpl": "^2.3.1",
     "@mui/material": "^9.5.0",
     "@rotorjs/dashboard": "^0.7.4",
     "@rotorjs/jpl": "^0.9.3",
@@ -62,7 +63,7 @@
     "@rotorjs/react": "^0.15.0",
     "@rotorjs/react-tiles": "^0.2.0",
     "@rotorjs/state": "^0.7.1",
-    "@scalar/api-reference": "^1.80.0",
+    "@scalar/api-reference": "^1.81.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router": "^8.5.1"
