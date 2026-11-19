@@ -11,10 +11,10 @@ import (
 type dashboard struct {
 	ID            string            `mapstructure:"id"`
 	Routes        []route           `mapstructure:"routes"`
-	Theme         map[string]any    `mapstructure:"theme"`
+	Theme         *map[string]any   `mapstructure:"theme"`
 	Vars          map[string]_var   `mapstructure:"vars"`
-	DefaultLayout map[string]any    `mapstructure:"defaultLayout"`
-	Layout        map[string]any    `mapstructure:"layout"`
+	DefaultLayout *map[string]any   `mapstructure:"defaultLayout"`
+	Layout        *map[string]any   `mapstructure:"layout"`
 	Content       []map[string]any  `mapstructure:"content"`
 	Scripts       map[string]string `mapstructure:"scripts"`
 }

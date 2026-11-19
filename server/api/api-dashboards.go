@@ -61,10 +61,10 @@ func GetDashboardsByID(res http.ResponseWriter, req *http.Request) {
 		Version       string                  `json:"version"`
 		ID            string                  `json:"id"`
 		Routes        []dashboardRoute        `json:"routes,omitempty"`
-		Theme         map[string]any          `json:"theme,omitempty"`
+		Theme         *map[string]any         `json:"theme,omitempty"`
 		Vars          map[string]dashboardVar `json:"vars,omitempty"`
-		DefaultLayout map[string]any          `json:"defaultLayout,omitempty"`
-		Layout        map[string]any          `json:"layout,omitempty"`
+		DefaultLayout *map[string]any         `json:"defaultLayout,omitempty"`
+		Layout        *map[string]any         `json:"layout,omitempty"`
 		Content       []map[string]any        `json:"content,omitempty"`
 		Scripts       map[string]string       `json:"scripts,omitempty"`
 	}
