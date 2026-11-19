@@ -4,10 +4,10 @@ type Dashboard struct {
 	Version       string
 	ID            string
 	Routes        []Route
-	Theme         map[string]any
+	Theme         *map[string]any
 	Vars          map[string]Var
-	DefaultLayout map[string]any
-	Layout        map[string]any
+	DefaultLayout *map[string]any
+	Layout        *map[string]any
 	Content       []map[string]any
 	Scripts       map[string]string
 }

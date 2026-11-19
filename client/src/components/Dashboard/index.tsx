@@ -41,7 +41,7 @@ const defaultTheme: ThemeOptions = {
     dark: true,
   },
   shape: {
-    borderRadius: 16,
+    borderRadius: 32,
   },
 };
 
