@@ -55,14 +55,15 @@ func VarStates(store *storage.Storage) jpl.JPLFunc {
 			return nil, errors.New(http.StatusText(http.StatusInternalServerError))
 		}
 
-		result := make([]map[string]any, len(records))
+		results := make([]any, len(records))
 		for i, record := range records {
-			result[i] = make(map[string]any, 3)
-			result[i]["registry"] = record.Registry
-			result[i]["id"] = record.ID
-			result[i]["data"] = record.Data
+			result := make(map[string]any, 3)
+			result["registry"] = record.Registry
+			result["id"] = record.ID
+			result["data"] = record.Data
+			results[i] = result
 		}
 
-		return []any{result}, nil
+		return []any{results}, nil
 	})
 }
