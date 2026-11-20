@@ -1,4 +1,9 @@
-import type { JPLFunc, JPLRuntime, JPLRuntimeSignal } from '@jplorg/jpl';
+import {
+  JPLRuntimeError,
+  type JPLFunc,
+  type JPLRuntime,
+  type JPLRuntimeSignal,
+} from '@jplorg/jpl';
 import {
   dashboardFactInterest,
   type DashboardStateReducer,
@@ -12,7 +17,11 @@ export default function jplLocation(reducer: DashboardStateReducer) {
       _runtime: JPLRuntime,
       _signal: JPLRuntimeSignal,
       next: (output: unknown) => Promise<unknown[]> | unknown[],
+      _input: unknown,
+      ...args: unknown[]
     ): Promise<unknown[]> => {
+      if (args.length > 0) throw new JPLRuntimeError('too many arguments');
+
       reducer.addInterest(dashboardFactInterest('location'));
 
       return next(reducer.engine.getFact('location')?.value);

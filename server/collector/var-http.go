@@ -15,21 +15,23 @@ import (
 	"github.com/jplorg/jpl/go/v2/library"
 )
 
-type HTTPOptions struct {
+type HTTPConfig struct {
+	URL           string             `mapstructure:"url"`
 	Method        string             `mapstructure:"method"`
 	Headers       map[string]*string `mapstructure:"headers"`
 	Timeout       int                `mapstructure:"timeout"`
 	DetailedError bool               `mapstructure:"detailedError"`
 }
 
-func FuncHTTP() jpl.JPLFunc {
+func VarHTTP() jpl.JPLFunc {
 	return enclose(func(runtime jpl.JPLRuntime, signal jpl.JPLRuntimeSignal, input any, args ...any) ([]any, error) {
 		var err error
 
 		argCount := len(args)
 		if argCount < 1 {
 			return nil, fmt.Errorf("not enough arguments")
-		} else if argCount > 2 {
+		}
+		if argCount > 1 {
 			return nil, fmt.Errorf("too many arguments")
 		}
 
@@ -53,51 +55,46 @@ func FuncHTTP() jpl.JPLFunc {
 			detectedContentType = "application/json"
 		}
 
-		unwrappedArg, err := library.UnwrapValue(args[0])
+		strippedArg, err := library.StripJSON(args[0])
 		if err != nil {
 			return nil, err
 		}
-		url, ok := unwrappedArg.(string)
-		if !ok {
-			return nil, fmt.Errorf("invalid URL")
+		t, err := library.Type(strippedArg)
+		if err != nil {
+			return nil, err
 		}
-
-		var options HTTPOptions
-		options.Method = "GET"
+		var config HTTPConfig
+		config.Method = "GET"
 		if body != nil {
-			options.Method = "POST"
-			options.Headers = map[string]*string{"Content-Type": &detectedContentType}
+			config.Method = "POST"
+			config.Headers = map[string]*string{"Content-Type": &detectedContentType}
 		}
-		if argCount > 1 {
-			var err error
-			strippedArg, err := library.StripJSON(args[1])
-			if err != nil {
-				return nil, err
-			}
-			decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &options})
-			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
-			}
-			err = decoder.Decode(strippedArg)
-			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
-			}
+		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &config})
+		if err != nil {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): %v", t, strippedArg, err.Error()))
+		}
+		err = decoder.Decode(strippedArg)
+		if err != nil {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): %v", t, strippedArg, err.Error()))
+		}
+		if config.URL == "" {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): missing \"url\"", t, strippedArg))
 		}
 
 		var ctx context.Context
 		var cancel context.CancelFunc
-		if options.Timeout > 0 {
-			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(options.Timeout)*time.Second)
+		if config.Timeout > 0 {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(config.Timeout)*time.Second)
 		} else {
 			ctx, cancel = context.WithCancel(context.Background())
 		}
 		unsub := signal.Subscribe(cancel)
 		defer unsub()
-		req, err := http.NewRequestWithContext(ctx, options.Method, url, body)
+		req, err := http.NewRequestWithContext(ctx, config.Method, config.URL, body)
 		if err != nil {
 			return nil, fmt.Errorf("sending HTTP request: %v", err)
 		}
-		for key, value := range options.Headers {
+		for key, value := range config.Headers {
 			if value == nil {
 				req.Header.Del(key)
 			} else {
@@ -111,7 +108,7 @@ func FuncHTTP() jpl.JPLFunc {
 		defer resp.Body.Close()
 
 		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-			if resp.StatusCode >= 400 && options.DetailedError {
+			if resp.StatusCode >= 400 && config.DetailedError {
 				message, _ := getResponsePayload(resp)
 				return nil, library.ThrowAny(library.NewRuntimeError(map[string]any{
 					"status": float64(resp.StatusCode),

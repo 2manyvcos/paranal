@@ -45,18 +45,22 @@ func (c *Collector) Shutdown() {
 }
 
 func (c *Collector) run(triggers []any) error {
-	results, programErr := c.program.Run([]any{nil}, &jpl.JPLProgramConfig{
+	var err error
+
+	results, err := c.program.Run([]any{nil}, &jpl.JPLProgramConfig{
 		Runtime: jpl.JPLRuntimeOptions{
 			Vars: map[string]any{
-				"http":     FuncHTTP(),
-				"script":   FuncScript(c.config),
-				"ssh":      FuncSSH(),
-				"triggers": FuncTriggers(triggers),
+				"http":     VarHTTP(),
+				"script":   VarScript(c.config),
+				"ssh":      VarSSH(),
+				"states":   VarStates(c.store),
+				"state":    VarState(c.store),
+				"triggers": VarTriggers(triggers),
 			},
 		},
 	})
-	if programErr != nil {
-		return programErr
+	if err != nil {
+		return err
 	}
 
 	states := make([]collector_spec.State, 0, len(results))

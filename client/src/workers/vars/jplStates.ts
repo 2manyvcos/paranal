@@ -5,7 +5,7 @@ import {
 import ParanalProvider from '@/api/ParanalProvider';
 import { AbortSignal } from '@civet/core';
 import {
-  JPLExecutionError,
+  JPLRuntimeError,
   type JPLFunc,
   type JPLRuntime,
   type JPLRuntimeSignal,
@@ -38,16 +38,22 @@ export default function jplStates(reducer: DashboardStateReducer) {
       runtime: JPLRuntime,
       signal: JPLRuntimeSignal,
       next: (output: unknown) => Promise<unknown[]> | unknown[],
-      input: unknown,
+      _input: unknown,
+      ...args: unknown[]
     ): Promise<unknown[]> => {
+      if (args.length < 1) throw new JPLRuntimeError('not enough arguments');
+      if (args.length > 1) throw new JPLRuntimeError('too many arguments');
+
       const config = assertJSON<StatesConfig>(
         runtime,
-        input,
-        ['null', 'object'],
-        'expected an object as config but got %s (%*<100v)',
+        args[0],
+        ['object'],
+        'invalid argument 0 (%s %*<100v): expected object',
       );
       if (!config.registry)
-        throw new JPLExecutionError('config.registry is required');
+        throw new JPLRuntimeError(
+          'invalid argument 0 (%s %*<100v): missing "registry"',
+        );
 
       reducer.addInterest(paranalReconnectInterest());
 

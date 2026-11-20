@@ -17,27 +17,26 @@ import (
 )
 
 type SSHConfig struct {
-	Address    string   `mapstructure:"address"`
-	HostKeys   []string `mapstructure:"hostKeys"`
-	User       string   `mapstructure:"user"`
-	Password   string   `mapstructure:"password"`
-	PrivateKey string   `mapstructure:"privateKey"`
-}
-
-type SSHOptions struct {
+	Address       string             `mapstructure:"address"`
+	HostKeys      []string           `mapstructure:"hostKeys"`
+	User          string             `mapstructure:"user"`
+	Password      string             `mapstructure:"password"`
+	PrivateKey    string             `mapstructure:"privateKey"`
+	Command       string             `mapstructure:"command"`
 	Env           map[string]*string `mapstructure:"env"`
 	Timeout       int                `mapstructure:"timeout"`
 	DetailedError bool               `mapstructure:"detailedError"`
 }
 
-func FuncSSH() jpl.JPLFunc {
+func VarSSH() jpl.JPLFunc {
 	return enclose(func(runtime jpl.JPLRuntime, signal jpl.JPLRuntimeSignal, input any, args ...any) ([]any, error) {
 		var err error
 
 		argCount := len(args)
-		if argCount < 2 {
+		if argCount < 1 {
 			return nil, fmt.Errorf("not enough arguments")
-		} else if argCount > 3 {
+		}
+		if argCount > 1 {
 			return nil, fmt.Errorf("too many arguments")
 		}
 
@@ -62,46 +61,27 @@ func FuncSSH() jpl.JPLFunc {
 		if err != nil {
 			return nil, err
 		}
-		var config SSHConfig
-		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &config})
-		if err != nil {
-			return nil, fmt.Errorf("invalid argument \"config\": %v", err)
-		}
-		err = decoder.Decode(strippedArg)
-		if err != nil {
-			return nil, fmt.Errorf("invalid argument \"config\": %v", err)
-		}
-
-		if config.Address == "" {
-			return nil, fmt.Errorf("invalid address")
-		}
-		if len(config.HostKeys) < 1 {
-			return nil, fmt.Errorf("missing host key")
-		}
-
-		unwrappedArg, err := library.UnwrapValue(args[1])
+		t, err := library.Type(strippedArg)
 		if err != nil {
 			return nil, err
 		}
-		command, ok := unwrappedArg.(string)
-		if !ok || command == "" {
-			return nil, fmt.Errorf("invalid command")
+		var config SSHConfig
+		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &config})
+		if err != nil {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): %v", t, strippedArg, err.Error()))
 		}
-
-		var options SSHOptions
-		if argCount > 2 {
-			strippedArg, err = library.StripJSON(args[2])
-			if err != nil {
-				return nil, err
-			}
-			decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &options})
-			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
-			}
-			err = decoder.Decode(strippedArg)
-			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
-			}
+		err = decoder.Decode(strippedArg)
+		if err != nil {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): %v", t, strippedArg, err.Error()))
+		}
+		if config.Address == "" {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): missing \"address\"", t, strippedArg))
+		}
+		if len(config.HostKeys) < 1 {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): missing \"hostKeys\"", t, strippedArg))
+		}
+		if config.Command == "" {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): missing \"command\"", t, strippedArg))
 		}
 
 		hostKeys := make([]ssh.PublicKey, len(config.HostKeys))
@@ -144,8 +124,8 @@ func FuncSSH() jpl.JPLFunc {
 		defer session.Close()
 		var ctx context.Context
 		var cancel context.CancelFunc
-		if options.Timeout > 0 {
-			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(options.Timeout)*time.Second)
+		if config.Timeout > 0 {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(config.Timeout)*time.Second)
 		} else {
 			ctx, cancel = context.WithCancel(context.Background())
 		}
@@ -162,7 +142,7 @@ func FuncSSH() jpl.JPLFunc {
 		session.Stdout = &stdout
 		var stderr strings.Builder
 		session.Stderr = &stderr
-		for key, value := range options.Env {
+		for key, value := range config.Env {
 			if value == nil {
 				err = session.Setenv(key, "")
 			} else {
@@ -172,9 +152,9 @@ func FuncSSH() jpl.JPLFunc {
 				return nil, fmt.Errorf("setting remote env: %v", err)
 			}
 		}
-		err = session.Run(command)
+		err = session.Run(config.Command)
 		if err != nil {
-			if options.DetailedError {
+			if config.DetailedError {
 				status := -1
 				if exitErr, ok := err.(*ssh.ExitError); ok {
 					status = exitErr.ExitStatus()

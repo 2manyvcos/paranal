@@ -19,20 +19,22 @@ import (
 	"github.com/jplorg/jpl/go/v2/library"
 )
 
-type ScriptOptions struct {
+type ScriptConfig struct {
+	Command       string             `mapstructure:"command"`
 	Env           map[string]*string `mapstructure:"env"`
 	Timeout       int                `mapstructure:"timeout"`
 	DetailedError bool               `mapstructure:"detailedError"`
 }
 
-func FuncScript(cfg *staticconfig.Config) jpl.JPLFunc {
+func VarScript(cfg *staticconfig.Config) jpl.JPLFunc {
 	return enclose(func(runtime jpl.JPLRuntime, signal jpl.JPLRuntimeSignal, input any, args ...any) ([]any, error) {
 		var err error
 
 		argCount := len(args)
 		if argCount < 1 {
 			return nil, fmt.Errorf("not enough arguments")
-		} else if argCount > 2 {
+		}
+		if argCount > 1 {
 			return nil, fmt.Errorf("too many arguments")
 		}
 
@@ -53,39 +55,34 @@ func FuncScript(cfg *staticconfig.Config) jpl.JPLFunc {
 			stdin = bytes.NewReader(serializedStdin)
 		}
 
-		unwrappedArg, err := library.UnwrapValue(args[0])
+		strippedArg, err := library.StripJSON(args[0])
 		if err != nil {
 			return nil, err
 		}
-		commandStr, ok := unwrappedArg.(string)
-		if !ok {
-			return nil, fmt.Errorf("invalid command")
+		t, err := library.Type(strippedArg)
+		if err != nil {
+			return nil, err
 		}
-		command, err := shlex.Split(commandStr)
+		var config ScriptConfig
+		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &config})
+		if err != nil {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): %v", t, strippedArg, err.Error()))
+		}
+		err = decoder.Decode(strippedArg)
+		if err != nil {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): %v", t, strippedArg, err.Error()))
+		}
+		if config.Command == "" {
+			return nil, library.ThrowAny(library.NewRuntimeError("invalid argument 0 (%s %*<100v): missing \"command\"", t, strippedArg))
+		}
+
+		command, err := shlex.Split(config.Command)
 		if err != nil {
 			return nil, fmt.Errorf("parsing command: %v", err)
 		}
 		if len(command) < 1 {
 			return nil, fmt.Errorf("invalid command")
 		}
-
-		var options ScriptOptions
-		if argCount > 1 {
-			var err error
-			strippedArg, err := library.StripJSON(args[1])
-			if err != nil {
-				return nil, err
-			}
-			decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{ErrorUnused: true, Result: &options})
-			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
-			}
-			err = decoder.Decode(strippedArg)
-			if err != nil {
-				return nil, fmt.Errorf("invalid argument \"options\": %v", err)
-			}
-		}
-
 		scriptsPath, err := filepath.Abs(cfg.ScriptDir)
 		if err != nil {
 			return nil, fmt.Errorf("resolving script: %v", err)
@@ -101,8 +98,8 @@ func FuncScript(cfg *staticconfig.Config) jpl.JPLFunc {
 		}
 		var ctx context.Context
 		var cancel context.CancelFunc
-		if options.Timeout > 0 {
-			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(options.Timeout)*time.Second)
+		if config.Timeout > 0 {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(config.Timeout)*time.Second)
 		} else {
 			ctx, cancel = context.WithCancel(context.Background())
 		}
@@ -115,8 +112,8 @@ func FuncScript(cfg *staticconfig.Config) jpl.JPLFunc {
 		cmd.Stdout = &stdout
 		var stderr strings.Builder
 		cmd.Stderr = &stderr
-		env := make([]string, 0, len(options.Env))
-		for key, value := range options.Env {
+		env := make([]string, 0, len(config.Env))
+		for key, value := range config.Env {
 			if value != nil {
 				env = append(env, key+"="+*value)
 			}
@@ -126,7 +123,7 @@ func FuncScript(cfg *staticconfig.Config) jpl.JPLFunc {
 		cmd.WaitDelay = 5 * time.Second
 		err = cmd.Run()
 		if err != nil {
-			if options.DetailedError {
+			if config.DetailedError {
 				status := -1
 				if exitErr, ok := err.(*exec.ExitError); ok {
 					status = exitErr.ExitCode()

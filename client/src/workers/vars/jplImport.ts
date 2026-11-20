@@ -1,4 +1,5 @@
 import {
+  JPLRuntimeError,
   parse as parseJPLProgram,
   type JPLFunc,
   type JPLProgram,
@@ -27,12 +28,15 @@ export default function jplImport(reducer: DashboardStateReducer) {
       _signal: JPLRuntimeSignal,
       next: (output: unknown) => Promise<unknown[]> | unknown[],
       input: unknown,
+      ...args: unknown[]
     ): Promise<unknown[]> => {
+      if (args.length > 0) throw new JPLRuntimeError('too many arguments');
+
       const scriptName = assertType<string>(
         runtime,
         input,
         ['string'],
-        '%s (%*<100v) cannot be used as a script name',
+        'invalid input (%s %*<100v): expected string',
       );
       const scriptFact = `scripts/${encodeURIComponent(scriptName)}`;
 
