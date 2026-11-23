@@ -8,7 +8,7 @@ type Collector struct {
 }
 
 type Trigger struct {
-	Trigger     string
+	Type        string
 	Crontab     string
 	PathPattern string
 }

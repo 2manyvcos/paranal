@@ -16,7 +16,7 @@ func (a *App) createCollectorFromDynamicConfig(id string, config dynamicconfig.C
 
 	triggers := make([]collector.Trigger, len(config.Triggers))
 	for i, t := range config.Triggers {
-		switch t.Trigger {
+		switch t.Type {
 		case "start":
 			triggers[i] = collector.OnStart()
 
@@ -27,7 +27,7 @@ func (a *App) createCollectorFromDynamicConfig(id string, config dynamicconfig.C
 			triggers[i] = collector.OnChange(a.EventBroker, t.PathPattern)
 
 		default:
-			return nil, fmt.Errorf("unsupported trigger %q", t.Trigger)
+			return nil, fmt.Errorf("unsupported type %q", t.Type)
 		}
 	}
 

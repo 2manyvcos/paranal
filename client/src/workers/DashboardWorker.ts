@@ -6,6 +6,7 @@ import jplImport from './vars/jplImport';
 import jplLocation from './vars/jplLocation';
 import jplState from './vars/jplState';
 import jplStates from './vars/jplStates';
+import jplTheme from './vars/jplTheme';
 
 const target = new DashboardEventTarget();
 attachWorker(target, self);
@@ -18,6 +19,7 @@ attachWorker(target, self);
       location: jplLocation,
       states: jplStates,
       state: jplState,
+      theme: jplTheme,
       // TODO: add http function
     },
   }),

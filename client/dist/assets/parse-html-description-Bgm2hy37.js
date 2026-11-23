@@ -1,1 +1,0 @@
-import{a as e,r as t}from"./dist-CDqg622_.js";var n=n=>{let r=t(n,{removeTags:[`img`,`picture`]});return e(r)};export{n as parseHtmlDescription};
