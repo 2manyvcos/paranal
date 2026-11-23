@@ -35,6 +35,10 @@ func VarScrapeLogo() jpl.JPLFunc {
 			return nil, err
 		}
 
+		if logo == "" {
+			return []any{nil}, nil
+		}
+
 		return []any{logo}, nil
 	})
 }
