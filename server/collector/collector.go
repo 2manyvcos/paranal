@@ -50,12 +50,13 @@ func (c *Collector) run(triggers []any) error {
 	results, err := c.program.Run([]any{nil}, &jpl.JPLProgramConfig{
 		Runtime: jpl.JPLRuntimeOptions{
 			Vars: map[string]any{
-				"http":     VarHTTP(),
-				"script":   VarScript(c.config),
-				"ssh":      VarSSH(),
-				"states":   VarStates(c.store),
-				"state":    VarState(c.store),
-				"triggers": VarTriggers(triggers),
+				"http":       VarHTTP(),
+				"scrapeLogo": VarScrapeLogo(),
+				"script":     VarScript(c.config),
+				"ssh":        VarSSH(),
+				"states":     VarStates(c.store),
+				"state":      VarState(c.store),
+				"triggers":   VarTriggers(triggers),
 			},
 		},
 	})
