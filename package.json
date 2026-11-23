@@ -61,7 +61,7 @@
     "@rotorjs/jpl": "^0.9.5",
     "@rotorjs/jpl-react": "^0.9.0",
     "@rotorjs/react": "^0.15.0",
-    "@rotorjs/react-tiles": "^0.3.0",
+    "@rotorjs/react-tiles": "^0.4.0",
     "@rotorjs/state": "^0.7.1",
     "@scalar/api-reference": "^1.83.0",
     "object-hash": "^3.0.0",
