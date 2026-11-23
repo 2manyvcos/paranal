@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/thanhpk/go-favicon"
+	"go.deanishe.net/favicon"
 )
 
 func ScrapeLogo(url string) (string, error) {
