@@ -1,0 +1,1 @@
+import{a as e,r as t}from"./dist-aU5svJ8D.js";var n=n=>{let r=t(n,{removeTags:[`img`,`picture`]});return e(r)};export{n as parseHtmlDescription};
