@@ -17,7 +17,7 @@ type collector struct {
 }
 
 type trigger struct {
-	Trigger string         `mapstructure:"trigger"`
+	Type    string         `mapstructure:"type"`
 	Payload map[string]any `mapstructure:",remain"`
 }
 
@@ -60,11 +60,11 @@ func (collectorParser) ParseCollector(provider string, input any) (collector_spe
 }
 
 func parseTrigger(input trigger) (collector_spec.Trigger, error) {
-	if input.Trigger == "" {
-		return collector_spec.Trigger{}, fmt.Errorf("missing \"trigger\"")
+	if input.Type == "" {
+		return collector_spec.Trigger{}, fmt.Errorf("missing \"type\"")
 	}
 
-	switch input.Trigger {
+	switch input.Type {
 	case "start":
 		return parseStartTrigger(input.Payload)
 
@@ -75,7 +75,7 @@ func parseTrigger(input trigger) (collector_spec.Trigger, error) {
 		return parseChangeTrigger(input.Payload)
 
 	default:
-		return collector_spec.Trigger{}, fmt.Errorf("unsupported trigger %q", input.Trigger)
+		return collector_spec.Trigger{}, fmt.Errorf("unsupported type %q", input.Type)
 	}
 }
 
@@ -93,7 +93,7 @@ func parseStartTrigger(input any) (collector_spec.Trigger, error) {
 	}
 
 	var result collector_spec.Trigger
-	result.Trigger = "start"
+	result.Type = "start"
 
 	return result, nil
 }
@@ -114,7 +114,7 @@ func parseScheduleTrigger(input any) (collector_spec.Trigger, error) {
 	}
 
 	var result collector_spec.Trigger
-	result.Trigger = "schedule"
+	result.Type = "schedule"
 
 	if t.Cron == "" {
 		return collector_spec.Trigger{}, fmt.Errorf("missing \"cron\"")
@@ -143,7 +143,7 @@ func parseChangeTrigger(input any) (collector_spec.Trigger, error) {
 	}
 
 	var result collector_spec.Trigger
-	result.Trigger = "change"
+	result.Type = "change"
 
 	if t.Pattern == "" {
 		return collector_spec.Trigger{}, fmt.Errorf("missing \"pattern\"")
