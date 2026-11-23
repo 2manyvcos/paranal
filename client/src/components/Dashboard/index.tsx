@@ -131,6 +131,7 @@ export default function Dashboard({
     return {
       apiURL: { value: getAPIURL().toString() },
       location: { value: { pathname: location.pathname, params: pathParams } },
+      theme: { value: JSON.parse(JSON.stringify(theme)) },
       ...Object.fromEntries(
         Object.entries(scripts ?? {}).map(([name, src]) => [
           `scripts/${encodeURIComponent(name)}`,
@@ -138,7 +139,7 @@ export default function Dashboard({
         ]),
       ),
     };
-  }, [location, pathParams, scripts]);
+  }, [location, pathParams, theme, scripts]);
 
   useEffect(() => {
     Object.entries(facts).forEach(([name, { value }]) => {
