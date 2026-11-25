@@ -14,6 +14,7 @@ import {
   ThemeProvider,
   type ThemeOptions,
 } from '@mui/material/styles';
+import { deepmerge } from '@mui/utils';
 import {
   DashboardEventTarget,
   type DashboardLayoutNode,
@@ -91,7 +92,7 @@ export default function Dashboard({
   const { eventReceiver } = useEventConfigContext<ParanalReceiverType>();
 
   const theme = useMemo(() => {
-    return createTheme(themeProp ?? defaultTheme);
+    return createTheme(deepmerge(defaultTheme, themeProp));
   }, [themeProp]);
 
   useEffect(() => {
