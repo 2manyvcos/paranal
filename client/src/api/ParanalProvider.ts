@@ -1,4 +1,5 @@
 import { FetchProvider } from '@civet/common';
+import { HTTPError } from './errors';
 
 export default class ParanalProvider extends FetchProvider {
   constructor(apiURL: string | URL) {
@@ -11,7 +12,7 @@ export default class ParanalProvider extends FetchProvider {
         } catch {
           // ignore
         }
-        throw new Error(message || response.statusText);
+        throw new HTTPError(message || response.statusText, response.status);
       },
     });
   }

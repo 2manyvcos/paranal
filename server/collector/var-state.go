@@ -56,7 +56,7 @@ func VarState(store *storage.Storage) jpl.JPLFunc {
 
 		record, err := store.GetState(config.Registry, config.ID)
 		if errors.Is(err, db.ErrNotFound) {
-			return nil, errors.New(http.StatusText(http.StatusNotFound))
+			return []any{nil}, nil
 		}
 		if err != nil {
 			log.Printf("loading record: %v\n", err)
