@@ -1,3 +1,4 @@
+import { HTTP_NOT_FOUND, type HTTPError } from '@/api/errors';
 import {
   paranalReconnectInterest,
   paranalStateInterest,
@@ -71,15 +72,23 @@ export default function jplState(reducer: DashboardStateReducer) {
         abortSignal.abort();
       });
 
-      const response = await provider.get(
-        `v1/registries/${encodeURIComponent(config.registry)}/states/${encodeURIComponent(config.id)}`,
-        undefined,
-        undefined,
-        undefined,
-        abortSignal,
-      );
+      try {
+        const response = await provider.get(
+          `v1/registries/${encodeURIComponent(config.registry)}/states/${encodeURIComponent(config.id)}`,
+          undefined,
+          undefined,
+          undefined,
+          abortSignal,
+        );
 
-      return next(response);
+        return next(response);
+      } catch (error) {
+        if ((error as HTTPError).status === HTTP_NOT_FOUND) {
+          return next(null);
+        }
+
+        throw error;
+      }
     };
   };
 }
